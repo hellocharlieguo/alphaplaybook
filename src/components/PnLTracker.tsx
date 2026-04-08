@@ -186,7 +186,7 @@ export default function PnLTracker() {
           {/* Date labels */}
           {snapshots
             .filter((_, i) => i === 0 || i === snapshots.length - 1 || i === Math.floor(snapshots.length / 2))
-            .map((s, _, arr) => {
+            .map((s) => {
               const idx = snapshots.indexOf(s)
               return (
                 <text

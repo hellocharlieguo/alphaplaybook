@@ -58,7 +58,7 @@ export default function Dashboard() {
   const cumulativeReturn = latestSnapshot?.cumulative_return_pct ?? 0
   const alpha = (latestSnapshot?.cumulative_return_pct ?? 0) - (latestSnapshot?.spy_cumulative_return_pct ?? 0)
   const spyRsi = latestSnapshot?.spy_rsi ?? null
-  const signalCount = latestSnapshot?.bullish_assets?.length ?? 0
+
 
   return (
     <div className="min-h-screen bg-[#0a0e17] text-white">
