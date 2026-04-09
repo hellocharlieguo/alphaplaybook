@@ -175,54 +175,24 @@ async function searchYouTube(channelId, channelName, maxResults = 3) {
 }
 
 
-// --- Fetch transcript directly from YouTube's timedtext API ---
+// --- Fetch transcript: check local file first ---
 async function fetchTranscript(videoId, title) {
-  try {
-    // Step 1: Fetch the video page to extract the captions URL
-    const pageUrl = `https://www.youtube.com/watch?v=${videoId}`
-    const pageResponse = await fetch(pageUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-      signal: AbortSignal.timeout(15000),
-    })
-    const html = await pageResponse.text()
+  const fs = require('fs')
+  const path = require('path')
+  const transcriptDir = path.join(__dirname, 'transcripts')
 
-    // Step 2: Extract captions URL from the page source
-    const captionMatch = html.match(/"captionTracks":\[\{"baseUrl":"(.*?)"/);
-    if (!captionMatch) {
-      console.log(`  No captions found in page source`)
-      return { text: null, source: 'none' }
-    }
-
-   const captionUrl = captionMatch[1].replace(/\\u0026/g, '&').replace(/\\u0025/g, '%')
-
-    // Step 3: Fetch the actual captions XML
-    const captionResponse = await fetch(captionUrl, {
-      signal: AbortSignal.timeout(10000),
-    })
-    const xml = await captionResponse.text()
-
-    // Step 4: Extract text from XML caption elements
-  const textMatches = xml.match(/<text[^>]*>([^<]*)<\/text>/gs)
-    if (!textMatches || textMatches.length === 0) {
-      console.log(`  No text found in captions XML`)
-      return { text: null, source: 'none' }
-    }
-
-    const text = textMatches
-      .map(t => t.replace(/<[^>]*>/g, ''))
-      .map(t => t.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'"))
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-
+  // Check for video-specific transcript file (e.g., transcripts/S2ziezeoK4E.txt)
+  const videoFile = path.join(transcriptDir, `${videoId}.txt`)
+  if (fs.existsSync(videoFile)) {
+    const text = fs.readFileSync(videoFile, 'utf-8').trim()
     if (text.length > 100) {
-      console.log(`  Got ${text.length} chars of transcript`)
-      return { text: text.slice(0, 30000), source: 'youtube-captions' }
+      console.log(`  Got video-specific transcript (${text.length} chars)`)
+      return { text: text.slice(0, 50000), source: 'manual-paste' }
     }
-  } catch (e) {
-    console.log(`  Transcript fetch failed: ${e.message}`)
   }
 
+  // Fallback: no transcript available
+  console.log(`  No transcript file found for ${videoId}`)
   return { text: null, source: 'none' }
 }
 
