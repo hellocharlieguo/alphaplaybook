@@ -24,7 +24,7 @@ const SOURCES = [
     name: 'visser',
     label: 'Jordi Visser',
     channels: [
-      { id: 'UCGAhWqzVgKytS0NcKz9bxDA', name: 'Anthony Pompliano Clips', filterGuest: 'Jordi Visser' },
+      { id: 'UCevXpeL8cNyAnww-NqJ4m2w', name: 'Anthony Pompliano', filterGuest: 'Jordi Visser' },
     ],
   },
   {
@@ -289,16 +289,44 @@ async function processSource(source) {
     console.log(`  Searching ${channel.name}...`)
     const videos = await searchYouTube(channel.id, channel.name)
 
-    // Filter by guest if needed (e.g., only Pomp episodes with Jordi)
-    const filtered = channel.filterGuest
-      ? videos.filter((v) =>
-          v.title.toLowerCase().includes(channel.filterGuest.toLowerCase()) ||
-          v.description.toLowerCase().includes(channel.filterGuest.toLowerCase())
-        )
-      : videos
+    if (channel.filterGuest) {
+      // First pass: check title and search snippet
+      const titleMatches = []
+      const needsDescCheck = []
 
-    console.log(`  Found ${filtered.length} relevant videos`)
-    allVideos.push(...filtered)
+      for (const v of videos) {
+        const titleAndDesc = `${v.title} ${v.description}`.toLowerCase()
+        if (titleAndDesc.includes(channel.filterGuest.toLowerCase())) {
+          titleMatches.push(v)
+        } else {
+          needsDescCheck.push(v)
+        }
+      }
+
+      // Second pass: fetch full description for videos that didn't match on title
+      for (const v of needsDescCheck) {
+        try {
+          const detailUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${v.videoId}&key=${YOUTUBE_API_KEY}`
+          const detailResponse = await fetch(detailUrl)
+          const detailData = await detailResponse.json()
+          if (detailData.items && detailData.items[0]) {
+            const fullDesc = detailData.items[0].snippet.description
+            if (fullDesc.toLowerCase().includes(channel.filterGuest.toLowerCase())) {
+              v.description = fullDesc
+              titleMatches.push(v)
+            }
+          }
+        } catch (e) {
+          // skip
+        }
+      }
+
+      console.log(`  Found ${titleMatches.length} relevant videos`)
+      allVideos.push(...titleMatches)
+    } else {
+      console.log(`  Found ${videos.length} relevant videos`)
+      allVideos.push(...videos)
+    }
   }
 
   if (allVideos.length === 0) {
@@ -309,7 +337,8 @@ async function processSource(source) {
   // Take the most recent video only (for daily cron efficiency)
   const latest = allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))[0]
   console.log(`  Latest: "${latest.title}" (${latest.publishedAt.split('T')[0]})`)
-// Fetch full video details (search API truncates description)
+
+  // Fetch full video details (search API truncates description)
   try {
     const detailUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${latest.videoId}&key=${YOUTUBE_API_KEY}`
     const detailResponse = await fetch(detailUrl)
@@ -321,6 +350,7 @@ async function processSource(source) {
   } catch (e) {
     console.log(`  Could not fetch full description`)
   }
+
   // Fetch transcript
   console.log(`  Fetching transcript...`)
   const transcript = await fetchTranscript(latest.videoId, latest.title)
@@ -346,6 +376,7 @@ async function processSource(source) {
   }))
 }
 
+  
 // --- Write to Supabase ---
 async function writeToSupabase(allSignals) {
   const today = new Date().toISOString().split('T')[0]
