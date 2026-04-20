@@ -58,7 +58,7 @@ const ASSET_KEYWORDS = {
   'ethereum': { ticker: 'ETH', asset: 'Ethereum', category: 'crypto' },
   'crypto': { ticker: 'IBIT', asset: 'Crypto', category: 'crypto' },
   'digital asset': { ticker: 'IBIT', asset: 'Digital Assets', category: 'crypto' },
-  'gold': { ticker: 'GLDM', asset: 'Gold', category: 'commodity', exact: true },
+  'gold': { ticker: 'GLD', asset: 'Gold', category: 'commodity', exact: true },
   'silver': { ticker: 'SLV', asset: 'Silver', category: 'commodity' },
   'copper': { ticker: 'COPX', asset: 'Copper', category: 'commodity' },
   'oil price': { ticker: 'XLE', asset: 'Oil', category: 'commodity' },
@@ -98,9 +98,9 @@ const ASSET_KEYWORDS = {
   'economic downturn': { ticker: 'SPY', asset: 'Economic Downturn', category: 'macro_bearish' },
   'hard landing': { ticker: 'SPY', asset: 'Hard Landing', category: 'macro_bearish' },
   'soft landing': { ticker: 'SPY', asset: 'Soft Landing', category: 'macro_bullish' },
-  'inflation': { ticker: 'GLDM', asset: 'Inflation', category: 'macro' },
-  'inflationary': { ticker: 'GLDM', asset: 'Inflation', category: 'macro' },
-  'stagflation': { ticker: 'GLDM', asset: 'Stagflation', category: 'macro_bearish' },
+  'inflation': { ticker: 'GLD', asset: 'Inflation', category: 'macro' },
+  'inflationary': { ticker: 'GLD', asset: 'Inflation', category: 'macro' },
+  'stagflation': { ticker: 'GLD', asset: 'Stagflation', category: 'macro_bearish' },
   'deflation': { ticker: 'TLT', asset: 'Deflation', category: 'macro' },
   'interest rate': { ticker: 'TLT', asset: 'Interest Rates', category: 'macro' },
   'rate cut': { ticker: 'TLT', asset: 'Rate Cuts', category: 'macro_bullish' },
@@ -108,22 +108,22 @@ const ASSET_KEYWORDS = {
   'federal reserve': { ticker: 'TLT', asset: 'Fed Policy', category: 'macro' },
   'the fed': { ticker: 'TLT', asset: 'Fed Policy', category: 'macro' },
   'quantitative easing': { ticker: 'SPY', asset: 'QE', category: 'macro_bullish' },
-  'money printing': { ticker: 'GLDM', asset: 'Money Printing', category: 'macro' },
+  'money printing': { ticker: 'GLD', asset: 'Money Printing', category: 'macro' },
   'liquidity': { ticker: 'IBIT', asset: 'Global Liquidity', category: 'macro' },
-  'dollar debasement': { ticker: 'GLDM', asset: 'Dollar Debasement', category: 'macro' },
-  'scarcity': { ticker: 'GLDM', asset: 'Scarcity Trade', category: 'macro' },
+  'dollar debasement': { ticker: 'GLD', asset: 'Dollar Debasement', category: 'macro' },
+  'scarcity': { ticker: 'GLD', asset: 'Scarcity Trade', category: 'macro' },
   'abundance': { ticker: 'XSD', asset: 'Abundance Trade', category: 'macro' },
   'tariff': { ticker: 'VEA', asset: 'Tariffs/Trade', category: 'macro' },
   'trade war': { ticker: 'VEA', asset: 'Trade War', category: 'macro_bearish' },
   'sanctions': { ticker: 'XLE', asset: 'Sanctions', category: 'macro' },
-  'war': { ticker: 'GLDM', asset: 'War/Conflict', category: 'geopolitical', exact: true },
+  'war': { ticker: 'GLD', asset: 'War/Conflict', category: 'geopolitical', exact: true },
   'military': { ticker: 'PPA', asset: 'Military/Defense', category: 'geopolitical' },
-  'geopolitical': { ticker: 'GLDM', asset: 'Geopolitical Risk', category: 'geopolitical' },
+  'geopolitical': { ticker: 'GLD', asset: 'Geopolitical Risk', category: 'geopolitical' },
   'iran': { ticker: 'XLE', asset: 'Iran Risk', category: 'geopolitical', exact: true },
   'china': { ticker: 'XSD', asset: 'China Risk', category: 'geopolitical', exact: true },
   'russia': { ticker: 'XLE', asset: 'Russia Risk', category: 'geopolitical' },
-  'ukraine': { ticker: 'GLDM', asset: 'Ukraine Conflict', category: 'geopolitical' },
-  'nuclear': { ticker: 'GLDM', asset: 'Nuclear Risk', category: 'geopolitical' },
+  'ukraine': { ticker: 'GLD', asset: 'Ukraine Conflict', category: 'geopolitical' },
+  'nuclear': { ticker: 'GLD', asset: 'Nuclear Risk', category: 'geopolitical' },
 }
 
 const BULLISH_WORDS = [
@@ -372,12 +372,12 @@ function mapMarketToAssets(question, probability) {
 
   // Monetary policy
   if ((q.includes('fed') || q.includes('federal reserve')) && (q.includes('cut') || q.includes('lower') || q.includes('decrease'))) {
-    if (probability > 0.70) return { direction: 'bullish', mapped_assets: ['GLDM', 'TLT', 'XSD'], conviction: 'high' }
-    if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['GLDM', 'TLT'], conviction: 'medium' }
+    if (probability > 0.70) return { direction: 'bullish', mapped_assets: ['GLD', 'TLT', 'XSD'], conviction: 'high' }
+    if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['GLD', 'TLT'], conviction: 'medium' }
     return { direction: 'neutral', mapped_assets: ['SGOV'], conviction: 'low' }
   }
   if ((q.includes('fed') || q.includes('federal reserve')) && (q.includes('hike') || q.includes('raise') || q.includes('increase'))) {
-    if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['TLT', 'XSD', 'GLDM'], conviction: 'medium' }
+    if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['TLT', 'XSD', 'GLD'], conviction: 'medium' }
     return { direction: 'neutral', mapped_assets: ['SGOV'], conviction: 'low' }
   }
   if (q.includes('fed funds') || q.includes('federal reserve') || q.includes('fomc')) {
@@ -387,14 +387,14 @@ function mapMarketToAssets(question, probability) {
   // Recession
   if (q.includes('recession')) {
     if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['SPY', 'XSD', 'COPX'], conviction: 'high' }
-    if (probability > 0.35) return { direction: 'neutral', mapped_assets: ['SGOV', 'GLDM'], conviction: 'medium' }
+    if (probability > 0.35) return { direction: 'neutral', mapped_assets: ['SGOV', 'GLD'], conviction: 'medium' }
     return { direction: 'bullish', mapped_assets: ['SPY', 'XSD', 'COPX'], conviction: 'medium' }
   }
 
   // Inflation / CPI
   if (q.includes('inflation') || q.includes('cpi')) {
     if ((q.includes('above') || q.includes('over') || q.includes('high') || q.includes('rise')) && probability > 0.60) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'COPX', 'XLE', 'IBIT'], conviction: 'medium' }
+      return { direction: 'bullish', mapped_assets: ['GLD', 'COPX', 'XLE', 'IBIT'], conviction: 'medium' }
     }
     if ((q.includes('below') || q.includes('under') || q.includes('fall') || q.includes('drop')) && probability > 0.60) {
       return { direction: 'bullish', mapped_assets: ['TLT', 'XSD', 'SPY'], conviction: 'medium' }
@@ -461,12 +461,12 @@ function mapMarketToAssets(question, probability) {
   // Gold
   if (q.includes('gold') || q.includes('xau')) {
     if ((q.includes('above') || q.includes('over') || q.includes('all-time high') || q.includes('rise')) && probability > 0.50) {
-      return { direction: 'bullish', mapped_assets: ['GLDM'], conviction: 'medium' }
+      return { direction: 'bullish', mapped_assets: ['GLD'], conviction: 'medium' }
     }
     if ((q.includes('below') || q.includes('under') || q.includes('drop') || q.includes('fall')) && probability > 0.50) {
-      return { direction: 'bearish', mapped_assets: ['GLDM'], conviction: 'medium' }
+      return { direction: 'bearish', mapped_assets: ['GLD'], conviction: 'medium' }
     }
-    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['GLD'], conviction: 'low' }
   }
 
   // S&P 500
@@ -484,43 +484,43 @@ function mapMarketToAssets(question, probability) {
   if (q.includes('russia') || q.includes('ukraine') || q.includes('putin') || q.includes('zelensky')) {
     if (q.includes('ceasefire') || q.includes('peace') || q.includes('deal') || q.includes('end')) {
       if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['VEA', 'SPY'], conviction: 'medium' }
-      return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+      return { direction: 'neutral', mapped_assets: ['XLE', 'GLD'], conviction: 'low' }
     }
     if ((q.includes('escalat') || q.includes('nuclear') || q.includes('nato') || q.includes('expand')) && probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'XLE', 'SGOV'], conviction: 'high' }
+      return { direction: 'bullish', mapped_assets: ['GLD', 'XLE', 'SGOV'], conviction: 'high' }
     }
-    return { direction: 'neutral', mapped_assets: ['GLDM', 'XLE'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['GLD', 'XLE'], conviction: 'low' }
   }
 
   // China-Taiwan
   if (q.includes('china') && (q.includes('taiwan') || q.includes('invasion') || q.includes('military'))) {
     if (probability > 0.20) return { direction: 'bearish', mapped_assets: ['XSD', 'VEA', 'SPY'], conviction: 'high' }
-    return { direction: 'neutral', mapped_assets: ['XSD', 'GLDM'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['XSD', 'GLD'], conviction: 'low' }
   }
 
   // Iran
   if (q.includes('iran') && (q.includes('war') || q.includes('strike') || q.includes('attack') || q.includes('nuclear') || q.includes('military'))) {
-    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['XLE', 'GLDM'], conviction: 'high' }
-    return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['XLE', 'GLD'], conviction: 'high' }
+    return { direction: 'neutral', mapped_assets: ['XLE', 'GLD'], conviction: 'low' }
   }
 
   // Israel / Middle East
   if (q.includes('israel') || q.includes('gaza') || q.includes('hamas') || q.includes('hezbollah') || q.includes('middle east')) {
     if (q.includes('ceasefire') || q.includes('peace') || q.includes('deal')) {
-      if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+      if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['XLE', 'GLD'], conviction: 'low' }
     }
     if ((q.includes('escalat') || q.includes('war') || q.includes('invasion') || q.includes('expand')) && probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['XLE', 'GLDM', 'SGOV'], conviction: 'high' }
+      return { direction: 'bullish', mapped_assets: ['XLE', 'GLD', 'SGOV'], conviction: 'high' }
     }
-    return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['XLE', 'GLD'], conviction: 'low' }
   }
 
   // North Korea
   if (q.includes('north korea') || q.includes('kim jong') || q.includes('pyongyang')) {
     if ((q.includes('nuclear') || q.includes('missile') || q.includes('test') || q.includes('launch')) && probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'SGOV'], conviction: 'medium' }
+      return { direction: 'bullish', mapped_assets: ['GLD', 'SGOV'], conviction: 'medium' }
     }
-    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['GLD'], conviction: 'low' }
   }
 
   // General war / conflict
@@ -528,18 +528,18 @@ function mapMarketToAssets(question, probability) {
     if (q.includes('ceasefire') || q.includes('peace') || q.includes('end') || q.includes('withdraw')) {
       if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['VEA', 'SPY'], conviction: 'medium' }
     }
-    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['GLDM', 'XLE', 'SGOV'], conviction: 'medium' }
-    return { direction: 'neutral', mapped_assets: ['GLDM', 'XLE'], conviction: 'low' }
+    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['GLD', 'XLE', 'SGOV'], conviction: 'medium' }
+    return { direction: 'neutral', mapped_assets: ['GLD', 'XLE'], conviction: 'low' }
   }
 
   // Sanctions
   if (q.includes('sanction')) {
-    if (probability > 0.50) return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM', 'COPX'], conviction: 'medium' }
+    if (probability > 0.50) return { direction: 'neutral', mapped_assets: ['XLE', 'GLD', 'COPX'], conviction: 'medium' }
     return { direction: 'neutral', mapped_assets: ['SPY'], conviction: 'low' }
   }
 
   // NATO
-  if (q.includes('nato')) return { direction: 'neutral', mapped_assets: ['VEA', 'GLDM'], conviction: 'low' }
+  if (q.includes('nato')) return { direction: 'neutral', mapped_assets: ['VEA', 'GLD'], conviction: 'low' }
 
   return null
 }
@@ -681,7 +681,7 @@ function getRSISignal(rsi) {
 
 function getRSIMappedTickers(signal) {
   if (signal === 'oversold') return ['SPY', 'QQQ', 'XSD']
-  if (signal === 'overbought') return ['SGOV', 'GLDM']
+  if (signal === 'overbought') return ['SGOV', 'GLD']
   return ['SPY']
 }
 
@@ -793,21 +793,18 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // ============================================================================
 
 // Charlie's core holdings and base weights
-// ~70/30 conservative/aggressive with $30-35K SGOV floor
+// ~$30-35K SGOV floor on $250K portfolio
 const BASE_PORTFOLIO = {
-  SGOV: { base_weight: 13, category: 'safety', min_weight: 12 },      // ~$30-35K floor on $250K
-  SCHD: { base_weight: 10, category: 'conservative' },
-  VEA:  { base_weight: 8,  category: 'conservative' },
-  XLV:  { base_weight: 7,  category: 'conservative' },
-  GLDM: { base_weight: 8,  category: 'conservative' },
-  GRID: { base_weight: 5,  category: 'conservative' },
-  CIBR: { base_weight: 4,  category: 'conservative' },
-  TLT:  { base_weight: 3,  category: 'conservative' },
-  IBIT: { base_weight: 12, category: 'aggressive' },
-  XSD:  { base_weight: 10, category: 'aggressive' },
+  SGOV: { base_weight: 14, category: 'safety', min_weight: 12 },      // ~$30-35K floor on $250K
+  GLD:  { base_weight: 12, category: 'conservative' },
+  XLV:  { base_weight: 10, category: 'conservative' },
+  SLV:  { base_weight: 6,  category: 'conservative' },
+  GRID: { base_weight: 8,  category: 'conservative' },
+  IBIT: { base_weight: 15, category: 'aggressive' },
+  XSD:  { base_weight: 12, category: 'aggressive' },
   XLE:  { base_weight: 8,  category: 'aggressive' },
   COPX: { base_weight: 7,  category: 'aggressive' },
-  PPA:  { base_weight: 5,  category: 'aggressive' },
+  PPA:  { base_weight: 8,  category: 'aggressive' },
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {
@@ -887,9 +884,14 @@ async function fetchCurrentPrices(tickers) {
 
   const prices = {}
 
+  // SGOV barely moves — hardcode at $100.00 to save an API call
+  prices['SGOV'] = { price: 100.00, change_pct: 0 }
+  console.log(`  SGOV: $100.00 (hardcoded)`)
+
   // Alpha Vantage free tier: 25 calls/day, 5/min
   // Fetch the most important tickers first; skip if rate-limited
   for (const ticker of tickers) {
+    if (ticker === 'SGOV') continue  // already hardcoded
     try {
       const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${ALPHA_VANTAGE_KEY}`
       const response = await fetch(url)
