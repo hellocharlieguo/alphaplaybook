@@ -140,7 +140,7 @@ export default function Dashboard() {
     { key: 'history', label: 'History' },
   ]
 
-  const dailyReturn = latestSnapshot?.daily_return_pct ?? 0
+  
   const cumulativeReturn = latestSnapshot?.cumulative_return_pct ?? 0
   const alpha = (latestSnapshot?.cumulative_return_pct ?? 0) - (latestSnapshot?.spy_cumulative_return_pct ?? 0)
   const spyRsi = latestSnapshot?.spy_rsi ?? null
