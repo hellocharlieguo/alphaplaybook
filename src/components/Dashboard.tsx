@@ -6,6 +6,7 @@ import PnLTracker from './PnLTracker'
 import HistoryLog from './HistoryLog'
 
 type Tab = 'signals' | 'portfolio' | 'pnl' | 'history'
+type ThemeMode = 'dark' | 'light'
 
 interface DailySnapshot {
   snapshot_date: string
@@ -22,10 +23,99 @@ interface DailySnapshot {
   spy_cumulative_return_pct: number | null
 }
 
+export interface Theme {
+  bg: string
+  cardPrimary: string
+  cardAccent: string
+  textPrimary: string
+  textSecondary: string
+  textTertiary: string
+  textOnAccent: string
+  textOnAccentSub: string
+  border: string
+  borderAccent: string
+  surfaceSubtle: string
+  tabBorder: string
+  badgeBg: string
+  badgeText: string
+  accentInnerBg: string
+  accentInnerText: string
+  accentInnerSub: string
+  tickerBg: string
+  tickerText: string
+  crowdRowBorder: string
+  positive: string
+  negative: string
+}
+
+const themes: Record<ThemeMode, Theme> = {
+  dark: {
+    bg: '#111827',
+    cardPrimary: '#1e293b',
+    cardAccent: '#ffffff',
+    textPrimary: '#f1f5f9',
+    textSecondary: '#94a3b8',
+    textTertiary: '#64748b',
+    textOnAccent: '#1a1a2e',
+    textOnAccentSub: '#64748b',
+    border: 'rgba(255,255,255,0.08)',
+    borderAccent: 'transparent',
+    surfaceSubtle: 'rgba(255,255,255,0.03)',
+    tabBorder: 'rgba(255,255,255,0.1)',
+    badgeBg: 'rgba(255,255,255,0.06)',
+    badgeText: '#64748b',
+    accentInnerBg: '#f8f9fb',
+    accentInnerText: '#1a1a2e',
+    accentInnerSub: '#94a3b8',
+    tickerBg: '#ede9fe',
+    tickerText: '#6d28d9',
+    crowdRowBorder: 'rgba(255,255,255,0.06)',
+    positive: '#34d399',
+    negative: '#f87171',
+  },
+  light: {
+    bg: '#f8f9fb',
+    cardPrimary: '#ffffff',
+    cardAccent: '#ffffff',
+    textPrimary: '#1a1a2e',
+    textSecondary: '#64748b',
+    textTertiary: '#94a3b8',
+    textOnAccent: '#1a1a2e',
+    textOnAccentSub: '#64748b',
+    border: '#e2e8f0',
+    borderAccent: '#e2e8f0',
+    surfaceSubtle: '#f8f9fb',
+    tabBorder: '#e2e8f0',
+    badgeBg: '#f1f5f9',
+    badgeText: '#94a3b8',
+    accentInnerBg: '#f8f9fb',
+    accentInnerText: '#1a1a2e',
+    accentInnerSub: '#94a3b8',
+    tickerBg: '#ede9fe',
+    tickerText: '#6d28d9',
+    crowdRowBorder: '#f1f5f9',
+    positive: '#10b981',
+    negative: '#ef4444',
+  },
+}
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('signals')
   const [latestSnapshot, setLatestSnapshot] = useState<DailySnapshot | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    try {
+      const saved = localStorage.getItem('alphaplaybook-theme')
+      if (saved === 'light' || saved === 'dark') return saved
+    } catch {}
+    return 'dark'
+  })
+
+  const t = themes[mode]
+
+  useEffect(() => {
+    try { localStorage.setItem('alphaplaybook-theme', mode) } catch {}
+  }, [mode])
 
   useEffect(() => {
     async function fetchLatest() {
@@ -36,152 +126,120 @@ export default function Dashboard() {
         .order('snapshot_date', { ascending: false })
         .limit(1)
         .single()
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching snapshot:', error)
-      }
+      if (error && error.code !== 'PGRST116') console.error('Error fetching snapshot:', error)
       setLatestSnapshot(data)
       setLoading(false)
     }
     fetchLatest()
   }, [])
 
-  const tabs: { key: Tab; label: string; icon: string }[] = [
-    { key: 'signals', label: 'Signal Recap', icon: '📡' },
-    { key: 'portfolio', label: 'Portfolio', icon: '💼' },
-    { key: 'pnl', label: 'P&L Tracker', icon: '📈' },
-    { key: 'history', label: 'History', icon: '📋' },
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'signals', label: 'Signals' },
+    { key: 'portfolio', label: 'Portfolio' },
+    { key: 'pnl', label: 'Performance' },
+    { key: 'history', label: 'History' },
   ]
 
-  const portfolioValue = latestSnapshot?.portfolio_value ?? 250000
   const dailyReturn = latestSnapshot?.daily_return_pct ?? 0
   const cumulativeReturn = latestSnapshot?.cumulative_return_pct ?? 0
   const alpha = (latestSnapshot?.cumulative_return_pct ?? 0) - (latestSnapshot?.spy_cumulative_return_pct ?? 0)
   const spyRsi = latestSnapshot?.spy_rsi ?? null
-
+  const signalCount = (latestSnapshot?.narrative_signals?.length ?? 0) +
+    (latestSnapshot?.polymarket_signals?.length ?? 0) +
+    (spyRsi !== null ? 1 : 0)
 
   return (
-    <div className="min-h-screen bg-[#0a0e17] text-white">
+    <div style={{ minHeight: '100vh', background: t.bg, color: t.textPrimary, transition: 'background 0.3s, color 0.3s' }}>
       {/* Header */}
-      <header className="border-b border-white/10 bg-[#0d1220]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center font-bold text-sm text-black">
+      <header style={{ borderBottom: `1px solid ${t.border}`, padding: '16px 0', transition: 'border-color 0.3s' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #34d399, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 14, color: '#000' }}>
               α
             </div>
-            <h1 className="text-lg font-semibold tracking-tight">
-              Alpha<span className="text-emerald-400">Playbook</span>
-            </h1>
+            <span style={{ fontSize: 18, fontWeight: 500 }}>
+              Alpha<span style={{ color: '#34d399' }}>Playbook</span>
+            </span>
           </div>
-          <div className="text-sm text-white/40">
-            {latestSnapshot?.snapshot_date
-              ? `Last updated: ${new Date(latestSnapshot.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-              : 'Awaiting first signal...'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 12, color: t.textTertiary }}>
+              {latestSnapshot?.snapshot_date
+                ? new Date(latestSnapshot.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : ''}
+            </span>
+            <button
+              onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+              style={{
+                width: 36, height: 36, borderRadius: 8, border: `1px solid ${t.border}`,
+                background: t.cardPrimary, cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', fontSize: 16,
+                color: t.textSecondary, transition: 'all 0.3s',
+              }}
+              title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {mode === 'dark' ? '☀' : '☾'}
+            </button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
+        {/* North Star */}
+        <div style={{
+          background: t.cardAccent, border: `1px solid ${t.borderAccent}`,
+          borderRadius: 12, padding: '20px 24px', marginBottom: 24, transition: 'all 0.3s',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#8b5cf6' }} />
+            <span style={{ fontSize: 11, color: t.textOnAccentSub, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              North star thesis
+            </span>
+          </div>
+          <p style={{ fontSize: 22, fontWeight: 500, margin: 0, color: t.textOnAccent, lineHeight: 1.4 }}>
+            "Long scarcity, short abundance"
+          </p>
+          <p style={{ fontSize: 13, color: t.textOnAccentSub, margin: '6px 0 0' }}>
+            5 thematic buckets · Jordi Visser macro framework
+          </p>
+        </div>
+
         {/* Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-          <StatCard
-            label="Portfolio Value"
-            value={`$${portfolioValue.toLocaleString()}`}
-            sub={null}
-          />
-          <StatCard
-            label="Daily Return"
-            value={`${dailyReturn >= 0 ? '+' : ''}${dailyReturn.toFixed(2)}%`}
-            sub={null}
-            color={dailyReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}
-          />
-          <StatCard
-            label="Cumulative Return"
-            value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`}
-            sub={null}
-            color={cumulativeReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}
-          />
-          <StatCard
-            label="Alpha vs SPY"
-            value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`}
-            sub={null}
-            color={alpha >= 0 ? 'text-emerald-400' : 'text-red-400'}
-          />
-          <StatCard
-            label="SPY RSI (14)"
-            value={spyRsi !== null ? spyRsi.toFixed(1) : '—'}
-            sub={latestSnapshot?.rsi_signal ?? null}
-            color={
-              spyRsi !== null
-                ? spyRsi < 30
-                  ? 'text-emerald-400'
-                  : spyRsi > 70
-                    ? 'text-red-400'
-                    : 'text-white'
-                : 'text-white/50'
-            }
-          />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+          <StatCard label="Cumulative return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
+          <StatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
+          <StatCard label="SPY RSI (14)" value={spyRsi !== null ? spyRsi.toFixed(1) : '—'} color={spyRsi !== null ? (spyRsi > 70 ? t.negative : spyRsi < 25 ? t.positive : t.textPrimary) : t.textTertiary} sub={latestSnapshot?.rsi_signal ?? undefined} t={t} />
+          <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
         </div>
 
-        {/* Three Plays Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-          <PlayCard
-            play="Play 1"
-            title="Narrative"
-            source="Visser / Pomp"
-            count={latestSnapshot?.narrative_signals?.length ?? 0}
-            color="from-violet-500/20 to-violet-600/5"
-            borderColor="border-violet-500/30"
-            dotColor="bg-violet-400"
-          />
-          <PlayCard
-            play="Play 2"
-            title="Crowd"
-            source="Polymarket"
-            count={latestSnapshot?.polymarket_signals?.length ?? 0}
-            color="from-amber-500/20 to-amber-600/5"
-            borderColor="border-amber-500/30"
-            dotColor="bg-amber-400"
-          />
-          <PlayCard
-            play="Play 3"
-            title="Quant"
-            source="SPY RSI"
-            count={spyRsi !== null ? 1 : 0}
-            color="from-cyan-500/20 to-cyan-600/5"
-            borderColor="border-cyan-500/30"
-            dotColor="bg-cyan-400"
-          />
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="flex gap-1 mb-6 bg-[#0d1220] p-1 rounded-xl border border-white/10 w-fit">
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: `1px solid ${t.tabBorder}` }}>
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                activeTab === tab.key
-                  ? 'bg-white/10 text-white shadow-sm'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
+              style={{
+                padding: '8px 16px', fontSize: 13, fontWeight: activeTab === tab.key ? 500 : 400,
+                color: activeTab === tab.key ? t.textPrimary : t.textTertiary,
+                background: 'none', border: 'none', cursor: 'pointer',
+                borderBottom: activeTab === tab.key ? '2px solid #34d399' : '2px solid transparent',
+                transition: 'all 0.2s',
+              }}
             >
-              <span className="mr-2">{tab.icon}</span>
               {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Tab Content */}
-        <div className="min-h-[400px]">
+        {/* Content */}
+        <div style={{ minHeight: 400 }}>
           {loading ? (
-            <div className="flex items-center justify-center h-64 text-white/30">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256, color: t.textTertiary }}>
               Loading signals...
             </div>
           ) : (
             <>
-              {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} />}
-              {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} />}
+              {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} />}
+              {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} />}
               {activeTab === 'pnl' && <PnLTracker />}
               {activeTab === 'history' && <HistoryLog />}
             </>
@@ -189,7 +247,7 @@ export default function Dashboard() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-12 pt-6 border-t border-white/10 text-center text-xs text-white/20 pb-8">
+        <footer style={{ marginTop: 48, paddingTop: 24, borderTop: `1px solid ${t.border}`, textAlign: 'center', fontSize: 11, color: t.textTertiary, paddingBottom: 32 }}>
           Not financial advice. For educational and portfolio demonstration purposes only.
           <br />
           Data: YouTube Data API · Polymarket Gamma API · Alpha Vantage
@@ -199,56 +257,12 @@ export default function Dashboard() {
   )
 }
 
-function StatCard({
-  label,
-  value,
-  sub,
-  color = 'text-white',
-}: {
-  label: string
-  value: string
-  sub: string | null
-  color?: string
-}) {
+function StatCard({ label, value, color, sub, t }: { label: string; value: string; color: string; sub?: string; t: Theme }) {
   return (
-    <div className="bg-[#0d1220] border border-white/10 rounded-xl p-4">
-      <div className="text-xs text-white/40 mb-1">{label}</div>
-      <div className={`text-xl font-semibold tracking-tight ${color}`}>{value}</div>
-      {sub && (
-        <div className="text-xs text-white/30 mt-1 capitalize">{sub}</div>
-      )}
-    </div>
-  )
-}
-
-function PlayCard({
-  play,
-  title,
-  source,
-  count,
-  color,
-  borderColor,
-  dotColor,
-}: {
-  play: string
-  title: string
-  source: string
-  count: number
-  color: string
-  borderColor: string
-  dotColor: string
-}) {
-  return (
-    <div className={`bg-gradient-to-br ${color} border ${borderColor} rounded-xl p-4`}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${dotColor}`} />
-          <span className="text-xs text-white/50 font-medium">{play}</span>
-        </div>
-        <span className="text-xs text-white/30">{count} signal{count !== 1 ? 's' : ''}</span>
-      </div>
-      <div className="text-base font-semibold">{title}</div>
-      <div className="text-xs text-white/40">{source}</div>
+    <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: 16, transition: 'all 0.3s' }}>
+      <div style={{ fontSize: 12, color: t.textTertiary, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2, textTransform: 'capitalize' }}>{sub}</div>}
     </div>
   )
 }
