@@ -24,78 +24,60 @@ interface DailySnapshot {
 }
 
 export interface Theme {
+  mode: ThemeMode
   bg: string
   cardPrimary: string
-  cardAccent: string
   textPrimary: string
   textSecondary: string
   textTertiary: string
-  textOnAccent: string
-  textOnAccentSub: string
   border: string
-  borderAccent: string
   surfaceSubtle: string
-  tabBorder: string
-  badgeBg: string
-  badgeText: string
-  accentInnerBg: string
-  accentInnerText: string
-  accentInnerSub: string
-  tickerBg: string
-  tickerText: string
-  crowdRowBorder: string
   positive: string
   negative: string
+  tickerBg: string
+  tickerText: string
+  badgeBg: string
+  badgeText: string
+  inputBg: string
+  inputBorder: string
 }
 
 const themes: Record<ThemeMode, Theme> = {
   dark: {
+    mode: 'dark',
     bg: '#111827',
     cardPrimary: '#1e293b',
-    cardAccent: '#ffffff',
     textPrimary: '#f1f5f9',
     textSecondary: '#94a3b8',
     textTertiary: '#64748b',
-    textOnAccent: '#1a1a2e',
-    textOnAccentSub: '#64748b',
     border: 'rgba(255,255,255,0.08)',
-    borderAccent: 'transparent',
-    surfaceSubtle: 'rgba(255,255,255,0.03)',
-    tabBorder: 'rgba(255,255,255,0.1)',
-    badgeBg: 'rgba(255,255,255,0.06)',
-    badgeText: '#64748b',
-    accentInnerBg: '#f8f9fb',
-    accentInnerText: '#1a1a2e',
-    accentInnerSub: '#94a3b8',
-    tickerBg: '#ede9fe',
-    tickerText: '#6d28d9',
-    crowdRowBorder: 'rgba(255,255,255,0.06)',
+    surfaceSubtle: 'rgba(255,255,255,0.04)',
     positive: '#34d399',
     negative: '#f87171',
+    tickerBg: 'rgba(139,92,246,0.15)',
+    tickerText: '#a78bfa',
+    badgeBg: 'rgba(255,255,255,0.06)',
+    badgeText: '#64748b',
+    inputBg: '#0f172a',
+    inputBorder: 'rgba(255,255,255,0.12)',
   },
   light: {
+    mode: 'light',
     bg: '#f8f9fb',
     cardPrimary: '#ffffff',
-    cardAccent: '#ffffff',
     textPrimary: '#1a1a2e',
     textSecondary: '#64748b',
     textTertiary: '#94a3b8',
-    textOnAccent: '#1a1a2e',
-    textOnAccentSub: '#64748b',
     border: '#e2e8f0',
-    borderAccent: '#e2e8f0',
-    surfaceSubtle: '#f8f9fb',
-    tabBorder: '#e2e8f0',
-    badgeBg: '#f1f5f9',
-    badgeText: '#94a3b8',
-    accentInnerBg: '#f8f9fb',
-    accentInnerText: '#1a1a2e',
-    accentInnerSub: '#94a3b8',
-    tickerBg: '#ede9fe',
-    tickerText: '#6d28d9',
-    crowdRowBorder: '#f1f5f9',
+    surfaceSubtle: '#f1f5f9',
     positive: '#10b981',
     negative: '#ef4444',
+    tickerBg: '#ede9fe',
+    tickerText: '#6d28d9',
+    badgeBg: '#f1f5f9',
+    badgeText: '#94a3b8',
+    inputBg: '#ffffff',
+    inputBorder: '#e2e8f0',
   },
 }
 
@@ -140,7 +122,6 @@ export default function Dashboard() {
     { key: 'history', label: 'History' },
   ]
 
-  
   const cumulativeReturn = latestSnapshot?.cumulative_return_pct ?? 0
   const alpha = (latestSnapshot?.cumulative_return_pct ?? 0) - (latestSnapshot?.spy_cumulative_return_pct ?? 0)
   const spyRsi = latestSnapshot?.spy_rsi ?? null
@@ -150,16 +131,11 @@ export default function Dashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: t.bg, color: t.textPrimary, transition: 'background 0.3s, color 0.3s' }}>
-      {/* Header */}
-      <header style={{ borderBottom: `1px solid ${t.border}`, padding: '16px 0', transition: 'border-color 0.3s' }}>
+      <header style={{ borderBottom: `1px solid ${t.border}`, padding: '16px 0' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #34d399, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 14, color: '#000' }}>
-              α
-            </div>
-            <span style={{ fontSize: 18, fontWeight: 500 }}>
-              Alpha<span style={{ color: '#34d399' }}>Playbook</span>
-            </span>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #34d399, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 14, color: '#000' }}>α</div>
+            <span style={{ fontSize: 18, fontWeight: 500 }}>Alpha<span style={{ color: '#34d399' }}>Playbook</span></span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontSize: 12, color: t.textTertiary }}>
@@ -169,38 +145,22 @@ export default function Dashboard() {
             </span>
             <button
               onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-              style={{
-                width: 36, height: 36, borderRadius: 8, border: `1px solid ${t.border}`,
-                background: t.cardPrimary, cursor: 'pointer', display: 'flex',
-                alignItems: 'center', justifyContent: 'center', fontSize: 16,
-                color: t.textSecondary, transition: 'all 0.3s',
-              }}
+              style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${t.border}`, background: t.cardPrimary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: t.textSecondary, transition: 'all 0.3s' }}
               title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {mode === 'dark' ? '☀' : '☾'}
-            </button>
+            >{mode === 'dark' ? '☀' : '☾'}</button>
           </div>
         </div>
       </header>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
         {/* North Star */}
-        <div style={{
-          background: t.cardAccent, border: `1px solid ${t.borderAccent}`,
-          borderRadius: 12, padding: '20px 24px', marginBottom: 24, transition: 'all 0.3s',
-        }}>
+        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: '20px 24px', marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#8b5cf6' }} />
-            <span style={{ fontSize: 11, color: t.textOnAccentSub, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              North star thesis
-            </span>
+            <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>North star thesis</span>
           </div>
-          <p style={{ fontSize: 22, fontWeight: 500, margin: 0, color: t.textOnAccent, lineHeight: 1.4 }}>
-            "Long scarcity, short abundance"
-          </p>
-          <p style={{ fontSize: 13, color: t.textOnAccentSub, margin: '6px 0 0' }}>
-            5 thematic buckets · Jordi Visser macro framework
-          </p>
+          <p style={{ fontSize: 22, fontWeight: 500, margin: 0, color: t.textPrimary, lineHeight: 1.4 }}>"Long scarcity, short abundance"</p>
+          <p style={{ fontSize: 13, color: t.textTertiary, margin: '6px 0 0' }}>5 themes · Jordi Visser macro framework</p>
         </div>
 
         {/* Stat Cards */}
@@ -212,30 +172,21 @@ export default function Dashboard() {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: `1px solid ${t.tabBorder}` }}>
+        <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: `1px solid ${t.border}` }}>
           {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              style={{
-                padding: '8px 16px', fontSize: 13, fontWeight: activeTab === tab.key ? 500 : 400,
-                color: activeTab === tab.key ? t.textPrimary : t.textTertiary,
-                background: 'none', border: 'none', cursor: 'pointer',
-                borderBottom: activeTab === tab.key ? '2px solid #34d399' : '2px solid transparent',
-                transition: 'all 0.2s',
-              }}
-            >
-              {tab.label}
-            </button>
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+              padding: '8px 16px', fontSize: 13, fontWeight: activeTab === tab.key ? 500 : 400,
+              color: activeTab === tab.key ? t.textPrimary : t.textTertiary,
+              background: 'none', border: 'none', cursor: 'pointer',
+              borderBottom: activeTab === tab.key ? '2px solid #34d399' : '2px solid transparent',
+              transition: 'all 0.2s',
+            }}>{tab.label}</button>
           ))}
         </div>
 
-        {/* Content */}
         <div style={{ minHeight: 400 }}>
           {loading ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256, color: t.textTertiary }}>
-              Loading signals...
-            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256, color: t.textTertiary }}>Loading signals...</div>
           ) : (
             <>
               {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} />}
@@ -246,11 +197,9 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Footer */}
         <footer style={{ marginTop: 48, paddingTop: 24, borderTop: `1px solid ${t.border}`, textAlign: 'center', fontSize: 11, color: t.textTertiary, paddingBottom: 32 }}>
           Not financial advice. For educational and portfolio demonstration purposes only.
-          <br />
-          Data: YouTube Data API · Polymarket Gamma API · Alpha Vantage
+          <br />Data: YouTube Data API · Polymarket Gamma API · Alpha Vantage
         </footer>
       </div>
     </div>
