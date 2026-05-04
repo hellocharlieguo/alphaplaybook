@@ -12,13 +12,26 @@ interface SignalRecapProps {
   theme: Theme
 }
 
-const THEMATIC_BUCKETS = [
-  { name: 'Semiconductors', description: 'Equal-weight semis + power semis — the core of the physical upgrade', tickers: ['XSD', 'PSI'] },
-  { name: 'AI Infrastructure', description: 'Grid buildout, optical fiber, silicon photonics — east-west traffic explosion', tickers: ['GRID', 'GLW', 'MRVL'] },
-  { name: 'Commodities / Hard Assets', description: 'Gold, silver, copper — scarcity + inflation hedge on negative real yields', tickers: ['GLDM', 'SLV', 'COPX'] },
-  { name: 'Bitcoin / Digital Scarcity', description: '100% of BTC cumulative returns from negative real yields + Fed on hold/easing', tickers: ['IBIT'] },
-  { name: 'Energy', description: 'US natgas-advantaged chemicals, utility operators powering data centers', tickers: ['XLE', 'XLU'] },
+interface ThemeBucket {
+  name: string
+  description: string
+  tickers: string[]
+  voices: string[]
+}
+
+const THEMATIC_BUCKETS: ThemeBucket[] = [
+  { name: 'Semiconductors', description: 'Equal-weight semis — core of the physical AI upgrade', tickers: ['XSD'], voices: ['Visser'] },
+  { name: 'AI Infrastructure', description: 'Grid buildout, optical fiber, silicon photonics', tickers: ['GRID', 'GLW'], voices: ['Visser'] },
+  { name: 'Commodities / Hard Assets', description: 'Gold, silver, copper — scarcity + inflation hedge on negative real yields', tickers: ['GLDM', 'SLV', 'COPX'], voices: ['Visser'] },
+  { name: 'Bitcoin / Digital Scarcity', description: '100% of BTC cumulative returns from negative real yields + Fed on hold/easing', tickers: ['IBIT'], voices: ['Visser'] },
+  { name: 'Energy / Power', description: 'Natgas chemicals, utilities, data center power — AI bottleneck', tickers: ['XLE', 'XLU', 'BE'], voices: ['Visser', 'Camillo'] },
+  { name: 'AI Platform Winners', description: 'Companies positioned to dominate AI efficiency, automation, fintech', tickers: ['HOOD', 'AMZN'], voices: ['Camillo'] },
 ]
+
+const VOICE_COLORS: Record<string, { bg: string; text: string }> = {
+  Visser: { bg: 'rgba(139,92,246,0.12)', text: '#a78bfa' },
+  Camillo: { bg: 'rgba(234,179,8,0.12)', text: '#eab308' },
+}
 
 export default function SignalRecap({ snapshot, theme: t }: SignalRecapProps) {
   if (!snapshot) {
@@ -35,22 +48,32 @@ export default function SignalRecap({ snapshot, theme: t }: SignalRecapProps) {
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
         {/* LEFT: Narrative Themes */}
-        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20, transition: 'all 0.3s' }}>
+        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#8b5cf6' }} />
             <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Narrative themes</span>
+            <span style={{ fontSize: 11, color: t.textTertiary, marginLeft: 'auto' }}>{THEMATIC_BUCKETS.length} themes</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {THEMATIC_BUCKETS.map((bucket, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: t.surfaceSubtle, borderRadius: 8 }}>
-                <div style={{ flex: 1, marginRight: 12 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: t.textPrimary }}>{bucket.name}</div>
-                  <div style={{ fontSize: 11, color: t.textTertiary, lineHeight: 1.4 }}>{bucket.description}</div>
+              <div key={i} style={{ padding: '10px 12px', background: t.surfaceSubtle, borderRadius: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: t.textPrimary }}>{bucket.name}</span>
+                    {bucket.voices.map((v, j) => {
+                      const vc = VOICE_COLORS[v] || { bg: t.badgeBg, text: t.badgeText }
+                      return <span key={j} style={{ fontSize: 10, background: vc.bg, color: vc.text, padding: '1px 6px', borderRadius: 3 }}>{v}</span>
+                    })}
+                    {bucket.voices.length > 1 && (
+                      <span style={{ fontSize: 10, background: t.mode === 'dark' ? 'rgba(52,211,153,0.12)' : 'rgba(45,138,94,0.1)', color: t.positive, padding: '1px 6px', borderRadius: 3 }}>convergence</span>
+                    )}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                <div style={{ fontSize: 11, color: t.textTertiary, lineHeight: 1.4, marginBottom: 6 }}>{bucket.description}</div>
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                   {bucket.tickers.map((ticker, j) => (
-                    <span key={j} style={{ fontSize: 11, background: t.tickerBg, color: t.tickerText, padding: '2px 8px', borderRadius: 4, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{ticker}</span>
+                    <span key={j} style={{ fontSize: 10, background: t.tickerBg, color: t.tickerText, padding: '2px 7px', borderRadius: 3, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{ticker}</span>
                   ))}
                 </div>
               </div>
@@ -73,7 +96,7 @@ export default function SignalRecap({ snapshot, theme: t }: SignalRecapProps) {
                       <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textPrimary }}>{s.ticker}</span>
                       <span style={{ color: t.textTertiary }}>{s.asset}</span>
                     </div>
-                    <span style={{ fontSize: 11, background: s.direction === 'bullish' ? 'rgba(52,211,153,0.15)' : s.direction === 'bearish' ? 'rgba(248,113,113,0.15)' : t.badgeBg, color: s.direction === 'bullish' ? t.positive : s.direction === 'bearish' ? t.negative : t.badgeText, padding: '1px 6px', borderRadius: 3 }}>{s.direction}</span>
+                    <DirectionBadge direction={s.direction} t={t} />
                   </div>
                 ))}
               </div>
@@ -83,8 +106,7 @@ export default function SignalRecap({ snapshot, theme: t }: SignalRecapProps) {
 
         {/* RIGHT: Crowd + Quant */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Crowd */}
-          <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20, transition: 'all 0.3s' }}>
+          <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#eab308' }} />
               <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Crowd signals</span>
@@ -98,7 +120,7 @@ export default function SignalRecap({ snapshot, theme: t }: SignalRecapProps) {
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, padding: '8px 0', borderBottom: i < Math.min(crowdSignals.length, 6) - 1 ? `1px solid ${t.border}` : 'none' }}>
                     <span style={{ color: t.textSecondary, flex: 1, marginRight: 12, lineHeight: 1.3 }}>{s.market}</span>
                     <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary, marginRight: 12, flexShrink: 0 }}>{(s.probability * 100).toFixed(0)}%</span>
-                    <span style={{ fontSize: 11, background: t.badgeBg, color: t.badgeText, padding: '1px 6px', borderRadius: 3, flexShrink: 0 }}>{s.direction}</span>
+                    <DirectionBadge direction={s.direction} t={t} />
                   </div>
                 ))}
                 {crowdSignals.length > 6 && <div style={{ fontSize: 11, color: t.textTertiary, paddingTop: 8 }}>+{crowdSignals.length - 6} more</div>}
@@ -106,8 +128,7 @@ export default function SignalRecap({ snapshot, theme: t }: SignalRecapProps) {
             )}
           </div>
 
-          {/* Quant */}
-          <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20, transition: 'all 0.3s' }}>
+          <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#06b6d4' }} />
               <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Quant signal</span>
@@ -120,8 +141,8 @@ export default function SignalRecap({ snapshot, theme: t }: SignalRecapProps) {
                   <span style={{ fontSize: 13, color: t.textTertiary }}>SPY RSI (14)</span>
                   <span style={{ fontSize: 28, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textPrimary }}>{rsi.toFixed(1)}</span>
                 </div>
-                <div style={{ position: 'relative', height: 6, background: t.surfaceSubtle, borderRadius: 3, marginBottom: 6 }}>
-                  <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${rsi}%`, background: 'linear-gradient(90deg, #34d399, #eab308, #f87171)', borderRadius: 3 }} />
+                <div style={{ position: 'relative', height: 6, background: t.sliderTrack, borderRadius: 3, marginBottom: 6 }}>
+                  <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${rsi}%`, background: t.mode === 'dark' ? 'linear-gradient(90deg, #7dba6a, #c9a96e, #c9705a)' : 'linear-gradient(90deg, #34d399, #eab308, #f87171)', borderRadius: 3 }} />
                   <div style={{ position: 'absolute', left: '25%', top: -2, width: 1, height: 10, background: t.border }} />
                   <div style={{ position: 'absolute', left: '70%', top: -2, width: 1, height: 10, background: t.border }} />
                 </div>
@@ -137,7 +158,6 @@ export default function SignalRecap({ snapshot, theme: t }: SignalRecapProps) {
         </div>
       </div>
 
-      {/* Bullish Assets */}
       {bullishAssets.length > 0 && (
         <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -162,4 +182,11 @@ export default function SignalRecap({ snapshot, theme: t }: SignalRecapProps) {
       )}
     </div>
   )
+}
+
+function DirectionBadge({ direction, t }: { direction: string; t: Theme }) {
+  const c = direction === 'bullish' ? { bg: 'rgba(52,211,153,0.15)', text: t.positive }
+    : direction === 'bearish' ? { bg: 'rgba(248,113,113,0.15)', text: t.negative }
+    : { bg: t.badgeBg, text: t.badgeText }
+  return <span style={{ fontSize: 11, background: c.bg, color: c.text, padding: '1px 6px', borderRadius: 3, flexShrink: 0 }}>{direction}</span>
 }

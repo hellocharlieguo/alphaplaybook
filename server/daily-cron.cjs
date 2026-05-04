@@ -639,8 +639,12 @@ async function fetchSPYPrices() {
   if (data['Error Message']) throw new Error(`Alpha Vantage: ${data['Error Message']}`)
   if (data['Note']) throw new Error(`Alpha Vantage rate limit: ${data['Note']}`)
 
-  const timeSeries = data['Time Series (Daily)']
-  if (!timeSeries) throw new Error('No time series data returned')
+const timeSeries = data['Time Series (Daily)']
+if (!timeSeries) {
+  console.warn('No time series data returned — skipping quant pipeline')
+  return null
+}
+}
 
   const prices = Object.entries(timeSeries)
     .map(([date, values]) => ({ date, close: parseFloat(values['4. close']) }))

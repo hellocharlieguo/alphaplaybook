@@ -40,44 +40,56 @@ export interface Theme {
   badgeText: string
   inputBg: string
   inputBorder: string
+  accent: string
+  accentMuted: string
+  sliderTrack: string
+  sliderThumb: string
 }
 
 const themes: Record<ThemeMode, Theme> = {
   dark: {
     mode: 'dark',
-    bg: '#111827',
-    cardPrimary: '#1e293b',
-    textPrimary: '#f1f5f9',
-    textSecondary: '#94a3b8',
-    textTertiary: '#64748b',
-    border: 'rgba(255,255,255,0.08)',
-    surfaceSubtle: 'rgba(255,255,255,0.04)',
-    positive: '#34d399',
-    negative: '#f87171',
-    tickerBg: 'rgba(139,92,246,0.15)',
-    tickerText: '#a78bfa',
-    badgeBg: 'rgba(255,255,255,0.06)',
-    badgeText: '#64748b',
-    inputBg: '#0f172a',
-    inputBorder: 'rgba(255,255,255,0.12)',
+    bg: '#1a1714',
+    cardPrimary: '#242018',
+    textPrimary: '#e8e0d4',
+    textSecondary: '#8a7e6e',
+    textTertiary: '#6b6050',
+    border: 'rgba(255,255,255,0.06)',
+    surfaceSubtle: 'rgba(255,255,255,0.025)',
+    positive: '#7dba6a',
+    negative: '#c9705a',
+    tickerBg: 'rgba(176,140,214,0.12)',
+    tickerText: '#b08cd6',
+    badgeBg: 'rgba(255,255,255,0.04)',
+    badgeText: '#6b6050',
+    inputBg: '#1e1a14',
+    inputBorder: 'rgba(255,255,255,0.1)',
+    accent: '#c9a96e',
+    accentMuted: 'rgba(201,169,110,0.15)',
+    sliderTrack: 'rgba(255,255,255,0.06)',
+    sliderThumb: '#c9a96e',
   },
   light: {
     mode: 'light',
-    bg: '#f8f9fb',
+    bg: '#f5f0eb',
     cardPrimary: '#ffffff',
-    textPrimary: '#1a1a2e',
-    textSecondary: '#64748b',
-    textTertiary: '#94a3b8',
-    border: '#e2e8f0',
-    surfaceSubtle: '#f1f5f9',
-    positive: '#10b981',
-    negative: '#ef4444',
+    textPrimary: '#1a1a1a',
+    textSecondary: '#5c5a57',
+    textTertiary: '#8a8784',
+    border: '#e5e0da',
+    surfaceSubtle: '#f0ebe5',
+    positive: '#2d8a5e',
+    negative: '#c44e4e',
     tickerBg: '#ede9fe',
     tickerText: '#6d28d9',
-    badgeBg: '#f1f5f9',
-    badgeText: '#94a3b8',
+    badgeBg: '#f0ebe5',
+    badgeText: '#8a8784',
     inputBg: '#ffffff',
-    inputBorder: '#e2e8f0',
+    inputBorder: '#e5e0da',
+    accent: '#2d8a5e',
+    accentMuted: 'rgba(45,138,94,0.1)',
+    sliderTrack: '#e5e0da',
+    sliderThumb: '#2d8a5e',
   },
 }
 
@@ -86,29 +98,18 @@ export default function Dashboard() {
   const [latestSnapshot, setLatestSnapshot] = useState<DailySnapshot | null>(null)
   const [loading, setLoading] = useState(true)
   const [mode, setMode] = useState<ThemeMode>(() => {
-    try {
-      const saved = localStorage.getItem('alphaplaybook-theme')
-      if (saved === 'light' || saved === 'dark') return saved
-    } catch {}
-    return 'dark'
+    try { const s = localStorage.getItem('ap-theme'); if (s === 'light' || s === 'dark') return s } catch {} return 'dark'
   })
 
   const t = themes[mode]
 
-  useEffect(() => {
-    try { localStorage.setItem('alphaplaybook-theme', mode) } catch {}
-  }, [mode])
+  useEffect(() => { try { localStorage.setItem('ap-theme', mode) } catch {} }, [mode])
 
   useEffect(() => {
     async function fetchLatest() {
       setLoading(true)
-      const { data, error } = await supabase
-        .from('daily_snapshots')
-        .select('*')
-        .order('snapshot_date', { ascending: false })
-        .limit(1)
-        .single()
-      if (error && error.code !== 'PGRST116') console.error('Error fetching snapshot:', error)
+      const { data, error } = await supabase.from('daily_snapshots').select('*').order('snapshot_date', { ascending: false }).limit(1).single()
+      if (error && error.code !== 'PGRST116') console.error('Error:', error)
       setLatestSnapshot(data)
       setLoading(false)
     }
@@ -125,26 +126,28 @@ export default function Dashboard() {
   const cumulativeReturn = latestSnapshot?.cumulative_return_pct ?? 0
   const alpha = (latestSnapshot?.cumulative_return_pct ?? 0) - (latestSnapshot?.spy_cumulative_return_pct ?? 0)
   const spyRsi = latestSnapshot?.spy_rsi ?? null
-  const signalCount = (latestSnapshot?.narrative_signals?.length ?? 0) +
-    (latestSnapshot?.polymarket_signals?.length ?? 0) +
-    (spyRsi !== null ? 1 : 0)
+  const signalCount = (latestSnapshot?.narrative_signals?.length ?? 0) + (latestSnapshot?.polymarket_signals?.length ?? 0) + (spyRsi !== null ? 1 : 0)
 
   return (
     <div style={{ minHeight: '100vh', background: t.bg, color: t.textPrimary, transition: 'background 0.3s, color 0.3s' }}>
+      <style>{`
+        input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: ${t.sliderTrack}; outline: none; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
+        input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
+        input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: ${t.sliderTrack}; }
+      `}</style>
+
       <header style={{ borderBottom: `1px solid ${t.border}`, padding: '16px 0' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #34d399, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 14, color: '#000' }}>α</div>
-            <span style={{ fontSize: 18, fontWeight: 500 }}>Alpha<span style={{ color: '#34d399' }}>Playbook</span></span>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${t.accent}, ${t.mode === 'dark' ? '#a67c52' : '#06b6d4'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 14, color: t.mode === 'dark' ? '#1a1714' : '#000' }}>α</div>
+            <span style={{ fontSize: 18, fontWeight: 500 }}>Alpha<span style={{ color: t.accent }}>Playbook</span></span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontSize: 12, color: t.textTertiary }}>
-              {latestSnapshot?.snapshot_date
-                ? new Date(latestSnapshot.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : ''}
+              {latestSnapshot?.snapshot_date ? new Date(latestSnapshot.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
             </span>
-            <button
-              onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+            <button onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
               style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${t.border}`, background: t.cardPrimary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: t.textSecondary, transition: 'all 0.3s' }}
               title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >{mode === 'dark' ? '☀' : '☾'}</button>
@@ -153,17 +156,15 @@ export default function Dashboard() {
       </header>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
-        {/* North Star */}
         <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: '20px 24px', marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#8b5cf6' }} />
             <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>North star thesis</span>
           </div>
-          <p style={{ fontSize: 22, fontWeight: 500, margin: 0, color: t.textPrimary, lineHeight: 1.4 }}>"Long scarcity, short abundance"</p>
-          <p style={{ fontSize: 13, color: t.textTertiary, margin: '6px 0 0' }}>5 themes · Jordi Visser macro framework</p>
+          <p style={{ fontSize: 22, fontWeight: 500, margin: 0, lineHeight: 1.4 }}>"Long scarcity, short abundance"</p>
+          <p style={{ fontSize: 13, color: t.textTertiary, margin: '6px 0 0' }}>5 themes · 2 voices · Visser + Camillo</p>
         </div>
 
-        {/* Stat Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
           <StatCard label="Cumulative return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
           <StatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
@@ -171,14 +172,13 @@ export default function Dashboard() {
           <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
         </div>
 
-        {/* Tabs */}
         <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: `1px solid ${t.border}` }}>
           {tabs.map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
               padding: '8px 16px', fontSize: 13, fontWeight: activeTab === tab.key ? 500 : 400,
               color: activeTab === tab.key ? t.textPrimary : t.textTertiary,
               background: 'none', border: 'none', cursor: 'pointer',
-              borderBottom: activeTab === tab.key ? '2px solid #34d399' : '2px solid transparent',
+              borderBottom: activeTab === tab.key ? `2px solid ${t.accent}` : '2px solid transparent',
               transition: 'all 0.2s',
             }}>{tab.label}</button>
           ))}
