@@ -1,228 +1,242 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
+import type { Theme } from './Dashboard'
 
-interface SnapshotRow {
+interface PnLTrackerProps {
+  theme: Theme
+}
+
+interface Snapshot {
   snapshot_date: string
   portfolio_value: number | null
   spy_value: number | null
+  daily_return_pct: number | null
   cumulative_return_pct: number | null
   spy_cumulative_return_pct: number | null
-  daily_return_pct: number | null
 }
 
-export default function PnLTracker() {
-  const [snapshots, setSnapshots] = useState<SnapshotRow[]>([])
+const PORTFOLIO_BASE = 100000
+
+export default function PnLTracker({ theme: t }: PnLTrackerProps) {
+  const [snapshots, setSnapshots] = useState<Snapshot[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchHistory() {
-      setLoading(true)
+    async function fetchSnapshots() {
       const { data, error } = await supabase
         .from('daily_snapshots')
-        .select('snapshot_date, portfolio_value, spy_value, cumulative_return_pct, spy_cumulative_return_pct, daily_return_pct')
+        .select('snapshot_date, portfolio_value, spy_value, daily_return_pct, cumulative_return_pct, spy_cumulative_return_pct')
+        .not('portfolio_value', 'is', null)
         .order('snapshot_date', { ascending: true })
-
-      if (error) {
-        console.error('Error fetching P&L:', error)
-      }
-      setSnapshots(data ?? [])
+      if (error) console.error('Error fetching snapshots:', error)
+      setSnapshots(data || [])
       setLoading(false)
     }
-    fetchHistory()
+    fetchSnapshots()
   }, [])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-white/30">
-        Loading P&L data...
-      </div>
-    )
-  }
-
-  if (snapshots.length === 0) {
-    return (
-      <div className="bg-[#0d1220] border border-white/10 rounded-xl p-8 text-center">
-        <div className="text-white/30 text-lg mb-2">No P&L data yet</div>
-        <div className="text-white/20 text-sm">
-          The equity curve will build day by day as the cron job runs. After 30 days you'll have a meaningful chart.
-        </div>
-      </div>
-    )
-  }
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256, color: t.textTertiary }}>Loading performance data...</div>
+  if (snapshots.length === 0) return <div style={{ textAlign: 'center', padding: '64px 0', color: t.textTertiary }}>No performance data yet. Data will appear after the cron runs.</div>
 
   const latest = snapshots[snapshots.length - 1]
-  const cumulativeReturn = latest?.cumulative_return_pct ?? 0
-  const spyCumulativeReturn = latest?.spy_cumulative_return_pct ?? 0
+  const cumulativeReturn = latest.cumulative_return_pct ?? 0
+  const spyCumulativeReturn = latest.spy_cumulative_return_pct ?? 0
   const alpha = cumulativeReturn - spyCumulativeReturn
+  const currentValue = PORTFOLIO_BASE * (1 + cumulativeReturn / 100)
   const daysSinceInception = snapshots.length
 
   // Calculate max drawdown
-  let maxDrawdown = 0
   let peak = -Infinity
-  for (const snap of snapshots) {
-    const val = snap.cumulative_return_pct ?? 0
+  let maxDrawdown = 0
+  for (const s of snapshots) {
+    const val = s.cumulative_return_pct ?? 0
     if (val > peak) peak = val
-    const drawdown = peak - val
-    if (drawdown > maxDrawdown) maxDrawdown = drawdown
+    const dd = peak - val
+    if (dd > maxDrawdown) maxDrawdown = dd
   }
 
-  // Simple SVG chart
-  const chartWidth = 800
-  const chartHeight = 300
-  const padding = { top: 20, right: 20, bottom: 40, left: 60 }
-  const innerWidth = chartWidth - padding.left - padding.right
-  const innerHeight = chartHeight - padding.top - padding.bottom
-
-  const allValues = snapshots.flatMap((s) => [
-    s.cumulative_return_pct ?? 0,
-    s.spy_cumulative_return_pct ?? 0,
-  ])
-  const minVal = Math.min(...allValues, 0)
-  const maxVal = Math.max(...allValues, 1)
-  const range = maxVal - minVal || 1
-
-  function toX(i: number) {
-    return padding.left + (i / Math.max(snapshots.length - 1, 1)) * innerWidth
-  }
-  function toY(val: number) {
-    return padding.top + innerHeight - ((val - minVal) / range) * innerHeight
-  }
-
-  const portfolioPath = snapshots
-    .map((s, i) => `${i === 0 ? 'M' : 'L'} ${toX(i)} ${toY(s.cumulative_return_pct ?? 0)}`)
-    .join(' ')
-
-  const spyPath = snapshots
-    .map((s, i) => `${i === 0 ? 'M' : 'L'} ${toX(i)} ${toY(s.spy_cumulative_return_pct ?? 0)}`)
-    .join(' ')
+  // Best and worst days
+  const dailyReturns = snapshots.filter(s => s.daily_return_pct !== null).map(s => ({ date: s.snapshot_date, ret: s.daily_return_pct! }))
+  const bestDay = dailyReturns.length > 0 ? dailyReturns.reduce((best, d) => d.ret > best.ret ? d : best) : null
+  const worstDay = dailyReturns.length > 0 ? dailyReturns.reduce((worst, d) => d.ret < worst.ret ? d : worst) : null
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <MiniStat
-          label="Total Return"
-          value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`}
-          color={cumulativeReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}
-        />
-        <MiniStat
-          label="Alpha vs SPY"
-          value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`}
-          color={alpha >= 0 ? 'text-emerald-400' : 'text-red-400'}
-        />
-        <MiniStat
-          label="Max Drawdown"
-          value={`-${maxDrawdown.toFixed(2)}%`}
-          color="text-red-400"
-        />
-        <MiniStat
-          label="Days Since Inception"
-          value={`${daysSinceInception}`}
-          color="text-white"
-        />
+      <div className="ap-pnl-stats">
+        <PnLStatCard label="Portfolio Value" value={`$${currentValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} color={t.textPrimary} t={t} />
+        <PnLStatCard label="Cumulative Return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
+        <PnLStatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
+        <PnLStatCard label="Max Drawdown" value={`-${maxDrawdown.toFixed(2)}%`} color={t.negative} t={t} />
+        <PnLStatCard label="Days Tracked" value={String(daysSinceInception)} color={t.textPrimary} t={t} />
       </div>
 
-      {/* Equity Curve */}
-      <div className="bg-[#0d1220] border border-white/10 rounded-xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-white/60">Equity Curve</h3>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-0.5 bg-emerald-400 rounded" />
-              <span className="text-[10px] text-white/40">Portfolio</span>
+      {/* Equity Curve Chart */}
+      <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Equity curve — Portfolio vs SPY</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 12, height: 3, borderRadius: 2, background: t.accent }} />
+              <span style={{ fontSize: 11, color: t.textTertiary }}>Portfolio</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-0.5 bg-white/30 rounded" />
-              <span className="text-[10px] text-white/40">SPY</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 12, height: 3, borderRadius: 2, background: t.textTertiary, opacity: 0.5 }} />
+              <span style={{ fontSize: 11, color: t.textTertiary }}>SPY</span>
             </div>
           </div>
         </div>
 
-        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-auto">
-          {/* Grid lines */}
-          {[0, 0.25, 0.5, 0.75, 1].map((pct) => {
-            const y = padding.top + innerHeight * (1 - pct)
-            const val = minVal + range * pct
-            return (
-              <g key={pct}>
-                <line
-                  x1={padding.left}
-                  y1={y}
-                  x2={chartWidth - padding.right}
-                  y2={y}
-                  stroke="rgba(255,255,255,0.05)"
-                  strokeWidth="1"
-                />
-                <text
-                  x={padding.left - 8}
-                  y={y + 4}
-                  textAnchor="end"
-                  fill="rgba(255,255,255,0.2)"
-                  fontSize="10"
-                >
-                  {val.toFixed(1)}%
-                </text>
-              </g>
-            )
-          })}
-
-          {/* Zero line */}
-          <line
-            x1={padding.left}
-            y1={toY(0)}
-            x2={chartWidth - padding.right}
-            y2={toY(0)}
-            stroke="rgba(255,255,255,0.1)"
-            strokeWidth="1"
-            strokeDasharray="4,4"
-          />
-
-          {/* SPY line */}
-          <path d={spyPath} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
-
-          {/* Portfolio line */}
-          <path d={portfolioPath} fill="none" stroke="#34d399" strokeWidth="2" />
-
-          {/* Date labels */}
-          {snapshots
-            .filter((_, i) => i === 0 || i === snapshots.length - 1 || i === Math.floor(snapshots.length / 2))
-            .map((s) => {
-              const idx = snapshots.indexOf(s)
-              return (
-                <text
-                  key={s.snapshot_date}
-                  x={toX(idx)}
-                  y={chartHeight - 10}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.2)"
-                  fontSize="10"
-                >
-                  {new Date(s.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </text>
-              )
-            })}
-        </svg>
+        <EquityCurve snapshots={snapshots} t={t} />
       </div>
+
+      {/* Daily Returns Table */}
+      <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ padding: '12px 20px', borderBottom: `1px solid ${t.border}` }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Daily returns</span>
+        </div>
+        <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${t.border}`, position: 'sticky', top: 0, background: t.cardPrimary }}>
+                <th style={{ textAlign: 'left', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Date</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Daily</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Cumulative</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>SPY Cumul.</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Alpha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...snapshots].reverse().map((s, i) => {
+                const daily = s.daily_return_pct ?? 0
+                const cum = s.cumulative_return_pct ?? 0
+                const spyCum = s.spy_cumulative_return_pct ?? 0
+                const a = cum - spyCum
+                return (
+                  <tr key={i} style={{ borderBottom: `1px solid ${t.border}` }}>
+                    <td style={{ padding: '8px 20px', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>
+                      {new Date(s.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </td>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: daily >= 0 ? t.positive : t.negative }}>
+                      {daily >= 0 ? '+' : ''}{daily.toFixed(2)}%
+                    </td>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: cum >= 0 ? t.positive : t.negative }}>
+                      {cum >= 0 ? '+' : ''}{cum.toFixed(2)}%
+                    </td>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: spyCum >= 0 ? t.positive : t.negative }}>
+                      {spyCum >= 0 ? '+' : ''}{spyCum.toFixed(2)}%
+                    </td>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: a >= 0 ? t.positive : t.negative }}>
+                      {a >= 0 ? '+' : ''}{a.toFixed(2)}%
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Best/Worst Days */}
+      {bestDay && worstDay && (
+        <div className="ap-bestworst">
+          <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 16 }}>
+            <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Best day</div>
+            <div style={{ fontSize: 18, fontWeight: 500, color: t.positive, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>+{bestDay.ret.toFixed(2)}%</div>
+            <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{new Date(bestDay.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+          </div>
+          <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 16 }}>
+            <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Worst day</div>
+            <div style={{ fontSize: 18, fontWeight: 500, color: t.negative, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{worstDay.ret.toFixed(2)}%</div>
+            <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{new Date(worstDay.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function MiniStat({
-  label,
-  value,
-  color,
-}: {
-  label: string
-  value: string
-  color: string
-}) {
+function PnLStatCard({ label, value, color, t }: { label: string; value: string; color: string; t: Theme }) {
   return (
-    <div className="bg-[#0d1220] border border-white/10 rounded-xl p-4">
-      <div className="text-xs text-white/40 mb-1">{label}</div>
-      <div className={`text-lg font-semibold ${color}`}>{value}</div>
+    <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: 16 }}>
+      <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 18, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
     </div>
+  )
+}
+
+// SVG Equity Curve — no dependencies
+function EquityCurve({ snapshots, t }: { snapshots: Snapshot[]; t: Theme }) {
+  if (snapshots.length < 2) return <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: t.textTertiary, fontSize: 13 }}>Need at least 2 days of data for chart</div>
+
+  const width = 800
+  const height = 250
+  const padX = 50
+  const padY = 30
+  const chartW = width - padX * 2
+  const chartH = height - padY * 2
+
+  const portfolioReturns = snapshots.map(s => s.cumulative_return_pct ?? 0)
+  const spyReturns = snapshots.map(s => s.spy_cumulative_return_pct ?? 0)
+
+  const allVals = [...portfolioReturns, ...spyReturns]
+  const minVal = Math.min(...allVals, 0)
+  const maxVal = Math.max(...allVals, 0)
+  const range = maxVal - minVal || 1
+
+  const toX = (i: number) => padX + (i / (snapshots.length - 1)) * chartW
+  const toY = (val: number) => padY + chartH - ((val - minVal) / range) * chartH
+
+  const portfolioPath = snapshots.map((_, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(portfolioReturns[i]).toFixed(1)}`).join(' ')
+  const spyPath = snapshots.map((_, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(spyReturns[i]).toFixed(1)}`).join(' ')
+
+  // Zero line
+  const zeroY = toY(0)
+
+  // Y-axis labels
+  const ySteps = 5
+  const yLabels: { val: number; y: number }[] = []
+  for (let i = 0; i <= ySteps; i++) {
+    const val = minVal + (range * i) / ySteps
+    yLabels.push({ val, y: toY(val) })
+  }
+
+  // X-axis labels (show first, last, and a few in between)
+  const xLabelIndices = [0, Math.floor(snapshots.length / 3), Math.floor(snapshots.length * 2 / 3), snapshots.length - 1].filter((v, i, a) => a.indexOf(v) === i)
+
+  return (
+    <svg width="100%" viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible' }}>
+      {/* Grid lines */}
+      {yLabels.map((yl, i) => (
+        <g key={i}>
+          <line x1={padX} y1={yl.y} x2={width - padX} y2={yl.y} stroke={t.border} strokeWidth={0.5} />
+          <text x={padX - 8} y={yl.y + 3} textAnchor="end" fill={t.textTertiary} fontSize={10} fontFamily="ui-monospace, SFMono-Regular, monospace">
+            {yl.val.toFixed(1)}%
+          </text>
+        </g>
+      ))}
+
+      {/* Zero line */}
+      <line x1={padX} y1={zeroY} x2={width - padX} y2={zeroY} stroke={t.textTertiary} strokeWidth={0.5} strokeDasharray="4,4" />
+
+      {/* X-axis labels */}
+      {xLabelIndices.map(idx => (
+        <text key={idx} x={toX(idx)} y={height - 5} textAnchor="middle" fill={t.textTertiary} fontSize={10} fontFamily="ui-monospace, SFMono-Regular, monospace">
+          {new Date(snapshots[idx].snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        </text>
+      ))}
+
+      {/* SPY line */}
+      <path d={spyPath} fill="none" stroke={t.textTertiary} strokeWidth={1.5} strokeOpacity={0.4} />
+
+      {/* Portfolio line */}
+      <path d={portfolioPath} fill="none" stroke={t.accent} strokeWidth={2.5} />
+
+      {/* Portfolio endpoint dot */}
+      <circle cx={toX(snapshots.length - 1)} cy={toY(portfolioReturns[portfolioReturns.length - 1])} r={4} fill={t.accent} />
+
+      {/* SPY endpoint dot */}
+      <circle cx={toX(snapshots.length - 1)} cy={toY(spyReturns[spyReturns.length - 1])} r={3} fill={t.textTertiary} fillOpacity={0.5} />
+    </svg>
   )
 }

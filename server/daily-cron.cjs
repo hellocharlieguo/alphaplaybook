@@ -639,12 +639,11 @@ async function fetchSPYPrices() {
   if (data['Error Message']) throw new Error(`Alpha Vantage: ${data['Error Message']}`)
   if (data['Note']) throw new Error(`Alpha Vantage rate limit: ${data['Note']}`)
 
-const timeSeries = data['Time Series (Daily)']
-if (!timeSeries) {
-  console.warn('No time series data returned — skipping quant pipeline')
-  return null
-}
-}
+  const timeSeries = data['Time Series (Daily)']
+  if (!timeSeries) {
+    console.warn('No time series data returned — skipping quant pipeline')
+    return null
+  }
 
   const prices = Object.entries(timeSeries)
     .map(([date, values]) => ({ date, close: parseFloat(values['4. close']) }))
@@ -796,19 +795,22 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // MODEL PORTFOLIO COMPUTATION
 // ============================================================================
 
-// Charlie's core holdings and base weights
-// ~$30-35K SGOV floor on $250K portfolio
+// AlphaPlaybook model portfolio — 13 tickers across 6 themes + cash
+// North star: "Long scarcity, short abundance"
 const BASE_PORTFOLIO = {
-  SGOV: { base_weight: 14, category: 'safety', min_weight: 12 },      // ~$30-35K floor on $250K
-  GLDM: { base_weight: 12, category: 'conservative' },
-  XLV:  { base_weight: 10, category: 'conservative' },
-  SLV:  { base_weight: 6,  category: 'conservative' },
-  GRID: { base_weight: 8,  category: 'conservative' },
-  IBIT: { base_weight: 15, category: 'aggressive' },
-  XSD:  { base_weight: 12, category: 'aggressive' },
-  XLE:  { base_weight: 8,  category: 'aggressive' },
-  COPX: { base_weight: 7,  category: 'aggressive' },
-  PPA:  { base_weight: 8,  category: 'aggressive' },
+  XSD:  { base_weight: 15, theme: 'Semiconductors' },
+  GRID: { base_weight: 6,  theme: 'AI Infrastructure' },
+  GLW:  { base_weight: 5,  theme: 'AI Infrastructure' },
+  GLDM: { base_weight: 7,  theme: 'Commodities / Hard Assets' },
+  SLV:  { base_weight: 7,  theme: 'Commodities / Hard Assets' },
+  COPX: { base_weight: 7,  theme: 'Commodities / Hard Assets' },
+  IBIT: { base_weight: 19, theme: 'Bitcoin / Digital Scarcity' },
+  XLE:  { base_weight: 9,  theme: 'Energy / Power' },
+  XLU:  { base_weight: 8.5, theme: 'Energy / Power' },
+  BE:   { base_weight: 1.5, theme: 'Energy / Power' },
+  HOOD: { base_weight: 5,  theme: 'AI Platform Winners' },
+  AMZN: { base_weight: 5,  theme: 'AI Platform Winners' },
+  SGOV: { base_weight: 5,  theme: 'Cash', min_weight: 3 },
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {
@@ -838,22 +840,23 @@ function computeModelPortfolio(bullishAssets, quantResult) {
     portfolio[ticker].adjustments.push(`+${boost}% (${asset.convergence} convergence)`)
   }
 
-  // If RSI is overbought, shift from aggressive to safety
+  // If RSI is overbought, trim higher-risk themes slightly
   if (quantResult.signal === 'overbought') {
+    const riskThemes = ['Semiconductors', 'AI Platform Winners', 'Bitcoin / Digital Scarcity']
     for (const [ticker, pos] of Object.entries(portfolio)) {
-      if (pos.category === 'aggressive') {
-        const reduction = Math.round(pos.weight * 0.15) // Reduce aggressive by 15%
+      if (riskThemes.includes(pos.theme)) {
+        const reduction = Math.round(pos.weight * 0.1) // Reduce by 10%
         portfolio[ticker].weight -= reduction
         portfolio[ticker].adjustments.push(`-${reduction}% (RSI overbought)`)
       }
     }
-    portfolio['SGOV'].weight += 5
-    portfolio['SGOV'].adjustments.push('+5% (RSI overbought → safety)')
+    portfolio['SGOV'].weight += 3
+    portfolio['SGOV'].adjustments.push('+3% (RSI overbought → safety)')
   }
 
   // Enforce SGOV floor
-  if (portfolio['SGOV'].weight < portfolio['SGOV'].min_weight) {
-    portfolio['SGOV'].weight = portfolio['SGOV'].min_weight
+  if (portfolio['SGOV'].weight < (portfolio['SGOV'].min_weight || 3)) {
+    portfolio['SGOV'].weight = portfolio['SGOV'].min_weight || 3
   }
 
   // Normalize weights to 100%
@@ -892,10 +895,15 @@ async function fetchCurrentPrices(tickers) {
   prices['SGOV'] = { price: 100.00, change_pct: 0 }
   console.log(`  SGOV: $100.00 (hardcoded)`)
 
+  // GLDM — Alpha Vantage doesn't return quotes for gold ETFs (GLD/GLDM both fail)
+  // Hardcode at ~$95. Update periodically or switch to a different price source later.
+  prices['GLDM'] = { price: 95.00, change_pct: 0 }
+  console.log(`  GLDM: $95.00 (hardcoded)`)
+
   // Alpha Vantage free tier: 25 calls/day, 5/min
   // Fetch the most important tickers first; skip if rate-limited
   for (const ticker of tickers) {
-    if (ticker === 'SGOV') continue  // already hardcoded
+    if (ticker === 'SGOV' || ticker === 'GLDM') continue  // already hardcoded
     try {
       const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${ALPHA_VANTAGE_KEY}`
       const response = await fetch(url)
@@ -935,7 +943,7 @@ async function calculatePnL(portfolio, prices, spyPrice) {
   console.log('CALCULATING P&L')
   console.log('========================================')
 
-  const STARTING_VALUE = 250000 // Charlie's portfolio baseline
+  const STARTING_VALUE = 100000 // Portfolio baseline
 
   // Fetch yesterday's snapshot for daily return calculation
   const { data: prevSnapshot } = await supabase
@@ -977,7 +985,7 @@ async function calculatePnL(portfolio, prices, spyPrice) {
       market_value: Math.round(marketValue * 100) / 100,
       daily_change_pct: dailyChangePct,
       signal_sources: pos.adjustments,
-      category: pos.category,
+      category: pos.theme,
     })
   }
 
@@ -1049,7 +1057,7 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
   const portfolioData = Object.entries(portfolio).map(([ticker, pos]) => ({
     ticker,
     weight_pct: pos.weight_pct,
-    category: pos.category,
+    category: pos.theme,
     adjustments: pos.adjustments,
   }))
 

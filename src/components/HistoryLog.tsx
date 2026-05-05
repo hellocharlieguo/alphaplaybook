@@ -1,173 +1,194 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
+import type { Theme } from './Dashboard'
 
-interface HistoryRow {
+interface HistoryLogProps {
+  theme: Theme
+}
+
+interface HistorySnapshot {
   snapshot_date: string
+  spy_rsi: number | null
+  rsi_signal: string | null
+  polymarket_signals: any[] | null
+  narrative_signals: any[] | null
   bullish_assets: any[] | null
   portfolio_value: number | null
   daily_return_pct: number | null
-  narrative_signals: any[] | null
-  polymarket_signals: any[] | null
-  spy_rsi: number | null
-  rsi_signal: string | null
+  cumulative_return_pct: number | null
 }
 
-export default function HistoryLog() {
-  const [history, setHistory] = useState<HistoryRow[]>([])
+export default function HistoryLog({ theme: t }: HistoryLogProps) {
+  const [snapshots, setSnapshots] = useState<HistorySnapshot[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedDate, setExpandedDate] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchHistory() {
-      setLoading(true)
       const { data, error } = await supabase
         .from('daily_snapshots')
-        .select('snapshot_date, bullish_assets, portfolio_value, daily_return_pct, narrative_signals, polymarket_signals, spy_rsi, rsi_signal')
+        .select('snapshot_date, spy_rsi, rsi_signal, polymarket_signals, narrative_signals, bullish_assets, portfolio_value, daily_return_pct, cumulative_return_pct')
         .order('snapshot_date', { ascending: false })
-
-      if (error) {
-        console.error('Error fetching history:', error)
-      }
-      setHistory(data ?? [])
+        .limit(60)
+      if (error) console.error('Error fetching history:', error)
+      setSnapshots(data || [])
       setLoading(false)
     }
     fetchHistory()
   }, [])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-white/30">
-        Loading history...
-      </div>
-    )
-  }
-
-  if (history.length === 0) {
-    return (
-      <div className="bg-[#0d1220] border border-white/10 rounded-xl p-8 text-center">
-        <div className="text-white/30 text-lg mb-2">No history yet</div>
-        <div className="text-white/20 text-sm">
-          Daily snapshots will appear here as the cron job runs each day.
-        </div>
-      </div>
-    )
-  }
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256, color: t.textTertiary }}>Loading history...</div>
+  if (snapshots.length === 0) return <div style={{ textAlign: 'center', padding: '64px 0', color: t.textTertiary }}>No history yet.</div>
 
   return (
-    <div className="space-y-2">
-      {history.map((row) => {
-        const isExpanded = expandedDate === row.snapshot_date
-        const topCalls = (row.bullish_assets ?? []).slice(0, 5)
-        const dailyReturn = row.daily_return_pct ?? 0
+    <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ padding: '16px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Daily snapshots</span>
+        <span style={{ fontSize: 11, color: t.textTertiary }}>{snapshots.length} days</span>
+      </div>
 
-        return (
-          <div key={row.snapshot_date} className="bg-[#0d1220] border border-white/10 rounded-xl overflow-hidden">
-            {/* Summary Row */}
-            <button
-              onClick={() => setExpandedDate(isExpanded ? null : row.snapshot_date)}
-              className="w-full p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors text-left"
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-sm font-medium">
-                  {new Date(row.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </div>
-                <div className="flex gap-1">
-                  {topCalls.map((asset: any, i: number) => (
-                    <span
-                      key={i}
-                      className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-white/50 font-medium"
-                    >
-                      {asset.ticker}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-white/50">
-                  ${(row.portfolio_value ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                </span>
-                <span
-                  className={`text-sm font-medium ${
-                    dailyReturn > 0
-                      ? 'text-emerald-400'
-                      : dailyReturn < 0
-                        ? 'text-red-400'
-                        : 'text-white/30'
-                  }`}
-                >
-                  {dailyReturn > 0 ? '+' : ''}{dailyReturn.toFixed(2)}%
-                </span>
-                <svg
-                  className={`w-4 h-4 text-white/30 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </button>
+      <div style={{ maxHeight: 600, overflowY: 'auto' }}>
+        {snapshots.map((s) => {
+          const expanded = expandedDate === s.snapshot_date
+          const daily = s.daily_return_pct ?? 0
+          const cum = s.cumulative_return_pct ?? 0
+          const narrativeCount = s.narrative_signals?.length ?? 0
+          const crowdCount = s.polymarket_signals?.length ?? 0
+          const rsi = s.spy_rsi
+          const totalSignals = narrativeCount + crowdCount + (rsi !== null ? 1 : 0)
 
-            {/* Expanded Detail */}
-            {isExpanded && (
-              <div className="px-4 pb-4 pt-2 border-t border-white/5 space-y-3">
-                {/* Narrative */}
-                <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                    <span className="text-xs text-violet-400 font-medium">Narrative</span>
-                  </div>
-                  {(row.narrative_signals ?? []).length === 0 ? (
-                    <span className="text-xs text-white/20">No signals</span>
-                  ) : (
-                    <div className="flex flex-wrap gap-1">
-                      {(row.narrative_signals ?? []).map((s: any, i: number) => (
-                        <span key={i} className="text-xs px-2 py-0.5 rounded bg-violet-500/10 text-violet-300">
-                          {s.ticker} ({s.direction})
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Crowd */}
-                <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    <span className="text-xs text-amber-400 font-medium">Crowd</span>
-                  </div>
-                  {(row.polymarket_signals ?? []).length === 0 ? (
-                    <span className="text-xs text-white/20">No signals</span>
-                  ) : (
-                    <div className="flex flex-wrap gap-1">
-                      {(row.polymarket_signals ?? []).map((s: any, i: number) => (
-                        <span key={i} className="text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-300">
-                          {s.market}: {(s.probability * 100).toFixed(0)}%
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Quant */}
-                <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                    <span className="text-xs text-cyan-400 font-medium">Quant</span>
-                  </div>
-                  <span className="text-xs px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300">
-                    RSI: {row.spy_rsi !== null ? Number(row.spy_rsi).toFixed(1) : '—'} ({row.rsi_signal ?? 'n/a'})
+          return (
+            <div key={s.snapshot_date}>
+              {/* Row header */}
+              <button
+                onClick={() => setExpandedDate(expanded ? null : s.snapshot_date)}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '12px 20px', background: 'none', border: 'none', borderBottom: `1px solid ${t.border}`,
+                  cursor: 'pointer', transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = t.surfaceSubtle)}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <span style={{ fontSize: 13, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary, minWidth: 80 }}>
+                    {new Date(s.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
+                  <span style={{ fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: daily >= 0 ? t.positive : t.negative, minWidth: 60, textAlign: 'right' }}>
+                    {daily >= 0 ? '+' : ''}{daily.toFixed(2)}%
+                  </span>
+                  <span style={{ fontSize: 11, color: t.textTertiary }}>
+                    {totalSignals} signals
+                  </span>
+                  {rsi !== null && (
+                    <span style={{ fontSize: 11, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textTertiary }}>
+                      RSI {rsi.toFixed(1)}
+                    </span>
+                  )}
                 </div>
-              </div>
-            )}
-          </div>
-        )
-      })}
+                <span style={{ fontSize: 12, color: t.textTertiary }}>{expanded ? '▲' : '▼'}</span>
+              </button>
+
+              {/* Expanded detail */}
+              {expanded && (
+                <div style={{ padding: '16px 20px', background: t.surfaceSubtle, borderBottom: `1px solid ${t.border}` }}>
+                  <div className="ap-history-detail">
+                    {/* Narrative Signals */}
+                    <div>
+                      <div style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#a78bfa' }} />
+                        Narrative ({narrativeCount})
+                      </div>
+                      {narrativeCount === 0 ? (
+                        <div style={{ fontSize: 12, color: t.textTertiary }}>No signals</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {s.narrative_signals!.map((sig: any, i: number) => (
+                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textPrimary }}>{sig.ticker}</span>
+                                <span style={{ color: t.textTertiary, fontSize: 11 }}>{sig.asset}</span>
+                              </div>
+                              <span style={{ fontSize: 10, background: sig.direction === 'bullish' ? 'rgba(52,211,153,0.15)' : sig.direction === 'bearish' ? 'rgba(248,113,113,0.15)' : t.badgeBg, color: sig.direction === 'bullish' ? t.positive : sig.direction === 'bearish' ? t.negative : t.badgeText, padding: '1px 6px', borderRadius: 3 }}>{sig.direction}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Crowd Signals */}
+                    <div>
+                      <div style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#eab308' }} />
+                        Crowd ({crowdCount})
+                      </div>
+                      {crowdCount === 0 ? (
+                        <div style={{ fontSize: 12, color: t.textTertiary }}>No signals</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {s.polymarket_signals!.slice(0, 5).map((sig: any, i: number) => (
+                            <div key={i} style={{ fontSize: 11, color: t.textSecondary, lineHeight: 1.3 }}>
+                              <span>{sig.market}</span>
+                              <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary, marginLeft: 6 }}>{(sig.probability * 100).toFixed(0)}%</span>
+                            </div>
+                          ))}
+                          {crowdCount > 5 && <div style={{ fontSize: 10, color: t.textTertiary }}>+{crowdCount - 5} more</div>}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quant + Summary */}
+                    <div>
+                      <div style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#06b6d4' }} />
+                        Quant
+                      </div>
+                      {rsi !== null ? (
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
+                            <span style={{ fontSize: 11, color: t.textTertiary }}>SPY RSI</span>
+                            <span style={{ fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textPrimary }}>{rsi.toFixed(1)}</span>
+                          </div>
+                          <span style={{ fontSize: 10, background: t.badgeBg, color: t.badgeText, padding: '1px 6px', borderRadius: 3 }}>{s.rsi_signal}</span>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 12, color: t.textTertiary }}>No RSI data</div>
+                      )}
+
+                      {/* Bullish assets */}
+                      {(s.bullish_assets?.length ?? 0) > 0 && (
+                        <div style={{ marginTop: 12 }}>
+                          <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Bullish convergence</div>
+                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                            {s.bullish_assets!.map((a: any, i: number) => (
+                              <span key={i} style={{ fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, monospace', background: t.tickerBg, color: t.tickerText, padding: '2px 6px', borderRadius: 3 }}>
+                                {a.ticker} {a.convergence}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Day summary */}
+                      <div style={{ marginTop: 12 }}>
+                        <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Day summary</div>
+                        <div style={{ fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>
+                          <span style={{ color: t.textTertiary }}>Daily: </span>
+                          <span style={{ color: daily >= 0 ? t.positive : t.negative }}>{daily >= 0 ? '+' : ''}{daily.toFixed(2)}%</span>
+                        </div>
+                        <div style={{ fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>
+                          <span style={{ color: t.textTertiary }}>Cumul: </span>
+                          <span style={{ color: cum >= 0 ? t.positive : t.negative }}>{cum >= 0 ? '+' : ''}{cum.toFixed(2)}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

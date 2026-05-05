@@ -135,6 +135,23 @@ export default function Dashboard() {
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
         input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
         input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: ${t.sliderTrack}; }
+        .ap-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+        .ap-signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .ap-portfolio-grid { display: grid; grid-template-columns: 1fr auto; gap: 16px; }
+        .ap-donut-grid { display: grid; grid-template-columns: 200px 1fr; gap: 16px; }
+        .ap-pnl-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+        .ap-history-detail { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .ap-bestworst { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .ap-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        @media (max-width: 768px) {
+          .ap-stats { grid-template-columns: repeat(2, 1fr); }
+          .ap-signals-grid { grid-template-columns: 1fr; }
+          .ap-portfolio-grid { grid-template-columns: 1fr; }
+          .ap-donut-grid { grid-template-columns: 1fr; }
+          .ap-pnl-stats { grid-template-columns: repeat(2, 1fr); }
+          .ap-history-detail { grid-template-columns: 1fr; }
+          .ap-bestworst { grid-template-columns: 1fr; }
+        }
       `}</style>
 
       <header style={{ borderBottom: `1px solid ${t.border}`, padding: '16px 0' }}>
@@ -165,7 +182,7 @@ export default function Dashboard() {
           <p style={{ fontSize: 13, color: t.textTertiary, margin: '6px 0 0' }}>5 themes · 2 voices · Visser + Camillo</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+        <div className="ap-stats">
           <StatCard label="Cumulative return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
           <StatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
           <StatCard label="SPY RSI (14)" value={spyRsi !== null ? spyRsi.toFixed(1) : '—'} color={spyRsi !== null ? (spyRsi > 70 ? t.negative : spyRsi < 25 ? t.positive : t.textPrimary) : t.textTertiary} sub={latestSnapshot?.rsi_signal ?? undefined} t={t} />
@@ -191,8 +208,8 @@ export default function Dashboard() {
             <>
               {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} />}
               {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} />}
-              {activeTab === 'pnl' && <PnLTracker />}
-              {activeTab === 'history' && <HistoryLog />}
+              {activeTab === 'pnl' && <PnLTracker theme={t} />}
+              {activeTab === 'history' && <HistoryLog theme={t} />}
             </>
           )}
         </div>

@@ -46,7 +46,7 @@ export default function SignalRecap({ snapshot, theme: t }: SignalRecapProps) {
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+      <div className="ap-signals-grid">
         {/* LEFT: Narrative Themes */}
         <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>

@@ -63,7 +63,7 @@ interface SavedState { checkedThemes: string[]; portfolioValue: number; weightOv
 
 function loadState(): SavedState {
   try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r) } catch {}
-  return { checkedThemes: THEMES.map(t => t.name), portfolioValue: 10000, weightOverrides: {} }
+  return { checkedThemes: THEMES.map(t => t.name), portfolioValue: 100000, weightOverrides: {} }
 }
 function saveState(s: SavedState) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)) } catch {} }
 
@@ -135,8 +135,18 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
     return { ...tk, weight, dollarAlloc, shares, actualCost }
   })
 
+  // Add cash remainder to SGOV
+  const nonSgovCost = allocations.filter(a => a.symbol !== 'SGOV').reduce((s, a) => s + a.actualCost, 0)
+  const sgovAlloc = allocations.find(a => a.symbol === 'SGOV')
+  if (sgovAlloc) {
+    const remainingCash = portfolioValue - nonSgovCost
+    const sgovShares = Math.max(0, Math.floor(remainingCash / sgovAlloc.price))
+    sgovAlloc.shares = sgovShares
+    sgovAlloc.actualCost = sgovShares * sgovAlloc.price
+  }
+
   const totalActualCost = allocations.reduce((s, a) => s + a.actualCost, 0)
-  const cashRemainder = portfolioValue - totalActualCost
+  const cashRemainder = Math.max(0, portfolioValue - totalActualCost)
   const totalWeight = Object.values(weights).reduce((s, w) => s + w, 0)
 
   const toggleTheme = (name: string) => {
@@ -151,14 +161,51 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
     setWeightOverrides(newOverrides)
   }
 
-  const handleSlider = (symbol: string, value: number) => { setWeightOverrides(prev => ({ ...prev, [symbol]: value })) }
+  const handleSlider = (symbol: string, newValue: number) => {
+    // Prevent slider from going below 0
+    newValue = Math.max(0, newValue)
+
+    const currentWeights: Record<string, number> = {}
+    for (const tk of tickers) {
+      currentWeights[tk.symbol] = weightOverrides[tk.symbol] !== undefined ? weightOverrides[tk.symbol] : tk.defaultWeight
+    }
+
+    const others = tickers.filter(tk => tk.symbol !== symbol)
+    const othersTotal = others.reduce((s, tk) => s + (currentWeights[tk.symbol] || 0), 0)
+
+    if (others.length === 0) return
+
+    const remaining = Math.max(0, 100 - newValue)
+    const newOverrides: Record<string, number> = { [symbol]: newValue }
+
+    if (othersTotal === 0) {
+      const each = remaining / others.length
+      for (const tk of others) newOverrides[tk.symbol] = Math.max(0, Math.round(each * 10) / 10)
+    } else {
+      let assigned = 0
+      for (let i = 0; i < others.length; i++) {
+        const tk = others[i]
+        const currentW = currentWeights[tk.symbol] || 0
+        if (i === others.length - 1) {
+          newOverrides[tk.symbol] = Math.max(0, Math.round((remaining - assigned) * 10) / 10)
+        } else {
+          const scaled = (currentW / othersTotal) * remaining
+          const rounded = Math.max(0, Math.round(scaled * 10) / 10)
+          newOverrides[tk.symbol] = rounded
+          assigned += rounded
+        }
+      }
+    }
+
+    setWeightOverrides(newOverrides)
+  }
   const resetWeights = () => setWeightOverrides({})
   const handlePortfolioSubmit = () => { const val = parseFloat(portfolioInput); if (!isNaN(val) && val > 0) setPortfolioValue(val) }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Theme Checkboxes + Portfolio Value */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 16 }}>
+      <div className="ap-portfolio-grid">
         <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20 }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, marginBottom: 12 }}>Select themes</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -202,7 +249,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
       </div>
 
       {/* Donut + Table */}
-      <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 16 }}>
+      <div className="ap-donut-grid">
         <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <DonutChart data={allocations.filter(a => a.weight > 0)} t={t} />
         </div>
