@@ -44,6 +44,7 @@ export interface Theme {
   accentMuted: string
   sliderTrack: string
   sliderThumb: string
+  ruleLine: string
 }
 
 const themes: Record<ThemeMode, Theme> = {
@@ -68,6 +69,7 @@ const themes: Record<ThemeMode, Theme> = {
     accentMuted: 'rgba(201,169,110,0.15)',
     sliderTrack: 'rgba(255,255,255,0.06)',
     sliderThumb: '#c9a96e',
+    ruleLine: 'rgba(201,169,110,0.25)',
   },
   light: {
     mode: 'light',
@@ -86,10 +88,11 @@ const themes: Record<ThemeMode, Theme> = {
     badgeText: '#8a8784',
     inputBg: '#ffffff',
     inputBorder: '#e5e0da',
-    accent: '#2d8a5e',
-    accentMuted: 'rgba(45,138,94,0.1)',
+    accent: '#8b6914',
+    accentMuted: 'rgba(139,105,20,0.1)',
     sliderTrack: '#e5e0da',
-    sliderThumb: '#2d8a5e',
+    sliderThumb: '#8b6914',
+    ruleLine: '#c4b99a',
   },
 }
 
@@ -100,10 +103,15 @@ export default function Dashboard() {
   const [mode, setMode] = useState<ThemeMode>(() => {
     try { const s = localStorage.getItem('ap-theme'); if (s === 'light' || s === 'dark') return s } catch {} return 'dark'
   })
+  const [activeVoices, setActiveVoices] = useState<Set<string>>(() => {
+    try { const s = localStorage.getItem('ap-voices'); if (s) return new Set(JSON.parse(s)) } catch {}
+    return new Set(['Visser', 'Camillo'])
+  })
 
   const t = themes[mode]
 
   useEffect(() => { try { localStorage.setItem('ap-theme', mode) } catch {} }, [mode])
+  useEffect(() => { try { localStorage.setItem('ap-voices', JSON.stringify(Array.from(activeVoices))) } catch {} }, [activeVoices])
 
   useEffect(() => {
     async function fetchLatest() {
@@ -116,6 +124,12 @@ export default function Dashboard() {
     fetchLatest()
   }, [])
 
+  const toggleVoice = (voice: string) => {
+    const next = new Set(activeVoices)
+    if (next.has(voice)) next.delete(voice); else next.add(voice)
+    setActiveVoices(next)
+  }
+
   const tabs: { key: Tab; label: string }[] = [
     { key: 'signals', label: 'Signals' },
     { key: 'portfolio', label: 'Portfolio' },
@@ -127,22 +141,24 @@ export default function Dashboard() {
   const alpha = (latestSnapshot?.cumulative_return_pct ?? 0) - (latestSnapshot?.spy_cumulative_return_pct ?? 0)
   const spyRsi = latestSnapshot?.spy_rsi ?? null
   const signalCount = (latestSnapshot?.narrative_signals?.length ?? 0) + (latestSnapshot?.polymarket_signals?.length ?? 0) + (spyRsi !== null ? 1 : 0)
+  const dateStr = latestSnapshot?.snapshot_date ? new Date(latestSnapshot.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : ''
 
   return (
     <div style={{ minHeight: '100vh', background: t.bg, color: t.textPrimary, transition: 'background 0.3s, color 0.3s' }}>
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
       <style>{`
         input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: ${t.sliderTrack}; outline: none; cursor: pointer; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
         input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
         input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: ${t.sliderTrack}; }
         .ap-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-        .ap-signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .ap-signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
         .ap-portfolio-grid { display: grid; grid-template-columns: 1fr auto; gap: 16px; }
         .ap-donut-grid { display: grid; grid-template-columns: 200px 1fr; gap: 16px; }
         .ap-pnl-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
         .ap-history-detail { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
         .ap-bestworst { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .ap-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .ap-voices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
         @media (max-width: 768px) {
           .ap-stats { grid-template-columns: repeat(2, 1fr); }
           .ap-signals-grid { grid-template-columns: 1fr; }
@@ -151,37 +167,59 @@ export default function Dashboard() {
           .ap-pnl-stats { grid-template-columns: repeat(2, 1fr); }
           .ap-history-detail { grid-template-columns: 1fr; }
           .ap-bestworst { grid-template-columns: 1fr; }
+          .ap-voices-grid { grid-template-columns: 1fr; }
         }
       `}</style>
 
-      <header style={{ borderBottom: `1px solid ${t.border}`, padding: '16px 0' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${t.accent}, ${t.mode === 'dark' ? '#a67c52' : '#06b6d4'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 14, color: t.mode === 'dark' ? '#1a1714' : '#000' }}>α</div>
-            <span style={{ fontSize: 18, fontWeight: 500 }}>Alpha<span style={{ color: t.accent }}>Playbook</span></span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span style={{ fontSize: 12, color: t.textTertiary }}>
-              {latestSnapshot?.snapshot_date ? new Date(latestSnapshot.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
-            </span>
+      {/* Newspaper Masthead */}
+      <header style={{ padding: '20px 0 0', borderBottom: `3px double ${t.ruleLine}` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+          {/* Top rule */}
+          <div style={{ borderTop: `2px solid ${t.ruleLine}`, marginBottom: 12 }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            {/* Voices checkboxes */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 10, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>Voices</span>
+              {['Visser', 'Camillo'].map(voice => {
+                const checked = activeVoices.has(voice)
+                return (
+                  <button key={voice} onClick={() => toggleVoice(voice)} style={{
+                    display: 'flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 4,
+                    border: `1px solid ${checked ? t.accent : t.border}`, background: checked ? t.accentMuted : 'transparent',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                  }}>
+                    <div style={{ width: 12, height: 12, borderRadius: 2, border: `1.5px solid ${checked ? t.accent : t.textTertiary}`, background: checked ? t.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {checked && <span style={{ color: t.bg, fontSize: 8, fontWeight: 700 }}>✓</span>}
+                    </div>
+                    <span style={{ fontSize: 12, color: checked ? t.textPrimary : t.textTertiary }}>{voice}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Theme toggle */}
             <button onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-              style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${t.border}`, background: t.cardPrimary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: t.textSecondary, transition: 'all 0.3s' }}
-              title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              style={{ width: 32, height: 32, borderRadius: 6, border: `1px solid ${t.border}`, background: t.cardPrimary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: t.textSecondary, transition: 'all 0.3s' }}
             >{mode === 'dark' ? '☀' : '☾'}</button>
+          </div>
+
+          {/* Masthead */}
+          <div style={{ textAlign: 'center', padding: '8px 0 12px' }}>
+            <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 900, margin: 0, letterSpacing: 2, lineHeight: 1, color: t.textPrimary }}>
+              ALPHA PLAYBOOK
+            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 6 }}>
+              <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>{dateStr}</span>
+              <span style={{ color: t.ruleLine }}>✦</span>
+              <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>Signal-Driven Investing</span>
+            </div>
           </div>
         </div>
       </header>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
-        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: '20px 24px', marginBottom: 24 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#8b5cf6' }} />
-            <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>North star thesis</span>
-          </div>
-          <p style={{ fontSize: 22, fontWeight: 500, margin: 0, lineHeight: 1.4 }}>"Long scarcity, short abundance"</p>
-          <p style={{ fontSize: 13, color: t.textTertiary, margin: '6px 0 0' }}>5 themes · 2 voices · Visser + Camillo</p>
-        </div>
-
+        {/* Stat Cards */}
         <div className="ap-stats">
           <StatCard label="Cumulative return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
           <StatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
@@ -189,6 +227,7 @@ export default function Dashboard() {
           <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
         </div>
 
+        {/* Tabs */}
         <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: `1px solid ${t.border}` }}>
           {tabs.map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
@@ -201,12 +240,13 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Content */}
         <div style={{ minHeight: 400 }}>
           {loading ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256, color: t.textTertiary }}>Loading signals...</div>
           ) : (
             <>
-              {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} />}
+              {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} activeVoices={activeVoices} />}
               {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} />}
               {activeTab === 'pnl' && <PnLTracker theme={t} />}
               {activeTab === 'history' && <HistoryLog theme={t} />}
@@ -214,9 +254,8 @@ export default function Dashboard() {
           )}
         </div>
 
-        <footer style={{ marginTop: 48, paddingTop: 24, borderTop: `1px solid ${t.border}`, textAlign: 'center', fontSize: 11, color: t.textTertiary, paddingBottom: 32 }}>
+        <footer style={{ marginTop: 48, paddingTop: 24, borderTop: `1px solid ${t.border}`, textAlign: 'center', fontSize: 11, color: t.textTertiary, paddingBottom: 32, fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>
           Not financial advice. For educational and portfolio demonstration purposes only.
-          <br />Data: YouTube Data API · Polymarket Gamma API · Alpha Vantage
         </footer>
       </div>
     </div>
@@ -225,8 +264,8 @@ export default function Dashboard() {
 
 function StatCard({ label, value, color, sub, t }: { label: string; value: string; color: string; sub?: string; t: Theme }) {
   return (
-    <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: 16, transition: 'all 0.3s' }}>
-      <div style={{ fontSize: 12, color: t.textTertiary, marginBottom: 4 }}>{label}</div>
+    <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 8, padding: 16, transition: 'all 0.3s' }}>
+      <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2, textTransform: 'capitalize' }}>{sub}</div>}
     </div>
