@@ -945,78 +945,150 @@ async function calculatePnL(portfolio, prices, spyPrice) {
 
   const STARTING_VALUE = 100000 // Portfolio baseline
 
-  // Fetch yesterday's snapshot for daily return calculation
+  // ============================================================
+  // FIX #1: Read INCEPTION SPY price (first ever snapshot), not yesterday's
+  // This makes spy_cumulative_return_pct an inception-to-date number
+  // so alpha-vs-SPY is comparable to portfolio cumulative_return_pct.
+  // ============================================================
+  const { data: firstSnapshot } = await supabase
+    .from('daily_snapshots')
+    .select('snapshot_date, spy_value')
+    .not('spy_value', 'is', null)
+    .order('snapshot_date', { ascending: true })
+    .limit(1)
+    .single()
+
+  // Yesterday's snapshot (for daily return baseline)
   const { data: prevSnapshot } = await supabase
     .from('daily_snapshots')
-    .select('portfolio_value, spy_value, cumulative_return_pct, spy_cumulative_return_pct')
+    .select('snapshot_date, portfolio_value, spy_value, cumulative_return_pct, spy_cumulative_return_pct')
     .lt('snapshot_date', TODAY)
     .order('snapshot_date', { ascending: false })
     .limit(1)
     .single()
 
   const prevPortfolioValue = prevSnapshot?.portfolio_value || STARTING_VALUE
-  const prevSpyValue = prevSnapshot?.spy_value || spyPrice // If first day, SPY base = today's price
+  const isFirstRun = !prevSnapshot
 
-  // Calculate current portfolio value using weights and prices
-  let portfolioValue = 0
-  const holdings = []
+  // Inception SPY price: from the very first snapshot. If today is the first run, lock today's SPY in.
+  const spyInceptionValue = firstSnapshot?.spy_value || spyPrice
 
-  for (const [ticker, pos] of Object.entries(portfolio)) {
-    const priceData = prices[ticker]
-    const allocation = (pos.weight_pct / 100) * STARTING_VALUE
-    const currentPrice = priceData?.price || null
-    const dailyChangePct = priceData?.change_pct || 0
+  // ============================================================
+  // FIX #3: Get yesterday's portfolio_holdings to detect new tickers
+  // A ticker counts as "new" if it has no row in portfolio_holdings yesterday.
+  // New tickers contribute 0% to daily_return on their first day to avoid
+  // a phantom "had it yesterday" return.
+  // ============================================================
+  let prevHoldingsByTicker = {}
+  if (prevSnapshot?.snapshot_date) {
+    const { data: prevHoldings } = await supabase
+      .from('portfolio_holdings')
+      .select('ticker, weight_pct, price, market_value')
+      .eq('snapshot_date', prevSnapshot.snapshot_date)
+    if (prevHoldings) {
+      for (const h of prevHoldings) {
+        prevHoldingsByTicker[h.ticker] = h
+      }
+    }
+  }
 
-    // If we have a price, calculate actual market value based on change
-    // Otherwise use the allocation amount
-    let marketValue = allocation
-    if (currentPrice && prevPortfolioValue !== STARTING_VALUE) {
-      // After first day: apply daily change to previous allocation
-      const prevAllocation = (pos.weight_pct / 100) * prevPortfolioValue
-      marketValue = prevAllocation * (1 + dailyChangePct / 100)
+  // ============================================================
+  // FIX #2: Compute daily return using YESTERDAY'S weights × today's prices.
+  // Then rebalance to today's weights for tomorrow's baseline.
+  //
+  // Step 1: "Held" portfolio value = apply today's daily_change_pct to each
+  //         position using yesterday's weights and yesterday's portfolio value.
+  // Step 2: Today's portfolio value = held value (this is the cleanest equity-
+  //         curve number). Weights change happens at end-of-day with no return
+  //         impact, the way a real portfolio rebalance works.
+  // ============================================================
+
+  let heldPortfolioValue = 0
+  const newTickers = []
+
+  if (isFirstRun) {
+    // Day 1: there's nothing to "hold." Portfolio value = STARTING_VALUE.
+    heldPortfolioValue = STARTING_VALUE
+  } else {
+    // Apply today's price changes to yesterday's positions
+    for (const [ticker, prevHolding] of Object.entries(prevHoldingsByTicker)) {
+      const priceData = prices[ticker]
+      const dailyChangePct = priceData?.change_pct ?? 0
+      const prevMarketValue = prevHolding.market_value ?? ((prevHolding.weight_pct / 100) * prevPortfolioValue)
+      heldPortfolioValue += prevMarketValue * (1 + dailyChangePct / 100)
     }
 
-    portfolioValue += marketValue
+    // Identify new tickers (in today's portfolio but not yesterday's)
+    for (const ticker of Object.keys(portfolio)) {
+      if (!prevHoldingsByTicker[ticker]) {
+        newTickers.push(ticker)
+      }
+    }
+    if (newTickers.length > 0) {
+      console.log(`  New tickers (no return contribution today): ${newTickers.join(', ')}`)
+    }
+
+    // If the cron found no prior holdings (e.g. holdings table empty for that date),
+    // fall back to prev portfolio value to avoid zeroing out the curve.
+    if (heldPortfolioValue === 0) {
+      console.warn(`  No prior holdings found for ${prevSnapshot.snapshot_date}; using prev portfolio_value as held value`)
+      heldPortfolioValue = prevPortfolioValue
+    }
+  }
+
+  const portfolioValue = Math.round(heldPortfolioValue * 100) / 100
+
+  // Daily return = today's held value vs yesterday's portfolio value
+  const dailyReturnPct = isFirstRun
+    ? 0
+    : Math.round(((portfolioValue - prevPortfolioValue) / prevPortfolioValue) * 10000) / 100
+
+  // Cumulative return = today's value vs starting value
+  const cumulativeReturnPct = Math.round(((portfolioValue - STARTING_VALUE) / STARTING_VALUE) * 10000) / 100
+
+  // SPY benchmark — inception-to-date
+  const spyValue = spyPrice || prevSnapshot?.spy_value || spyInceptionValue
+  const spyCumulativeReturnPct = spyInceptionValue && spyInceptionValue > 0
+    ? Math.round(((spyValue - spyInceptionValue) / spyInceptionValue) * 10000) / 100
+    : 0
+
+  // Build today's holdings rows using TODAY's target weights.
+  // Market value reflects the rebalanced amount applied to today's portfolioValue.
+  const holdings = []
+  for (const [ticker, pos] of Object.entries(portfolio)) {
+    const priceData = prices[ticker]
+    const currentPrice = priceData?.price ?? null
+    const dailyChangePct = priceData?.change_pct ?? 0
+    const isNewTicker = newTickers.includes(ticker)
+
+    // Today's allocation for this position based on today's target weight
+    const marketValue = Math.round(((pos.weight_pct / 100) * portfolioValue) * 100) / 100
+
+    // Per-ticker daily change shown in the table is the asset's actual move.
+    // For new tickers, mark as 0 since we didn't hold them yesterday.
+    const reportedDailyChange = isNewTicker ? 0 : dailyChangePct
 
     holdings.push({
       ticker,
       weight_pct: pos.weight_pct,
       price: currentPrice,
-      market_value: Math.round(marketValue * 100) / 100,
-      daily_change_pct: dailyChangePct,
+      market_value: marketValue,
+      daily_change_pct: reportedDailyChange,
       signal_sources: pos.adjustments,
       category: pos.theme,
+      is_new_ticker: isNewTicker,
     })
   }
-
-  // If no prices fetched, use starting value
-  if (Object.keys(prices).length === 0) {
-    portfolioValue = prevPortfolioValue
-  }
-
-  // Daily return
-  const dailyReturnPct = prevPortfolioValue > 0
-    ? Math.round(((portfolioValue - prevPortfolioValue) / prevPortfolioValue) * 10000) / 100
-    : 0
-
-  // Cumulative return from inception
-  const cumulativeReturnPct = Math.round(((portfolioValue - STARTING_VALUE) / STARTING_VALUE) * 10000) / 100
-
-  // SPY benchmark
-  const spyValue = spyPrice || prevSpyValue
-  const spyBaseValue = prevSnapshot ? prevSpyValue : spyValue
-  const spyCumulativeReturnPct = spyBaseValue && spyBaseValue > 0
-    ? Math.round(((spyValue - spyBaseValue) / spyBaseValue) * 10000) / 100
-    : 0
 
   console.log(`  Portfolio Value: $${portfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`)
   console.log(`  Daily Return: ${dailyReturnPct >= 0 ? '+' : ''}${dailyReturnPct}%`)
   console.log(`  Cumulative Return: ${cumulativeReturnPct >= 0 ? '+' : ''}${cumulativeReturnPct}%`)
+  console.log(`  SPY Inception: $${spyInceptionValue} → Today: $${spyValue}`)
   console.log(`  SPY Cumulative: ${spyCumulativeReturnPct >= 0 ? '+' : ''}${spyCumulativeReturnPct}%`)
   console.log(`  Alpha vs SPY: ${(cumulativeReturnPct - spyCumulativeReturnPct).toFixed(2)}%`)
 
   return {
-    portfolio_value: Math.round(portfolioValue * 100) / 100,
+    portfolio_value: portfolioValue,
     spy_value: spyValue,
     daily_return_pct: dailyReturnPct,
     cumulative_return_pct: cumulativeReturnPct,
