@@ -76,6 +76,35 @@ const VOICES: VoiceSection[] = [
   },
 ]
 
+// Rich thesis context per ticker — shown in bullish asset descriptions
+const TICKER_THESIS: Record<string, string> = {
+  IBIT: 'Visser thesis: over 100% of Bitcoin\'s cumulative returns since 2010 come from negative real yields + Fed on hold/easing. Current macro setup points directly at this quadrant.',
+  XSD: 'Visser thesis: semiconductors are now 17% of the S&P 500 and growing. The physical AI upgrade cycle is in early innings — equal-weight captures the breadth beyond mega-caps.',
+  GRID: 'Visser thesis: the grid buildout required to power AI is a multi-year capex cycle most investors are underestimating. Data center demand is overwhelming existing infrastructure.',
+  GLW: 'Visser thesis: Corning is the dominant fiber play. East-west data center traffic is exploding, driving demand for optical fiber and silicon photonics.',
+  GLDM: 'Visser thesis: negative real yields and monetary debasement make gold a structural long. Finite resource in a world printing infinite currency.',
+  SLV: 'Visser thesis: silver benefits from the same scarcity dynamics as gold, with additional industrial demand from electrification and solar.',
+  COPX: 'Visser thesis: copper is the metal of electrification. Every EV, data center, and grid upgrade requires massive copper input — supply cannot keep up.',
+  XLE: 'Visser thesis: US has a structural natural gas advantage, making domestic energy producers attractive. Chemical companies are "at the beginning of a bull market."',
+  XLU: 'Visser thesis: data center power demand is creating a supply crisis for utilities. The grid cannot keep up with AI\'s appetite for electricity.',
+  BE: 'Camillo thesis: Bloom Energy\'s 800V DC platform solves the data center power bottleneck that traditional utilities cannot. The pick-and-shovel play on AI infrastructure.',
+  AMZN: 'Camillo thesis: Amazon sits at the intersection of AI automation, robotics, and logistics — the company most positioned to turn AI efficiency into real-world margin expansion.',
+  HOOD: 'Camillo thesis: Robinhood captures the retail fintech revolution and crypto accessibility for the next generation of investors.',
+  SGOV: 'Quant-driven cash allocation. Increases when RSI signals overbought conditions to reduce portfolio risk.',
+  SPY: 'Broad market proxy. Appears in rankings when narrative or quant signals reference overall market conditions.',
+}
+
+// Crowd signal context per ticker
+const CROWD_CONTEXT: Record<string, string> = {
+  IBIT: 'Low probability of forced Bitcoin selling by major holders is supportive for price stability and continued accumulation.',
+  GLDM: 'Prediction markets on inflation, Fed policy, or geopolitical risk have implications for gold demand as a safe haven.',
+  XSD: 'Trade policy or tech sector prediction markets mapped to semiconductor exposure.',
+  XLE: 'Energy-related geopolitical markets (sanctions, conflict, oil prices) mapped to energy sector.',
+  SPY: 'Broad macro prediction markets (recession probability, GDP, employment) mapped to S&P 500.',
+  COPX: 'Commodity-related prediction markets mapped to copper exposure.',
+  SLV: 'Precious metals and inflation-related prediction markets mapped to silver.',
+}
+
 export default function SignalRecap({ snapshot, theme: t, activeVoices }: SignalRecapProps) {
   if (!snapshot) {
     return <div style={{ textAlign: 'center', padding: '64px 0', color: t.textTertiary, fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>Awaiting first signal...</div>
@@ -202,21 +231,95 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
 
       {/* Bullish Assets */}
       {bullishAssets.length > 0 && (
-        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: '20px 24px' }}>
+        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: '20px 24px', marginTop: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, fontFamily: "'Playfair Display', Georgia, serif" }}>Bullish Asset Rankings</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: t.textPrimary, fontFamily: "'Playfair Display', Georgia, serif" }}>Bullish Asset Rankings</span>
             <span style={{ fontSize: 11, color: t.textTertiary }}>{bullishAssets.length} tickers</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {bullishAssets.map((asset: any, i: number) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: t.surfaceSubtle, borderRadius: 6 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 11, color: t.textTertiary, fontFamily: 'ui-monospace, SFMono-Regular, monospace', width: 20 }}>#{i + 1}</span>
-                  <span style={{ fontSize: 14, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary }}>{asset.ticker}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {bullishAssets.map((asset: any, i: number) => {
+              const sourceColors: Record<string, { bg: string; text: string; label: string }> = {
+                narrative: { bg: 'rgba(176,140,214,0.12)', text: '#b08cd6', label: 'Narrative' },
+                crowd: { bg: 'rgba(201,169,110,0.12)', text: t.accent, label: 'Crowd' },
+                quant: { bg: 'rgba(91,163,201,0.12)', text: '#5ba3c9', label: 'Quant' },
+              }
+
+              return (
+                <div key={i} style={{ padding: '12px 14px', background: t.surfaceSubtle, borderRadius: 8 }}>
+                  {/* Top row: rank, ticker, convergence */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 11, color: t.textTertiary, fontFamily: 'ui-monospace, SFMono-Regular, monospace', width: 20 }}>#{i + 1}</span>
+                      <span style={{ fontSize: 16, fontWeight: 600, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary }}>{asset.ticker}</span>
+                      {/* Source badges */}
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        {(asset.sources || []).map((src: string, j: number) => {
+                          const sc = sourceColors[src] || sourceColors.narrative
+                          return <span key={j} style={{ fontSize: 10, background: sc.bg, color: sc.text, padding: '2px 7px', borderRadius: 3 }}>{sc.label}</span>
+                        })}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', padding: '2px 8px', borderRadius: 4, background: asset.source_count >= 3 ? 'rgba(125,186,106,0.15)' : asset.source_count >= 2 ? 'rgba(201,169,110,0.15)' : t.badgeBg, color: asset.source_count >= 3 ? t.positive : asset.source_count >= 2 ? t.accent : t.textTertiary }}>{asset.convergence}</span>
+                  </div>
+
+                  {/* Signal descriptions */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 32 }}>
+                    {(asset.signals || []).map((sig: any, k: number) => {
+                      const sc = sourceColors[sig.source] || sourceColors.narrative
+                      const conviction = sig.conviction || 'medium'
+                      const convictionExplain = conviction === 'high'
+                        ? 'High conviction — strong bullish language detected ("pounding the table", "biggest opportunity", "generational")'
+                        : conviction === 'medium'
+                          ? 'Medium conviction — bullish language present but no extreme phrases'
+                          : 'Low conviction — mentioned but without strong directional language'
+
+                      let description: { main: string; context: string } = { main: '', context: '' }
+
+                      if (sig.source === 'narrative') {
+                        const videoTitle = sig.video_title || sig.quote || ''
+                        const thesisContext = TICKER_THESIS[asset.ticker] || ''
+                        description = {
+                          main: videoTitle
+                            ? `Visser's latest: "${videoTitle}"`
+                            : `${sig.asset || asset.ticker} detected in narrative pipeline`,
+                          context: thesisContext
+                            ? `${thesisContext} ${convictionExplain}.`
+                            : `${convictionExplain}.`,
+                        }
+                      } else if (sig.source === 'crowd') {
+                        const prob = ((sig.probability || 0) * 100).toFixed(0)
+                        const marketQ = sig.market || 'Polymarket signal'
+                        const crowdContext = CROWD_CONTEXT[asset.ticker] || `Prediction market activity mapped to ${asset.ticker}.`
+                        description = {
+                          main: `"${marketQ}" at ${prob}%`,
+                          context: crowdContext,
+                        }
+                      } else if (sig.source === 'quant') {
+                        const indicator = sig.indicator || 'SPY RSI'
+                        description = {
+                          main: `${indicator}`,
+                          context: conviction === 'medium'
+                            ? 'RSI below 25 signals market is oversold — historically a bounce follows within days. Favoring risk-on positions.'
+                            : 'RSI signal active — monitoring for positioning opportunity.',
+                        }
+                      }
+
+                      return (
+                        <div key={k} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 12, lineHeight: 1.6 }}>
+                          <span style={{ color: sc.text, flexShrink: 0, marginTop: 2 }}>•</span>
+                          <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif" }}>
+                            <span style={{ color: t.textPrimary }}>{description.main}</span>
+                            {description.context && (
+                              <span style={{ color: t.textSecondary }}> — {description.context}</span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', padding: '2px 8px', borderRadius: 4, background: asset.source_count >= 3 ? 'rgba(125,186,106,0.15)' : asset.source_count >= 2 ? 'rgba(201,169,110,0.15)' : t.badgeBg, color: asset.source_count >= 3 ? t.positive : asset.source_count >= 2 ? t.accent : t.textTertiary }}>{asset.convergence}</span>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
