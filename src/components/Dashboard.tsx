@@ -178,41 +178,42 @@ export default function Dashboard() {
           <div style={{ borderTop: `2px solid ${t.ruleLine}`, marginBottom: 12 }} />
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            {/* Voices checkboxes */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 10, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>Voices</span>
-              {['Visser', 'Camillo'].map(voice => {
-                const checked = activeVoices.has(voice)
+            {/* Left spacer for symmetry */}
+            <div style={{ width: 180 }} />
+
+            {/* Center: Masthead */}
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 900, margin: 0, letterSpacing: 2, lineHeight: 1, color: t.textPrimary }}>
+                ALPHA PLAYBOOK
+              </h1>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 6 }}>
+                <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>{dateStr}</span>
+                <span style={{ color: t.ruleLine }}>✦</span>
+                <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>Signal-Driven Investing</span>
+              </div>
+            </div>
+
+            {/* Right: Contributors + theme toggle */}
+            <div style={{ width: 180, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, paddingRight: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 9, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1.5 }}>Contributors</span>
+                <button onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+                  style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${t.border}`, background: t.cardPrimary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: t.textSecondary, transition: 'all 0.3s' }}
+                >{mode === 'dark' ? '☀' : '☾'}</button>
+              </div>
+              {[{ key: 'Visser', label: 'Jordi Visser' }, { key: 'Camillo', label: 'Chris Camillo' }].map(voice => {
+                const checked = activeVoices.has(voice.key)
                 return (
-                  <button key={voice} onClick={() => toggleVoice(voice)} style={{
-                    display: 'flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 4,
-                    border: `1px solid ${checked ? t.accent : t.border}`, background: checked ? t.accentMuted : 'transparent',
-                    cursor: 'pointer', transition: 'all 0.2s',
+                  <button key={voice.key} onClick={() => toggleVoice(voice.key)} style={{
+                    display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
                   }}>
-                    <div style={{ width: 12, height: 12, borderRadius: 2, border: `1.5px solid ${checked ? t.accent : t.textTertiary}`, background: checked ? t.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 13, height: 13, borderRadius: 2, border: `1.5px solid ${checked ? t.accent : t.textTertiary}`, background: checked ? t.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
                       {checked && <span style={{ color: t.bg, fontSize: 8, fontWeight: 700 }}>✓</span>}
                     </div>
-                    <span style={{ fontSize: 12, color: checked ? t.textPrimary : t.textTertiary }}>{voice}</span>
+                    <span style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 12, color: checked ? t.textPrimary : t.textTertiary, fontStyle: 'italic', transition: 'color 0.2s' }}>{voice.label}</span>
                   </button>
                 )
               })}
-            </div>
-
-            {/* Theme toggle */}
-            <button onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-              style={{ width: 32, height: 32, borderRadius: 6, border: `1px solid ${t.border}`, background: t.cardPrimary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: t.textSecondary, transition: 'all 0.3s' }}
-            >{mode === 'dark' ? '☀' : '☾'}</button>
-          </div>
-
-          {/* Masthead */}
-          <div style={{ textAlign: 'center', padding: '8px 0 12px' }}>
-            <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 900, margin: 0, letterSpacing: 2, lineHeight: 1, color: t.textPrimary }}>
-              ALPHA PLAYBOOK
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 6 }}>
-              <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>{dateStr}</span>
-              <span style={{ color: t.ruleLine }}>✦</span>
-              <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>Signal-Driven Investing</span>
             </div>
           </div>
         </div>
