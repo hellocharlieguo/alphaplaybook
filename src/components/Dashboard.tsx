@@ -174,15 +174,9 @@ export default function Dashboard() {
       {/* Newspaper Masthead */}
       <header style={{ padding: '20px 0 0', borderBottom: `3px double ${t.ruleLine}` }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-          {/* Top rule */}
           <div style={{ borderTop: `2px solid ${t.ruleLine}`, marginBottom: 12 }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            {/* Left spacer for symmetry */}
-            <div style={{ width: 180 }} />
-
-            {/* Center: Masthead */}
-            <div style={{ textAlign: 'center', flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', position: 'relative', marginBottom: 8 }}>
+            <div style={{ textAlign: 'center' }}>
               <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 900, margin: 0, letterSpacing: 2, lineHeight: 1, color: t.textPrimary }}>
                 ALPHA PLAYBOOK
               </h1>
@@ -192,29 +186,9 @@ export default function Dashboard() {
                 <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>Signal-Driven Investing</span>
               </div>
             </div>
-
-            {/* Right: Contributors + theme toggle */}
-            <div style={{ width: 180, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, paddingRight: 4 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 9, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1.5 }}>Contributors</span>
-                <button onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-                  style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${t.border}`, background: t.cardPrimary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: t.textSecondary, transition: 'all 0.3s' }}
-                >{mode === 'dark' ? '☀' : '☾'}</button>
-              </div>
-              {[{ key: 'Visser', label: 'Jordi Visser' }, { key: 'Camillo', label: 'Chris Camillo' }].map(voice => {
-                const checked = activeVoices.has(voice.key)
-                return (
-                  <button key={voice.key} onClick={() => toggleVoice(voice.key)} style={{
-                    display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                  }}>
-                    <div style={{ width: 13, height: 13, borderRadius: 2, border: `1.5px solid ${checked ? t.accent : t.textTertiary}`, background: checked ? t.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-                      {checked && <span style={{ color: t.bg, fontSize: 8, fontWeight: 700 }}>✓</span>}
-                    </div>
-                    <span style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 12, color: checked ? t.textPrimary : t.textTertiary, fontStyle: 'italic', transition: 'color 0.2s' }}>{voice.label}</span>
-                  </button>
-                )
-              })}
-            </div>
+            <button onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+              style={{ position: 'absolute', right: 0, top: 0, width: 28, height: 28, borderRadius: 6, border: `1px solid ${t.border}`, background: t.cardPrimary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: t.textSecondary, transition: 'all 0.3s' }}
+            >{mode === 'dark' ? '☀' : '☾'}</button>
           </div>
         </div>
       </header>
@@ -226,6 +200,24 @@ export default function Dashboard() {
           <StatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
           <StatCard label="SPY RSI (14)" value={spyRsi !== null ? spyRsi.toFixed(1) : '—'} color={spyRsi !== null ? (spyRsi > 70 ? t.negative : spyRsi < 25 ? t.positive : t.textPrimary) : t.textTertiary} sub={latestSnapshot?.rsi_signal ?? undefined} t={t} />
           <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
+        </div>
+
+        {/* Contributors */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16, marginBottom: 16 }}>
+          <span style={{ fontSize: 9, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1.5 }}>Contributors</span>
+          {[{ key: 'Visser', label: 'Jordi Visser' }, { key: 'Camillo', label: 'Chris Camillo' }].map(voice => {
+            const checked = activeVoices.has(voice.key)
+            return (
+              <button key={voice.key} onClick={() => toggleVoice(voice.key)} style={{
+                display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              }}>
+                <div style={{ width: 13, height: 13, borderRadius: 2, border: `1.5px solid ${checked ? t.accent : t.textTertiary}`, background: checked ? t.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                  {checked && <span style={{ color: t.bg, fontSize: 8, fontWeight: 700 }}>✓</span>}
+                </div>
+                <span style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 12, color: checked ? t.textPrimary : t.textTertiary, fontStyle: 'italic', transition: 'color 0.2s' }}>{voice.label}</span>
+              </button>
+            )
+          })}
         </div>
 
         {/* Tabs */}
