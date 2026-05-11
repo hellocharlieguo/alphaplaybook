@@ -941,7 +941,22 @@ async function fetchCurrentPrices(tickers) {
       const data = await response.json()
 
       if (data['Note']) {
-        console.warn(`  Rate limited at ${ticker} — stopping price fetches`)
+        console.warn(`  Rate limited at ${ticker} (Note) — stopping price fetches`)
+        console.warn(`  Raw: ${JSON.stringify(data).slice(0, 300)}`)
+        break
+      }
+
+      // DIAGNOSTIC: Alpha Vantage also returns rate-limit messages under
+      // 'Information' (newer format). Detect and stop here too.
+      if (data['Information']) {
+        console.warn(`  Issue at ${ticker} (Information) — stopping price fetches`)
+        console.warn(`  Raw: ${JSON.stringify(data).slice(0, 300)}`)
+        break
+      }
+
+      if (data['Error Message']) {
+        console.warn(`  Error at ${ticker} (Error Message) — stopping price fetches`)
+        console.warn(`  Raw: ${JSON.stringify(data).slice(0, 300)}`)
         break
       }
 
@@ -961,7 +976,9 @@ async function fetchCurrentPrices(tickers) {
           console.log(`  ${ticker}: $${price.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)`)
         }
       } else {
-        console.warn(`  ${ticker}: no quote data`)
+        // DIAGNOSTIC: print first 300 chars of raw response so we can
+        // see exactly what Alpha Vantage is returning instead of a quote
+        console.warn(`  ${ticker}: no quote data — raw: ${JSON.stringify(data).slice(0, 300)}`)
       }
 
       // Respect rate limit: wait 1.5s between calls
