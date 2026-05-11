@@ -25,10 +25,8 @@ const THEMES: ThemeDef[] = [
   { name: 'Semiconductors', voices: ['Visser'], tickers: [
     { symbol: 'XSD', name: 'Equal-Weight Semis ETF', fallbackPrice: 280, defaultWeight: 15 },
   ]},
-  { name: 'AI Infrastructure', voices: ['Visser'], tickers: [
+  { name: 'AI Infrastructure', voices: ['Visser', 'Camillo'], tickers: [
     { symbol: 'GLW', name: 'Corning (Optical Fiber)', fallbackPrice: 75, defaultWeight: 5 },
-  ]},
-  { name: 'AI Power Stack', voices: ['Visser', 'Camillo'], tickers: [
     { symbol: 'AIPO', name: 'Defiance AI & Power Infrastructure ETF', fallbackPrice: 32, defaultWeight: 16.5 },
   ]},
   { name: 'Commodities / Hard Assets', voices: ['Visser'], tickers: [
@@ -57,7 +55,6 @@ const TICKER_COLORS: Record<string, string> = {
 const THEME_COLORS: Record<string, string> = {
   'Semiconductors': '#06b6d4',
   'AI Infrastructure': '#14b8a6',
-  'AI Power Stack': '#f59e0b',
   'Commodities / Hard Assets': '#eab308',
   'Bitcoin / Digital Scarcity': '#8b5cf6',
   'Utilities': '#10b981',
@@ -69,7 +66,7 @@ const VOICE_COLORS: Record<string, { bg: string; text: string }> = {
   Camillo: { bg: 'rgba(234,179,8,0.12)', text: '#eab308' },
 }
 
-const STORAGE_KEY = 'ap-portfolio-v4'
+const STORAGE_KEY = 'ap-portfolio-v5'
 
 interface SavedState { checkedThemes: string[]; portfolioValue: number; weightOverrides: Record<string, number> }
 
@@ -102,7 +99,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const [saved] = useState(loadState)
   const [checkedThemes, setCheckedThemes] = useState<Set<string>>(new Set(saved.checkedThemes))
   const [portfolioValue, setPortfolioValue] = useState(saved.portfolioValue)
-  const [portfolioInput, setPortfolioInput] = useState(String(saved.portfolioValue))
+  const [portfolioInput, setPortfolioInput] = useState(saved.portfolioValue.toLocaleString('en-US'))
   const [weightOverrides, setWeightOverrides] = useState<Record<string, number>>(saved.weightOverrides)
   const [livePrices, setLivePrices] = useState<Record<string, number>>({})
   const [priceStale, setPriceStale] = useState(false)
@@ -152,10 +149,42 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const tickers = activeTickers()
 
   const computeWeights = useCallback(() => {
-    const weights: Record<string, number> = {}
+    // Gather raw weights (slider overrides if set, else default)
+    const raw: Record<string, number> = {}
     for (const tk of tickers) {
-      weights[tk.symbol] = weightOverrides[tk.symbol] !== undefined ? weightOverrides[tk.symbol] : tk.defaultWeight
+      raw[tk.symbol] = weightOverrides[tk.symbol] !== undefined ? weightOverrides[tk.symbol] : tk.defaultWeight
     }
+
+    // Normalize so weights always sum to 100% — accounts for theme toggles
+    // that add/remove tickers. SGOV gets a 5% floor.
+    const SGOV_FLOOR = 5
+    const sgovRaw = raw['SGOV'] !== undefined ? raw['SGOV'] : 0
+    const nonSgov = Object.entries(raw).filter(([k]) => k !== 'SGOV')
+    const nonSgovTotal = nonSgov.reduce((s, [, w]) => s + w, 0)
+
+    const sgovTarget = Math.max(SGOV_FLOOR, sgovRaw)
+    const nonSgovBudget = 100 - sgovTarget
+
+    const weights: Record<string, number> = {}
+    if (nonSgovTotal > 0 && nonSgov.length > 0) {
+      const scale = nonSgovBudget / nonSgovTotal
+      let assigned = 0
+      for (let i = 0; i < nonSgov.length; i++) {
+        const [sym, w] = nonSgov[i]
+        if (i === nonSgov.length - 1) {
+          // Last ticker absorbs rounding residual so total is exact
+          weights[sym] = Math.round((nonSgovBudget - assigned) * 10) / 10
+        } else {
+          const scaled = Math.round(w * scale * 10) / 10
+          weights[sym] = scaled
+          assigned += scaled
+        }
+      }
+    } else {
+      // No non-SGOV tickers: SGOV is 100%
+      for (const [sym] of nonSgov) weights[sym] = 0
+    }
+    weights['SGOV'] = sgovTarget
     return weights
   }, [tickers, weightOverrides])
 
@@ -227,7 +256,17 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
     setWeightOverrides(newOverrides)
   }
   const resetWeights = () => setWeightOverrides({})
-  const handlePortfolioSubmit = () => { const val = parseFloat(portfolioInput); if (!isNaN(val) && val > 0) setPortfolioValue(val) }
+  const handlePortfolioSubmit = () => {
+    const cleaned = portfolioInput.replace(/,/g, '').replace(/[^0-9.]/g, '')
+    const val = parseFloat(cleaned)
+    if (!isNaN(val) && val > 0) {
+      setPortfolioValue(val)
+      setPortfolioInput(val.toLocaleString('en-US'))
+    } else {
+      // Invalid input — revert to current portfolio value
+      setPortfolioInput(portfolioValue.toLocaleString('en-US'))
+    }
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -273,10 +312,13 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
             <span style={{ fontSize: 18, fontWeight: 500, color: t.textTertiary }}>$</span>
             <input type="text" value={portfolioInput} onChange={e => setPortfolioInput(e.target.value)}
               onBlur={handlePortfolioSubmit} onKeyDown={e => e.key === 'Enter' && handlePortfolioSubmit()}
-              style={{ width: 120, fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '6px 10px', color: t.textPrimary, outline: 'none' }} />
+              style={{ width: 140, fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '6px 10px', color: t.textPrimary, outline: 'none' }} />
           </div>
           <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 8 }}>
             Invested: ${totalActualCost.toLocaleString(undefined, { maximumFractionDigits: 0 })} · Remainder: ${cashRemainder.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </div>
+          <div style={{ fontSize: 10, color: t.textTertiary, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${t.border}`, fontStyle: 'italic', lineHeight: 1.4 }}>
+            Illustrative portfolio — for educational purposes only. Not investment advice.
           </div>
         </div>
       </div>

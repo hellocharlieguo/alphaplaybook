@@ -816,7 +816,7 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 const BASE_PORTFOLIO = {
   XSD:  { base_weight: 15,  theme: 'Semiconductors' },
   GLW:  { base_weight: 5,   theme: 'AI Infrastructure' },
-  AIPO: { base_weight: 16.5, theme: 'AI Power Stack' },
+  AIPO: { base_weight: 16.5, theme: 'AI Infrastructure' },
   GLDM: { base_weight: 7,   theme: 'Commodities / Hard Assets' },
   SLV:  { base_weight: 7,   theme: 'Commodities / Hard Assets' },
   COPX: { base_weight: 7,   theme: 'Commodities / Hard Assets' },
