@@ -1,8 +1,13 @@
 // server/daily-cron.cjs
-// AlphaPlaybook Daily Orchestrator
+// AlphaPlaybook Daily Orchestrator — v4 (11-ticker portfolio)
 // Runs: narrative → crowd → quant → aggregate bullish assets →
 //       compute model portfolio → fetch prices → calculate P&L →
 //       write complete daily_snapshot to Supabase
+//
+// v4 changes (5/11/26):
+//   - Portfolio: dropped GRID/BE/XLE, added AIPO at 16.5% (AI Power Stack)
+//   - Price freshness guard: skip writing rows if Alpha Vantage returns
+//     no quote, so bad/stale values never pollute portfolio_holdings
 //
 // Schedule: 0 23 * * * (7pm ET = 23:00 UTC)
 // Deploy: Render.com cron job
@@ -61,11 +66,11 @@ const ASSET_KEYWORDS = {
   'gold': { ticker: 'GLDM', asset: 'Gold', category: 'commodity', exact: true },
   'silver': { ticker: 'SLV', asset: 'Silver', category: 'commodity' },
   'copper': { ticker: 'COPX', asset: 'Copper', category: 'commodity' },
-  'oil price': { ticker: 'XLE', asset: 'Oil', category: 'commodity' },
-  'crude oil': { ticker: 'XLE', asset: 'Oil/Energy', category: 'commodity' },
-  'energy sector': { ticker: 'XLE', asset: 'Energy', category: 'commodity' },
-  'energy stocks': { ticker: 'XLE', asset: 'Energy', category: 'commodity' },
-  'natural gas': { ticker: 'XLE', asset: 'Natural Gas', category: 'commodity' },
+  'oil price': { ticker: 'AIPO', asset: 'Oil', category: 'commodity' },
+  'crude oil': { ticker: 'AIPO', asset: 'Oil/Energy', category: 'commodity' },
+  'energy sector': { ticker: 'AIPO', asset: 'Energy', category: 'commodity' },
+  'energy stocks': { ticker: 'AIPO', asset: 'Energy', category: 'commodity' },
+  'natural gas': { ticker: 'AIPO', asset: 'Natural Gas', category: 'commodity' },
   'uranium': { ticker: 'URA', asset: 'Uranium', category: 'commodity' },
   'commodities': { ticker: 'COPX', asset: 'Commodities', category: 'commodity' },
   'semiconductor': { ticker: 'XSD', asset: 'Semiconductors', category: 'equity' },
@@ -87,9 +92,18 @@ const ASSET_KEYWORDS = {
   'emerging market': { ticker: 'VWO', asset: 'Emerging Markets', category: 'equity' },
   'data center': { ticker: 'XSD', asset: 'Data Centers', category: 'equity' },
   'data centers': { ticker: 'XSD', asset: 'Data Centers', category: 'equity' },
-  'infrastructure': { ticker: 'GRID', asset: 'Infrastructure', category: 'equity' },
-  'power grid': { ticker: 'GRID', asset: 'Power Grid', category: 'equity' },
-  'electric grid': { ticker: 'GRID', asset: 'Electric Grid', category: 'equity' },
+  'infrastructure': { ticker: 'AIPO', asset: 'Infrastructure', category: 'equity' },
+  'power grid': { ticker: 'AIPO', asset: 'Power Grid', category: 'equity' },
+  'electric grid': { ticker: 'AIPO', asset: 'Electric Grid', category: 'equity' },
+  'data center power': { ticker: 'AIPO', asset: 'Data Center Power', category: 'equity' },
+  'power demand': { ticker: 'AIPO', asset: 'Power Demand', category: 'equity' },
+  'gas turbine': { ticker: 'AIPO', asset: 'Gas Turbines', category: 'equity' },
+  'electrification': { ticker: 'AIPO', asset: 'Electrification', category: 'equity' },
+  'fuel cell': { ticker: 'AIPO', asset: 'Fuel Cells (Bloom)', category: 'equity' },
+  'bloom energy': { ticker: 'AIPO', asset: 'Bloom Energy', category: 'equity' },
+  'quanta': { ticker: 'AIPO', asset: 'Quanta Services', category: 'equity' },
+  'vertiv': { ticker: 'AIPO', asset: 'Vertiv', category: 'equity' },
+  'ge vernova': { ticker: 'AIPO', asset: 'GE Vernova', category: 'equity' },
   'bonds': { ticker: 'TLT', asset: 'Bonds', category: 'fixed_income' },
   'treasuries': { ticker: 'TLT', asset: 'Treasuries', category: 'fixed_income' },
   'treasury': { ticker: 'TLT', asset: 'Treasuries', category: 'fixed_income' },
@@ -115,13 +129,13 @@ const ASSET_KEYWORDS = {
   'abundance': { ticker: 'XSD', asset: 'Abundance Trade', category: 'macro' },
   'tariff': { ticker: 'VEA', asset: 'Tariffs/Trade', category: 'macro' },
   'trade war': { ticker: 'VEA', asset: 'Trade War', category: 'macro_bearish' },
-  'sanctions': { ticker: 'XLE', asset: 'Sanctions', category: 'macro' },
+  'sanctions': { ticker: 'GLDM', asset: 'Sanctions', category: 'macro' },
   'war': { ticker: 'GLDM', asset: 'War/Conflict', category: 'geopolitical', exact: true },
   'military': { ticker: 'PPA', asset: 'Military/Defense', category: 'geopolitical' },
   'geopolitical': { ticker: 'GLDM', asset: 'Geopolitical Risk', category: 'geopolitical' },
-  'iran': { ticker: 'XLE', asset: 'Iran Risk', category: 'geopolitical', exact: true },
+  'iran': { ticker: 'GLDM', asset: 'Iran Risk', category: 'geopolitical', exact: true },
   'china': { ticker: 'XSD', asset: 'China Risk', category: 'geopolitical', exact: true },
-  'russia': { ticker: 'XLE', asset: 'Russia Risk', category: 'geopolitical' },
+  'russia': { ticker: 'GLDM', asset: 'Russia Risk', category: 'geopolitical' },
   'ukraine': { ticker: 'GLDM', asset: 'Ukraine Conflict', category: 'geopolitical' },
   'nuclear': { ticker: 'GLDM', asset: 'Nuclear Risk', category: 'geopolitical' },
 }
@@ -394,7 +408,7 @@ function mapMarketToAssets(question, probability) {
   // Inflation / CPI
   if (q.includes('inflation') || q.includes('cpi')) {
     if ((q.includes('above') || q.includes('over') || q.includes('high') || q.includes('rise')) && probability > 0.60) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'COPX', 'XLE', 'IBIT'], conviction: 'medium' }
+      return { direction: 'bullish', mapped_assets: ['GLDM', 'COPX', 'AIPO', 'IBIT'], conviction: 'medium' }
     }
     if ((q.includes('below') || q.includes('under') || q.includes('fall') || q.includes('drop')) && probability > 0.60) {
       return { direction: 'bullish', mapped_assets: ['TLT', 'XSD', 'SPY'], conviction: 'medium' }
@@ -447,15 +461,16 @@ function mapMarketToAssets(question, probability) {
     return { direction: 'neutral', mapped_assets: ['IBIT'], conviction: 'low' }
   }
 
-  // Oil / crude
+  // Oil / crude (mapped to AIPO since XLE was dropped; AIPO has GE Vernova
+  // gas turbines + nuclear utilities which benefit from energy demand)
   if (q.includes('oil') || q.includes('crude') || q.includes('wti') || q.includes('brent')) {
     if ((q.includes('above') || q.includes('over') || q.includes('rise') || q.includes('spike')) && probability > 0.50) {
-      return { direction: 'bullish', mapped_assets: ['XLE'], conviction: 'medium' }
+      return { direction: 'bullish', mapped_assets: ['AIPO'], conviction: 'medium' }
     }
     if ((q.includes('below') || q.includes('under') || q.includes('drop') || q.includes('fall')) && probability > 0.50) {
-      return { direction: 'bearish', mapped_assets: ['XLE'], conviction: 'medium' }
+      return { direction: 'bearish', mapped_assets: ['AIPO'], conviction: 'medium' }
     }
-    return { direction: 'neutral', mapped_assets: ['XLE'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['AIPO'], conviction: 'low' }
   }
 
   // Gold
@@ -484,12 +499,12 @@ function mapMarketToAssets(question, probability) {
   if (q.includes('russia') || q.includes('ukraine') || q.includes('putin') || q.includes('zelensky')) {
     if (q.includes('ceasefire') || q.includes('peace') || q.includes('deal') || q.includes('end')) {
       if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['VEA', 'SPY'], conviction: 'medium' }
-      return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+      return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
     }
     if ((q.includes('escalat') || q.includes('nuclear') || q.includes('nato') || q.includes('expand')) && probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'XLE', 'SGOV'], conviction: 'high' }
+      return { direction: 'bullish', mapped_assets: ['GLDM', 'SGOV'], conviction: 'high' }
     }
-    return { direction: 'neutral', mapped_assets: ['GLDM', 'XLE'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
   }
 
   // China-Taiwan
@@ -498,21 +513,21 @@ function mapMarketToAssets(question, probability) {
     return { direction: 'neutral', mapped_assets: ['XSD', 'GLDM'], conviction: 'low' }
   }
 
-  // Iran
+  // Iran (oil/gas disruption → AIPO via energy demand, GLDM as classic hedge)
   if (q.includes('iran') && (q.includes('war') || q.includes('strike') || q.includes('attack') || q.includes('nuclear') || q.includes('military'))) {
-    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['XLE', 'GLDM'], conviction: 'high' }
-    return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['GLDM', 'AIPO'], conviction: 'high' }
+    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
   }
 
   // Israel / Middle East
   if (q.includes('israel') || q.includes('gaza') || q.includes('hamas') || q.includes('hezbollah') || q.includes('middle east')) {
     if (q.includes('ceasefire') || q.includes('peace') || q.includes('deal')) {
-      if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+      if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['GLDM'], conviction: 'low' }
     }
     if ((q.includes('escalat') || q.includes('war') || q.includes('invasion') || q.includes('expand')) && probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['XLE', 'GLDM', 'SGOV'], conviction: 'high' }
+      return { direction: 'bullish', mapped_assets: ['GLDM', 'AIPO', 'SGOV'], conviction: 'high' }
     }
-    return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
   }
 
   // North Korea
@@ -528,13 +543,13 @@ function mapMarketToAssets(question, probability) {
     if (q.includes('ceasefire') || q.includes('peace') || q.includes('end') || q.includes('withdraw')) {
       if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['VEA', 'SPY'], conviction: 'medium' }
     }
-    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['GLDM', 'XLE', 'SGOV'], conviction: 'medium' }
-    return { direction: 'neutral', mapped_assets: ['GLDM', 'XLE'], conviction: 'low' }
+    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['GLDM', 'AIPO', 'SGOV'], conviction: 'medium' }
+    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
   }
 
   // Sanctions
   if (q.includes('sanction')) {
-    if (probability > 0.50) return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM', 'COPX'], conviction: 'medium' }
+    if (probability > 0.50) return { direction: 'neutral', mapped_assets: ['GLDM', 'COPX'], conviction: 'medium' }
     return { direction: 'neutral', mapped_assets: ['SPY'], conviction: 'low' }
   }
 
@@ -795,22 +810,21 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // MODEL PORTFOLIO COMPUTATION
 // ============================================================================
 
-// AlphaPlaybook model portfolio — 13 tickers across 6 themes + cash
+// AlphaPlaybook model portfolio — v4: 11 tickers across 7 themes + cash
 // North star: "Long scarcity, short abundance"
+// v4 changes: GRID + BE + XLE → consolidated into AIPO (16.5%)
 const BASE_PORTFOLIO = {
-  XSD:  { base_weight: 15, theme: 'Semiconductors' },
-  GRID: { base_weight: 6,  theme: 'AI Infrastructure' },
-  GLW:  { base_weight: 5,  theme: 'AI Infrastructure' },
-  GLDM: { base_weight: 7,  theme: 'Commodities / Hard Assets' },
-  SLV:  { base_weight: 7,  theme: 'Commodities / Hard Assets' },
-  COPX: { base_weight: 7,  theme: 'Commodities / Hard Assets' },
-  IBIT: { base_weight: 19, theme: 'Bitcoin / Digital Scarcity' },
-  XLE:  { base_weight: 9,  theme: 'Energy / Power' },
-  XLU:  { base_weight: 8.5, theme: 'Energy / Power' },
-  BE:   { base_weight: 1.5, theme: 'Energy / Power' },
-  HOOD: { base_weight: 5,  theme: 'AI Platform Winners' },
-  AMZN: { base_weight: 5,  theme: 'AI Platform Winners' },
-  SGOV: { base_weight: 5,  theme: 'Cash', min_weight: 3 },
+  XSD:  { base_weight: 15,  theme: 'Semiconductors' },
+  GLW:  { base_weight: 5,   theme: 'AI Infrastructure' },
+  AIPO: { base_weight: 16.5, theme: 'AI Power Stack' },
+  GLDM: { base_weight: 7,   theme: 'Commodities / Hard Assets' },
+  SLV:  { base_weight: 7,   theme: 'Commodities / Hard Assets' },
+  COPX: { base_weight: 7,   theme: 'Commodities / Hard Assets' },
+  IBIT: { base_weight: 19,  theme: 'Bitcoin / Digital Scarcity' },
+  XLU:  { base_weight: 8.5, theme: 'Utilities' },
+  HOOD: { base_weight: 5,   theme: 'AI Platform Winners' },
+  AMZN: { base_weight: 5,   theme: 'AI Platform Winners' },
+  SGOV: { base_weight: 5,   theme: 'Cash', min_weight: 3 },
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {
@@ -889,6 +903,23 @@ async function fetchCurrentPrices(tickers) {
     return {}
   }
 
+  // ============================================================
+  // Sanity-check ranges per ticker (as of May 2026).
+  // Prices outside these ranges are rejected as bad data and the
+  // ticker is left unwritten — better to have null than $425 XSD.
+  // ============================================================
+  const PRICE_SANITY = {
+    XSD:  { min: 150, max: 500 },
+    GLW:  { min: 30,  max: 200 },
+    AIPO: { min: 15,  max: 80 },
+    SLV:  { min: 20,  max: 100 },
+    COPX: { min: 25,  max: 150 },
+    IBIT: { min: 25,  max: 200 },
+    XLU:  { min: 60,  max: 150 },
+    HOOD: { min: 15,  max: 200 },
+    AMZN: { min: 100, max: 400 },
+  }
+
   const prices = {}
 
   // SGOV barely moves — hardcode at $100.00 to save an API call
@@ -918,8 +949,17 @@ async function fetchCurrentPrices(tickers) {
       if (quote && quote['05. price']) {
         const price = parseFloat(quote['05. price'])
         const changePct = parseFloat(quote['10. change percent']?.replace('%', '') || '0')
-        prices[ticker] = { price, change_pct: changePct }
-        console.log(`  ${ticker}: $${price.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)`)
+
+        // STALENESS GUARD: validate price is in expected range
+        const sanity = PRICE_SANITY[ticker]
+        if (!price || isNaN(price) || price <= 0) {
+          console.warn(`  ${ticker}: SKIPPED — invalid price (${price})`)
+        } else if (sanity && (price < sanity.min || price > sanity.max)) {
+          console.warn(`  ${ticker}: SKIPPED — price $${price.toFixed(2)} outside sanity range [$${sanity.min}, $${sanity.max}]`)
+        } else {
+          prices[ticker] = { price, change_pct: changePct }
+          console.log(`  ${ticker}: $${price.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)`)
+        }
       } else {
         console.warn(`  ${ticker}: no quote data`)
       }
@@ -1171,7 +1211,13 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
   }
 
   // Write to portfolio_holdings table
+  // v4: if price is null (fetch failed or sanity-check rejected it), we still
+  // write the row but with null price — the frontend's freshness guard will
+  // then fall back to the in-app fallbackPrice rather than showing stale data.
+  let writtenCount = 0
+  let priceNullCount = 0
   for (const holding of pnl.holdings) {
+    if (holding.price === null || holding.price === undefined) priceNullCount++
     await supabase.from('portfolio_holdings').upsert({
       snapshot_date: TODAY,
       ticker: holding.ticker,
@@ -1181,9 +1227,10 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
       daily_change_pct: holding.daily_change_pct,
       signal_sources: holding.signal_sources,
     }, { onConflict: 'snapshot_date,ticker', ignoreDuplicates: false })
+    writtenCount++
   }
 
-  console.log(`Written ${pnl.holdings.length} holdings to portfolio_holdings table`)
+  console.log(`Written ${writtenCount} holdings to portfolio_holdings table${priceNullCount > 0 ? ` (${priceNullCount} with null price)` : ''}`)
 }
 
 // ============================================================================

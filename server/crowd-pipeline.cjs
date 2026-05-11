@@ -103,7 +103,7 @@ function mapMarketToAssets(question, probability) {
   if (q.includes('inflation') || q.includes('cpi')) {
     if (q.includes('above') || q.includes('over') || q.includes('high') || q.includes('rise')) {
       if (probability > 0.60) {
-        return { direction: 'bullish', mapped_assets: ['GLDM', 'COPX', 'XLE', 'IBIT'], conviction: 'medium' }
+        return { direction: 'bullish', mapped_assets: ['GLDM', 'COPX', 'AIPO', 'IBIT'], conviction: 'medium' }
       }
     }
     if (q.includes('below') || q.includes('under') || q.includes('fall') || q.includes('drop')) {
@@ -183,15 +183,15 @@ function mapMarketToAssets(question, probability) {
   if (q.includes('oil') || q.includes('crude') || q.includes('wti') || q.includes('brent')) {
     if (q.includes('above') || q.includes('over') || q.includes('rise') || q.includes('spike')) {
       if (probability > 0.50) {
-        return { direction: 'bullish', mapped_assets: ['XLE'], conviction: 'medium' }
+        return { direction: 'bullish', mapped_assets: ['AIPO'], conviction: 'medium' }
       }
     }
     if (q.includes('below') || q.includes('under') || q.includes('drop') || q.includes('fall')) {
       if (probability > 0.50) {
-        return { direction: 'bearish', mapped_assets: ['XLE'], conviction: 'medium' }
+        return { direction: 'bearish', mapped_assets: ['AIPO'], conviction: 'medium' }
       }
     }
-    return { direction: 'neutral', mapped_assets: ['XLE'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['AIPO'], conviction: 'low' }
   }
 
   // Gold
@@ -232,14 +232,14 @@ function mapMarketToAssets(question, probability) {
       if (probability > 0.50) {
         return { direction: 'bullish', mapped_assets: ['VEA', 'SPY'], conviction: 'medium' }
       }
-      return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+      return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
     }
     if (q.includes('escalat') || q.includes('nuclear') || q.includes('nato') || q.includes('expand')) {
       if (probability > 0.30) {
-        return { direction: 'bullish', mapped_assets: ['GLDM', 'XLE', 'SGOV'], conviction: 'high' }
+        return { direction: 'bullish', mapped_assets: ['GLDM', 'SGOV'], conviction: 'high' }
       }
     }
-    return { direction: 'neutral', mapped_assets: ['GLDM', 'XLE'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
   }
 
   // China-Taiwan
@@ -253,24 +253,24 @@ function mapMarketToAssets(question, probability) {
   // Iran
   if (q.includes('iran') && (q.includes('war') || q.includes('strike') || q.includes('attack') || q.includes('nuclear') || q.includes('military'))) {
     if (probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['XLE', 'GLDM'], conviction: 'high' }
+      return { direction: 'bullish', mapped_assets: ['GLDM', 'AIPO'], conviction: 'high' }
     }
-    return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
   }
 
   // Israel / Middle East
   if (q.includes('israel') || q.includes('gaza') || q.includes('hamas') || q.includes('hezbollah') || q.includes('middle east')) {
     if (q.includes('ceasefire') || q.includes('peace') || q.includes('deal')) {
       if (probability > 0.50) {
-        return { direction: 'bearish', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+        return { direction: 'bearish', mapped_assets: ['GLDM'], conviction: 'low' }
       }
     }
     if (q.includes('escalat') || q.includes('war') || q.includes('invasion') || q.includes('expand')) {
       if (probability > 0.30) {
-        return { direction: 'bullish', mapped_assets: ['XLE', 'GLDM', 'SGOV'], conviction: 'high' }
+        return { direction: 'bullish', mapped_assets: ['GLDM', 'AIPO', 'SGOV'], conviction: 'high' }
       }
     }
-    return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
   }
 
   // North Korea
@@ -291,15 +291,15 @@ function mapMarketToAssets(question, probability) {
       }
     }
     if (probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'XLE', 'SGOV'], conviction: 'medium' }
+      return { direction: 'bullish', mapped_assets: ['GLDM', 'AIPO', 'SGOV'], conviction: 'medium' }
     }
-    return { direction: 'neutral', mapped_assets: ['GLDM', 'XLE'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
   }
 
   // Sanctions
   if (q.includes('sanction')) {
     if (probability > 0.50) {
-      return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM', 'COPX'], conviction: 'medium' }
+      return { direction: 'neutral', mapped_assets: ['GLDM', 'COPX'], conviction: 'medium' }
     }
     return { direction: 'neutral', mapped_assets: ['SPY'], conviction: 'low' }
   }

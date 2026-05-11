@@ -13,43 +13,55 @@ interface ThemeDef {
   tickers: { symbol: string; name: string; fallbackPrice: number; defaultWeight: number }[]
 }
 
+// ============================================================================
+// v4 PORTFOLIO — 11 tickers
+// Changes from v3:
+//   - DROPPED: GRID (subsumed by AIPO), BE (in AIPO at ~3.6%), XLE (wrong thesis)
+//   - ADDED:   AIPO (AI Power Stack — PWR, VRT, GEV, ETN, CCJ, NVDA, BE, CEG...)
+//   - WEIGHTS: AIPO 16.5% = sum of dropped XLE 9% + GRID 6% + BE 1.5%
+//   - Fallback prices refreshed to current market (May 2026)
+// ============================================================================
 const THEMES: ThemeDef[] = [
   { name: 'Semiconductors', voices: ['Visser'], tickers: [
-    { symbol: 'XSD', name: 'Equal-Weight Semis ETF', fallbackPrice: 425, defaultWeight: 15 },
+    { symbol: 'XSD', name: 'Equal-Weight Semis ETF', fallbackPrice: 280, defaultWeight: 15 },
   ]},
   { name: 'AI Infrastructure', voices: ['Visser'], tickers: [
-    { symbol: 'GRID', name: 'Grid / Clean Energy ETF', fallbackPrice: 185, defaultWeight: 6 },
-    { symbol: 'GLW', name: 'Corning (Optical Fiber)', fallbackPrice: 48, defaultWeight: 5 },
+    { symbol: 'GLW', name: 'Corning (Optical Fiber)', fallbackPrice: 75, defaultWeight: 5 },
+  ]},
+  { name: 'AI Power Stack', voices: ['Visser', 'Camillo'], tickers: [
+    { symbol: 'AIPO', name: 'Defiance AI & Power Infrastructure ETF', fallbackPrice: 32, defaultWeight: 16.5 },
   ]},
   { name: 'Commodities / Hard Assets', voices: ['Visser'], tickers: [
     { symbol: 'GLDM', name: 'Gold ETF', fallbackPrice: 95, defaultWeight: 7 },
-    { symbol: 'SLV', name: 'Silver ETF', fallbackPrice: 68, defaultWeight: 7 },
-    { symbol: 'COPX', name: 'Copper Miners ETF', fallbackPrice: 87, defaultWeight: 7 },
+    { symbol: 'SLV', name: 'Silver ETF', fallbackPrice: 45, defaultWeight: 7 },
+    { symbol: 'COPX', name: 'Copper Miners ETF', fallbackPrice: 60, defaultWeight: 7 },
   ]},
   { name: 'Bitcoin / Digital Scarcity', voices: ['Visser'], tickers: [
-    { symbol: 'IBIT', name: 'Bitcoin ETF', fallbackPrice: 43, defaultWeight: 19 },
+    { symbol: 'IBIT', name: 'Bitcoin ETF', fallbackPrice: 65, defaultWeight: 19 },
   ]},
-  { name: 'Energy / Power', voices: ['Visser', 'Camillo'], tickers: [
-    { symbol: 'XLE', name: 'Energy Sector ETF', fallbackPrice: 55, defaultWeight: 9 },
-    { symbol: 'XLU', name: 'Utilities ETF', fallbackPrice: 82, defaultWeight: 8.5 },
-    { symbol: 'BE', name: 'Bloom Energy', fallbackPrice: 28, defaultWeight: 1.5 },
+  { name: 'Utilities', voices: ['Visser'], tickers: [
+    { symbol: 'XLU', name: 'Utilities ETF', fallbackPrice: 95, defaultWeight: 8.5 },
   ]},
   { name: 'AI Platform Winners', voices: ['Camillo'], tickers: [
-    { symbol: 'HOOD', name: 'Robinhood', fallbackPrice: 70, defaultWeight: 5 },
-    { symbol: 'AMZN', name: 'Amazon', fallbackPrice: 195, defaultWeight: 5 },
+    { symbol: 'HOOD', name: 'Robinhood', fallbackPrice: 50, defaultWeight: 5 },
+    { symbol: 'AMZN', name: 'Amazon', fallbackPrice: 215, defaultWeight: 5 },
   ]},
 ]
 
 const TICKER_COLORS: Record<string, string> = {
-  XSD: '#06b6d4', GRID: '#14b8a6', GLW: '#f97316', GLDM: '#eab308', SLV: '#94a3b8',
-  COPX: '#ef4444', IBIT: '#8b5cf6', XLE: '#f97316', XLU: '#10b981', BE: '#f59e0b',
+  XSD: '#06b6d4', GLW: '#f97316', AIPO: '#f59e0b', GLDM: '#eab308', SLV: '#94a3b8',
+  COPX: '#ef4444', IBIT: '#8b5cf6', XLU: '#10b981',
   HOOD: '#22c55e', AMZN: '#3b82f6', SGOV: '#6b7280',
 }
 
 const THEME_COLORS: Record<string, string> = {
-  'Semiconductors': '#06b6d4', 'AI Infrastructure': '#14b8a6',
-  'Commodities / Hard Assets': '#eab308', 'Bitcoin / Digital Scarcity': '#8b5cf6',
-  'Energy / Power': '#f97316', 'AI Platform Winners': '#3b82f6',
+  'Semiconductors': '#06b6d4',
+  'AI Infrastructure': '#14b8a6',
+  'AI Power Stack': '#f59e0b',
+  'Commodities / Hard Assets': '#eab308',
+  'Bitcoin / Digital Scarcity': '#8b5cf6',
+  'Utilities': '#10b981',
+  'AI Platform Winners': '#3b82f6',
 }
 
 const VOICE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -57,7 +69,7 @@ const VOICE_COLORS: Record<string, { bg: string; text: string }> = {
   Camillo: { bg: 'rgba(234,179,8,0.12)', text: '#eab308' },
 }
 
-const STORAGE_KEY = 'ap-portfolio-v2'
+const STORAGE_KEY = 'ap-portfolio-v4'
 
 interface SavedState { checkedThemes: string[]; portfolioValue: number; weightOverrides: Record<string, number> }
 
@@ -73,6 +85,19 @@ function roundShares(raw: number): number {
   return Math.floor(raw / 5) * 5
 }
 
+// ============================================================================
+// Price freshness threshold: if Supabase price is older than 3 days, treat as
+// stale and fall back to fallbackPrice. Prevents the "stuck at $425" bug.
+// ============================================================================
+const PRICE_STALENESS_DAYS = 3
+
+function isPriceFresh(snapshotDate: string): boolean {
+  const snap = new Date(snapshotDate + 'T00:00:00Z')
+  const now = new Date()
+  const ageDays = (now.getTime() - snap.getTime()) / (1000 * 60 * 60 * 24)
+  return ageDays <= PRICE_STALENESS_DAYS
+}
+
 export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const [saved] = useState(loadState)
   const [checkedThemes, setCheckedThemes] = useState<Set<string>>(new Set(saved.checkedThemes))
@@ -80,14 +105,25 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const [portfolioInput, setPortfolioInput] = useState(String(saved.portfolioValue))
   const [weightOverrides, setWeightOverrides] = useState<Record<string, number>>(saved.weightOverrides)
   const [livePrices, setLivePrices] = useState<Record<string, number>>({})
+  const [priceStale, setPriceStale] = useState(false)
 
   useEffect(() => {
     async function fetchPrices() {
       if (!snapshot?.snapshot_date) return
-      const { data } = await supabase.from('portfolio_holdings').select('ticker, price').eq('snapshot_date', snapshot.snapshot_date)
+      const fresh = isPriceFresh(snapshot.snapshot_date)
+      setPriceStale(!fresh)
+      // If stale, don't bother fetching — we'll use fallbacks
+      if (!fresh) {
+        setLivePrices({})
+        return
+      }
+      const { data } = await supabase
+        .from('portfolio_holdings')
+        .select('ticker, price')
+        .eq('snapshot_date', snapshot.snapshot_date)
       if (data) {
         const prices: Record<string, number> = {}
-        for (const row of data) { if (row.price) prices[row.ticker] = row.price }
+        for (const row of data) { if (row.price && row.price > 0) prices[row.ticker] = row.price }
         setLivePrices(prices)
       }
     }
@@ -117,7 +153,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
 
   const computeWeights = useCallback(() => {
     const weights: Record<string, number> = {}
-    // Use default weights from theme definitions, overridden by slider changes
     for (const tk of tickers) {
       weights[tk.symbol] = weightOverrides[tk.symbol] !== undefined ? weightOverrides[tk.symbol] : tk.defaultWeight
     }
@@ -135,7 +170,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
     return { ...tk, weight, dollarAlloc, shares, actualCost }
   })
 
-  // Add cash remainder to SGOV
   const nonSgovCost = allocations.filter(a => a.symbol !== 'SGOV').reduce((s, a) => s + a.actualCost, 0)
   const sgovAlloc = allocations.find(a => a.symbol === 'SGOV')
   if (sgovAlloc) {
@@ -162,22 +196,16 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   }
 
   const handleSlider = (symbol: string, newValue: number) => {
-    // Prevent slider from going below 0
     newValue = Math.max(0, newValue)
-
     const currentWeights: Record<string, number> = {}
     for (const tk of tickers) {
       currentWeights[tk.symbol] = weightOverrides[tk.symbol] !== undefined ? weightOverrides[tk.symbol] : tk.defaultWeight
     }
-
     const others = tickers.filter(tk => tk.symbol !== symbol)
     const othersTotal = others.reduce((s, tk) => s + (currentWeights[tk.symbol] || 0), 0)
-
     if (others.length === 0) return
-
     const remaining = Math.max(0, 100 - newValue)
     const newOverrides: Record<string, number> = { [symbol]: newValue }
-
     if (othersTotal === 0) {
       const each = remaining / others.length
       for (const tk of others) newOverrides[tk.symbol] = Math.max(0, Math.round(each * 10) / 10)
@@ -196,7 +224,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
         }
       }
     }
-
     setWeightOverrides(newOverrides)
   }
   const resetWeights = () => setWeightOverrides({})
@@ -204,7 +231,13 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Theme Checkboxes + Portfolio Value */}
+      {/* Stale price warning */}
+      {priceStale && (
+        <div style={{ background: 'rgba(245,158,11,0.08)', border: `1px solid rgba(245,158,11,0.3)`, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#f59e0b' }}>
+          ⚠️ Showing reference prices — last cron snapshot is more than {PRICE_STALENESS_DAYS} days old. Live prices will refresh after the next daily cron run.
+        </div>
+      )}
+
       <div className="ap-portfolio-grid">
         <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20 }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, marginBottom: 12 }}>Select themes</div>
@@ -248,7 +281,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
         </div>
       </div>
 
-      {/* Donut + Table */}
       <div className="ap-donut-grid">
         <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <DonutChart data={allocations.filter(a => a.weight > 0)} t={t} />
@@ -293,7 +325,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                         <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, color: t.textSecondary, minWidth: 40, textAlign: 'right' }}>{a.weight.toFixed(1)}%</span>
                       </div>
                     </td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${a.price.toFixed(0)}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${a.price.toFixed(2)}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${a.dollarAlloc.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textPrimary }}>{a.shares}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${a.actualCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
