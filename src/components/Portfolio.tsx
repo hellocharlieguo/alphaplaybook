@@ -10,7 +10,7 @@ interface PortfolioProps {
 interface ThemeDef {
   name: string
   voices: string[]
-  tickers: { symbol: string; name: string; fallbackPrice: number; defaultWeight: number }[]
+  tickers: { symbol: string; name: string; defaultWeight: number }[]
 }
 
 // ============================================================================
@@ -23,26 +23,26 @@ interface ThemeDef {
 // ============================================================================
 const THEMES: ThemeDef[] = [
   { name: 'Semiconductors', voices: ['Visser'], tickers: [
-    { symbol: 'XSD', name: 'Equal-Weight Semis ETF', fallbackPrice: 280, defaultWeight: 15 },
+    { symbol: 'XSD', name: 'Equal-Weight Semis ETF', defaultWeight: 15 },
   ]},
   { name: 'AI Infrastructure', voices: ['Visser', 'Camillo'], tickers: [
-    { symbol: 'GLW', name: 'Corning (Optical Fiber)', fallbackPrice: 75, defaultWeight: 5 },
-    { symbol: 'AIPO', name: 'Defiance AI & Power Infrastructure ETF', fallbackPrice: 32, defaultWeight: 16.5 },
+    { symbol: 'GLW', name: 'Corning (Optical Fiber)', defaultWeight: 5 },
+    { symbol: 'AIPO', name: 'Defiance AI & Power Infrastructure ETF', defaultWeight: 16.5 },
   ]},
   { name: 'Commodities / Hard Assets', voices: ['Visser'], tickers: [
-    { symbol: 'GLDM', name: 'Gold ETF', fallbackPrice: 95, defaultWeight: 7 },
-    { symbol: 'SLV', name: 'Silver ETF', fallbackPrice: 45, defaultWeight: 7 },
-    { symbol: 'COPX', name: 'Copper Miners ETF', fallbackPrice: 60, defaultWeight: 7 },
+    { symbol: 'GLDM', name: 'Gold ETF', defaultWeight: 7 },
+    { symbol: 'SLV', name: 'Silver ETF', defaultWeight: 7 },
+    { symbol: 'COPX', name: 'Copper Miners ETF', defaultWeight: 7 },
   ]},
   { name: 'Bitcoin / Digital Scarcity', voices: ['Visser'], tickers: [
-    { symbol: 'IBIT', name: 'Bitcoin ETF', fallbackPrice: 65, defaultWeight: 19 },
+    { symbol: 'IBIT', name: 'Bitcoin ETF', defaultWeight: 19 },
   ]},
   { name: 'Utilities', voices: ['Visser'], tickers: [
-    { symbol: 'XLU', name: 'Utilities ETF', fallbackPrice: 95, defaultWeight: 8.5 },
+    { symbol: 'XLU', name: 'Utilities ETF', defaultWeight: 8.5 },
   ]},
   { name: 'AI Platform Winners', voices: ['Camillo'], tickers: [
-    { symbol: 'HOOD', name: 'Robinhood', fallbackPrice: 50, defaultWeight: 5 },
-    { symbol: 'AMZN', name: 'Amazon', fallbackPrice: 215, defaultWeight: 5 },
+    { symbol: 'HOOD', name: 'Robinhood', defaultWeight: 5 },
+    { symbol: 'AMZN', name: 'Amazon', defaultWeight: 5 },
   ]},
 ]
 
@@ -84,7 +84,7 @@ function roundShares(raw: number): number {
 
 // ============================================================================
 // Price freshness threshold: if Supabase price is older than 3 days, treat as
-// stale and fall back to fallbackPrice. Prevents the "stuck at $425" bug.
+// stale and show "—" in the price column. Prevents the "stuck at $425" bug.
 // ============================================================================
 const PRICE_STALENESS_DAYS = 3
 
@@ -130,17 +130,18 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   useEffect(() => { saveState({ checkedThemes: Array.from(checkedThemes), portfolioValue, weightOverrides }) }, [checkedThemes, portfolioValue, weightOverrides])
 
   const activeTickers = useCallback(() => {
-    const tickers: { symbol: string; name: string; price: number; theme: string; voices: string[]; defaultWeight: number }[] = []
+    const tickers: { symbol: string; name: string; price: number | undefined; theme: string; voices: string[]; defaultWeight: number }[] = []
     for (const theme of THEMES) {
       if (!checkedThemes.has(theme.name)) continue
       for (const ticker of theme.tickers) {
         const existing = tickers.find(t => t.symbol === ticker.symbol)
         if (existing) continue
-        const price = livePrices[ticker.symbol] || ticker.fallbackPrice
+        const price = livePrices[ticker.symbol]  // undefined if no live price
         tickers.push({ symbol: ticker.symbol, name: ticker.name, price, theme: theme.name, voices: [...theme.voices], defaultWeight: ticker.defaultWeight })
       }
     }
     if (!tickers.find(t => t.symbol === 'SGOV')) {
+      // SGOV is hardcoded at $100 since it's a cash-equivalent that barely moves
       tickers.push({ symbol: 'SGOV', name: 'T-Bills / Cash', price: livePrices['SGOV'] || 100, theme: 'Cash', voices: [], defaultWeight: 5 })
     }
     return tickers
@@ -193,15 +194,16 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const allocations = tickers.map(tk => {
     const weight = weights[tk.symbol] || 0
     const dollarAlloc = (weight / 100) * portfolioValue
-    const rawShares = dollarAlloc / tk.price
+    // If price is unknown, shares and cost can't be computed — show 0
+    const rawShares = tk.price ? dollarAlloc / tk.price : 0
     const shares = roundShares(rawShares)
-    const actualCost = shares * tk.price
+    const actualCost = tk.price ? shares * tk.price : 0
     return { ...tk, weight, dollarAlloc, shares, actualCost }
   })
 
   const nonSgovCost = allocations.filter(a => a.symbol !== 'SGOV').reduce((s, a) => s + a.actualCost, 0)
   const sgovAlloc = allocations.find(a => a.symbol === 'SGOV')
-  if (sgovAlloc) {
+  if (sgovAlloc && sgovAlloc.price) {
     const remainingCash = portfolioValue - nonSgovCost
     const sgovShares = Math.max(0, Math.floor(remainingCash / sgovAlloc.price))
     sgovAlloc.shares = sgovShares
@@ -273,7 +275,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
       {/* Stale price warning */}
       {priceStale && (
         <div style={{ background: 'rgba(245,158,11,0.08)', border: `1px solid rgba(245,158,11,0.3)`, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#f59e0b' }}>
-          ⚠️ Showing reference prices — last cron snapshot is more than {PRICE_STALENESS_DAYS} days old. Live prices will refresh after the next daily cron run.
+          ⚠️ Price data is more than {PRICE_STALENESS_DAYS} days old. Live prices will refresh after the next daily cron run.
         </div>
       )}
 
@@ -367,7 +369,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                         <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, color: t.textSecondary, minWidth: 40, textAlign: 'right' }}>{a.weight.toFixed(1)}%</span>
                       </div>
                     </td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${a.price.toFixed(2)}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{a.price ? `$${a.price.toFixed(2)}` : '—'}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${a.dollarAlloc.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textPrimary }}>{a.shares}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${a.actualCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
