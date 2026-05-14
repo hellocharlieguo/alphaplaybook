@@ -904,21 +904,12 @@ async function fetchCurrentPrices(tickers) {
   }
 
   // ============================================================
-  // Sanity-check ranges per ticker (as of May 2026).
-  // Prices outside these ranges are rejected as bad data and the
-  // ticker is left unwritten — better to have null than $425 XSD.
+  // Sanity floor only — reject zero/near-zero prices (Alpha Vantage
+  // occasionally returns $0.00 for tickers it can't quote). No upper
+  // bound: real markets can move dramatically and any hardcoded ceiling
+  // will eventually reject correct data.
   // ============================================================
-  const PRICE_SANITY = {
-    XSD:  { min: 150, max: 500 },
-    GLW:  { min: 30,  max: 200 },
-    AIPO: { min: 15,  max: 80 },
-    SLV:  { min: 20,  max: 100 },
-    COPX: { min: 25,  max: 150 },
-    IBIT: { min: 25,  max: 200 },
-    XLU:  { min: 60,  max: 150 },
-    HOOD: { min: 15,  max: 200 },
-    AMZN: { min: 100, max: 400 },
-  }
+  const PRICE_FLOOR = 1.00
 
   const prices = {}
 
@@ -927,65 +918,96 @@ async function fetchCurrentPrices(tickers) {
   console.log(`  SGOV: $100.00 (hardcoded)`)
 
   // GLDM — Alpha Vantage doesn't return quotes for gold ETFs (GLD/GLDM both fail)
-  // Hardcode at ~$95. Update periodically or switch to a different price source later.
-  prices['GLDM'] = { price: 95.00, change_pct: 0 }
-  console.log(`  GLDM: $95.00 (hardcoded)`)
+  // Hardcode at ~$92 (May 2026). Update periodically or switch to a different price source later.
+  prices['GLDM'] = { price: 92.00, change_pct: 0 }
+  console.log(`  GLDM: $92.00 (hardcoded)`)
 
-  // Alpha Vantage free tier: 25 calls/day, 5/min
-  // Fetch the most important tickers first; skip if rate-limited
-  for (const ticker of tickers) {
-    if (ticker === 'SGOV' || ticker === 'GLDM') continue  // already hardcoded
+  // ============================================================
+  // Alpha Vantage free tier: 25 calls/day, 5 calls/minute.
+  // We pace calls at 13 seconds (< 5/min) and retry once with a
+  // 60-second backoff if we hit a per-minute rate limit. If the
+  // retry also fails, that means we're at the daily cap — abort.
+  // ============================================================
+  const PACING_MS = 13000      // 13s between calls = ~4.6/min, safely under 5/min cap
+  const RETRY_BACKOFF_MS = 60000  // 1-min wait before retry on rate-limit hit
+
+  // Helper: fetch a single ticker quote. Returns { kind, ...payload }.
+  //   kind: 'ok' | 'invalid' | 'rate_limit' | 'error' | 'no_data'
+  async function fetchOneQuote(ticker) {
     try {
       const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${ALPHA_VANTAGE_KEY}`
       const response = await fetch(url)
       const data = await response.json()
 
-      if (data['Note']) {
-        console.warn(`  Rate limited at ${ticker} (Note) — stopping price fetches`)
-        console.warn(`  Raw: ${JSON.stringify(data).slice(0, 300)}`)
-        break
+      if (data['Note'] || data['Information']) {
+        return { kind: 'rate_limit', raw: JSON.stringify(data).slice(0, 300) }
       }
-
-      // DIAGNOSTIC: Alpha Vantage also returns rate-limit messages under
-      // 'Information' (newer format). Detect and stop here too.
-      if (data['Information']) {
-        console.warn(`  Issue at ${ticker} (Information) — stopping price fetches`)
-        console.warn(`  Raw: ${JSON.stringify(data).slice(0, 300)}`)
-        break
-      }
-
       if (data['Error Message']) {
-        console.warn(`  Error at ${ticker} (Error Message) — stopping price fetches`)
-        console.warn(`  Raw: ${JSON.stringify(data).slice(0, 300)}`)
-        break
+        return { kind: 'error', raw: JSON.stringify(data).slice(0, 300) }
       }
 
       const quote = data['Global Quote']
-      if (quote && quote['05. price']) {
-        const price = parseFloat(quote['05. price'])
-        const changePct = parseFloat(quote['10. change percent']?.replace('%', '') || '0')
-
-        // STALENESS GUARD: validate price is in expected range
-        const sanity = PRICE_SANITY[ticker]
-        if (!price || isNaN(price) || price <= 0) {
-          console.warn(`  ${ticker}: SKIPPED — invalid price (${price})`)
-        } else if (sanity && (price < sanity.min || price > sanity.max)) {
-          console.warn(`  ${ticker}: SKIPPED — price $${price.toFixed(2)} outside sanity range [$${sanity.min}, $${sanity.max}]`)
-        } else {
-          prices[ticker] = { price, change_pct: changePct }
-          console.log(`  ${ticker}: $${price.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)`)
-        }
-      } else {
-        // DIAGNOSTIC: print first 300 chars of raw response so we can
-        // see exactly what Alpha Vantage is returning instead of a quote
-        console.warn(`  ${ticker}: no quote data — raw: ${JSON.stringify(data).slice(0, 300)}`)
+      if (!quote || !quote['05. price']) {
+        return { kind: 'no_data', raw: JSON.stringify(data).slice(0, 300) }
       }
 
-      // Respect rate limit: wait 1.5s between calls
-      await new Promise((r) => setTimeout(r, 1500))
+      const price = parseFloat(quote['05. price'])
+      const changePct = parseFloat(quote['10. change percent']?.replace('%', '') || '0')
+
+      if (!price || isNaN(price) || price < PRICE_FLOOR) {
+        return { kind: 'invalid', price }
+      }
+      return { kind: 'ok', price, change_pct: changePct }
     } catch (error) {
-      console.warn(`  ${ticker}: fetch error — ${error.message}`)
+      return { kind: 'error', raw: `fetch threw: ${error.message}` }
     }
+  }
+
+  // Main fetch loop with retry-on-rate-limit
+  let rateLimited = false
+  for (const ticker of tickers) {
+    if (ticker === 'SGOV' || ticker === 'GLDM') continue  // already hardcoded
+    if (rateLimited) {
+      console.warn(`  ${ticker}: SKIPPED — daily quota exhausted earlier`)
+      continue
+    }
+
+    let result = await fetchOneQuote(ticker)
+
+    // RESILIENCE: if rate-limited, wait 60s and retry once. If retry also
+    // fails, we're at the daily cap, not just per-minute — stop trying.
+    if (result.kind === 'rate_limit') {
+      console.warn(`  ${ticker}: rate-limit hit, waiting ${RETRY_BACKOFF_MS / 1000}s then retrying...`)
+      console.warn(`  Raw: ${result.raw}`)
+      await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS))
+      result = await fetchOneQuote(ticker)
+      if (result.kind === 'rate_limit') {
+        console.warn(`  ${ticker}: still rate-limited after retry — daily cap likely exhausted. Stopping fetches.`)
+        rateLimited = true
+        continue
+      }
+      console.log(`  ${ticker}: retry succeeded`)
+    }
+
+    // Handle result
+    switch (result.kind) {
+      case 'ok':
+        prices[ticker] = { price: result.price, change_pct: result.change_pct }
+        console.log(`  ${ticker}: $${result.price.toFixed(2)} (${result.change_pct >= 0 ? '+' : ''}${result.change_pct.toFixed(2)}%)`)
+        break
+      case 'invalid':
+        console.warn(`  ${ticker}: SKIPPED — invalid price (${result.price})`)
+        break
+      case 'no_data':
+        console.warn(`  ${ticker}: no quote data — raw: ${result.raw}`)
+        break
+      case 'error':
+        console.warn(`  ${ticker}: error — ${result.raw}`)
+        break
+    }
+
+    // Pace: wait 13s between calls to stay under 5/min limit
+    await new Promise((r) => setTimeout(r, PACING_MS))
   }
 
   return prices
