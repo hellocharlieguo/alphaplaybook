@@ -4,8 +4,9 @@ import SignalRecap from './SignalRecap'
 import Portfolio from './Portfolio'
 import PnLTracker from './PnLTracker'
 import HistoryLog from './HistoryLog'
+import Methodology from './Methodology'
 
-type Tab = 'signals' | 'portfolio' | 'pnl' | 'history'
+type Tab = 'signals' | 'portfolio' | 'pnl' | 'history' | 'methodology'
 type ThemeMode = 'dark' | 'light'
 
 interface DailySnapshot {
@@ -21,6 +22,8 @@ interface DailySnapshot {
   daily_return_pct: number | null
   cumulative_return_pct: number | null
   spy_cumulative_return_pct: number | null
+  capex_yoy_pct?: number | null
+  visser_stage?: number | null
 }
 
 export interface Theme {
@@ -135,6 +138,7 @@ export default function Dashboard() {
     { key: 'portfolio', label: 'Portfolio' },
     { key: 'pnl', label: 'Performance' },
     { key: 'history', label: 'History' },
+    { key: 'methodology', label: 'Methodology' },
   ]
 
   const cumulativeReturn = latestSnapshot?.cumulative_return_pct ?? 0
@@ -243,6 +247,7 @@ export default function Dashboard() {
               {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} />}
               {activeTab === 'pnl' && <PnLTracker theme={t} />}
               {activeTab === 'history' && <HistoryLog theme={t} />}
+              {activeTab === 'methodology' && <Methodology snapshot={latestSnapshot} theme={t} />}
             </>
           )}
         </div>
