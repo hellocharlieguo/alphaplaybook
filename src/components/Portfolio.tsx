@@ -20,39 +20,26 @@ interface ThemeDef {
 // `action` = engine entry signal shown in the Action column.
 // ============================================================================
 const THEMES: ThemeDef[] = [
-  { name: 'Power Generation', voices: ['Visser', 'Aschenbrenner', 'Camillo'], tickers: [
+  { name: 'Power & Infrastructure', voices: ['Visser', 'Aschenbrenner', 'Camillo'], tickers: [
     { symbol: 'CEG', name: 'Constellation (Nuclear)', defaultWeight: 18, action: 'Strong Entry' },
     { symbol: 'BE', name: 'Bloom Energy (Fuel Cells)', defaultWeight: 9, action: 'Enter' },
-  ]},
-  { name: 'AI Power Infrastructure', voices: ['Visser', 'Aschenbrenner', 'Camillo'], tickers: [
     { symbol: 'AIPO', name: 'Defiance AI & Power Infrastructure ETF', defaultWeight: 9, action: 'Strong Entry' },
-  ]},
-  { name: 'Hard Money', voices: ['Visser'], tickers: [
-    { symbol: 'SLV', name: 'Silver ETF', defaultWeight: 15, action: 'Strong Entry' },
-    { symbol: 'GLDM', name: 'Gold ETF', defaultWeight: 6, action: 'Enter' },
-  ]},
-  { name: 'Bitcoin / Digital Scarcity', voices: ['Visser'], tickers: [
-    { symbol: 'IBIT', name: 'Bitcoin ETF', defaultWeight: 9, action: 'Enter' },
-  ]},
-  { name: 'Power Metals', voices: ['Visser'], tickers: [
     { symbol: 'COPX', name: 'Copper Miners ETF', defaultWeight: 7, action: 'Enter' },
-  ]},
-  { name: 'Power Real Estate', voices: ['Visser', 'Aschenbrenner'], tickers: [
-    { symbol: 'WGMI', name: 'Bitcoin Miners ETF', defaultWeight: 6.5, action: 'Enter' },
-  ]},
-  { name: 'AI Infrastructure', voices: ['Visser', 'Aschenbrenner'], tickers: [
+    { symbol: 'WGMI', name: 'Bitcoin Miners ETF (Power Real Estate)', defaultWeight: 6.5, action: 'Enter' },
     { symbol: 'GLW', name: 'Corning (Optical Fiber)', defaultWeight: 3.5, action: 'Enter' },
-    { symbol: 'CRWV', name: 'CoreWeave (Neocloud)', defaultWeight: 3.5, action: 'Starter / Watch' },
   ]},
-  { name: 'Semiconductors / Memory', voices: ['Visser', 'Aschenbrenner'], tickers: [
+  { name: 'Compute', voices: ['Visser', 'Aschenbrenner'], tickers: [
+    { symbol: 'CRWV', name: 'CoreWeave (Neocloud)', defaultWeight: 3.5, action: 'Starter / Watch' },
     { symbol: 'MU', name: 'Micron (Memory)', defaultWeight: 3, action: 'Starter / Watch' },
     { symbol: 'XSD', name: 'Equal-Weight Semis ETF', defaultWeight: 2.5, action: 'Starter / Watch' },
   ]},
-  { name: 'Tokenization', voices: ['Visser', 'Camillo'], tickers: [
-    { symbol: 'HOOD', name: 'Robinhood', defaultWeight: 3.5, action: 'Starter / Watch' },
+  { name: 'Monetary Scarcity & Tokenization', voices: ['Visser', 'Camillo'], tickers: [
+    { symbol: 'SLV', name: 'Silver ETF', defaultWeight: 15, action: 'Strong Entry' },
+    { symbol: 'IBIT', name: 'Bitcoin ETF', defaultWeight: 9, action: 'Enter' },
+    { symbol: 'GLDM', name: 'Gold ETF', defaultWeight: 6, action: 'Enter' },
+    { symbol: 'HOOD', name: 'Robinhood (Tokenization)', defaultWeight: 3.5, action: 'Starter / Watch' },
   ]},
 ]
-
 const TICKER_COLORS: Record<string, string> = {
   CEG: '#10b981', BE: '#f59e0b', AIPO: '#14b8a6', SLV: '#94a3b8', GLDM: '#eab308',
   IBIT: '#8b5cf6', COPX: '#ef4444', WGMI: '#a855f7', GLW: '#f97316', CRWV: '#06b6d4',
@@ -60,15 +47,9 @@ const TICKER_COLORS: Record<string, string> = {
 }
 
 const THEME_COLORS: Record<string, string> = {
-  'Power Generation': '#10b981',
-  'AI Power Infrastructure': '#14b8a6',
-  'Hard Money': '#eab308',
-  'Bitcoin / Digital Scarcity': '#8b5cf6',
-  'Power Metals': '#ef4444',
-  'Power Real Estate': '#a855f7',
-  'AI Infrastructure': '#06b6d4',
-  'Semiconductors / Memory': '#3b82f6',
-  'Tokenization': '#22c55e',
+  'Power & Infrastructure': '#10b981',
+  'Compute': '#06b6d4',
+  'Monetary Scarcity & Tokenization': '#eab308',
 }
 
 const ACTION_COLORS: Record<string, { bg: string; text: string }> = {
@@ -84,7 +65,7 @@ const VOICE_COLORS: Record<string, { bg: string; text: string }> = {
   Aschenbrenner: { bg: 'rgba(59,130,246,0.12)', text: '#60a5fa' },
 }
 
-const STORAGE_KEY = 'ap-portfolio-v6'
+const STORAGE_KEY = 'ap-portfolio-v7'
 
 interface SavedState { checkedThemes: string[]; portfolioValue: number; weightOverrides: Record<string, number> }
 
