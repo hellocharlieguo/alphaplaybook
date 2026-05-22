@@ -797,24 +797,20 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 
 // AlphaPlaybook model portfolio — 13 tickers across 6 themes + cash
 // North star: "Long scarcity, short abundance"
-// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.0 conviction weights (2026-05-20)
-// Weights are conviction-proportional (top name ~18%, 2% floor, no single-stock cap).
-// `action` reflects the engine's entry signal for display in the Portfolio tab.
 const BASE_PORTFOLIO = {
-  CEG:  { base_weight: 18,  theme: 'Power Generation',        action: 'Strong Entry' },
-  SLV:  { base_weight: 15,  theme: 'Hard Money',              action: 'Strong Entry' },
-  BE:   { base_weight: 9,   theme: 'Power Generation',        action: 'Enter' },
-  AIPO: { base_weight: 9,   theme: 'AI Power Infrastructure', action: 'Strong Entry' },
-  IBIT: { base_weight: 9,   theme: 'Bitcoin / Digital Scarcity', action: 'Enter' },
-  COPX: { base_weight: 7,   theme: 'Power Metals',            action: 'Enter' },
-  WGMI: { base_weight: 6.5, theme: 'Power Real Estate',       action: 'Enter' },
-  GLDM: { base_weight: 6,   theme: 'Hard Money',              action: 'Enter' },
-  GLW:  { base_weight: 3.5, theme: 'AI Infrastructure',       action: 'Enter' },
-  CRWV: { base_weight: 3.5, theme: 'AI Infrastructure',       action: 'Starter / Watch' },
-  HOOD: { base_weight: 3.5, theme: 'Tokenization',            action: 'Starter / Watch' },
-  MU:   { base_weight: 3,   theme: 'Semiconductors / Memory', action: 'Starter / Watch' },
-  XSD:  { base_weight: 2.5, theme: 'Semiconductors',          action: 'Starter / Watch' },
-  SGOV: { base_weight: 4.5, theme: 'Cash', min_weight: 3,     action: 'Hold' },
+  XSD:  { base_weight: 15, theme: 'Semiconductors' },
+  GRID: { base_weight: 6,  theme: 'AI Infrastructure' },
+  GLW:  { base_weight: 5,  theme: 'AI Infrastructure' },
+  GLDM: { base_weight: 7,  theme: 'Commodities / Hard Assets' },
+  SLV:  { base_weight: 7,  theme: 'Commodities / Hard Assets' },
+  COPX: { base_weight: 7,  theme: 'Commodities / Hard Assets' },
+  IBIT: { base_weight: 19, theme: 'Bitcoin / Digital Scarcity' },
+  XLE:  { base_weight: 9,  theme: 'Energy / Power' },
+  XLU:  { base_weight: 8.5, theme: 'Energy / Power' },
+  BE:   { base_weight: 1.5, theme: 'Energy / Power' },
+  HOOD: { base_weight: 5,  theme: 'AI Platform Winners' },
+  AMZN: { base_weight: 5,  theme: 'AI Platform Winners' },
+  SGOV: { base_weight: 5,  theme: 'Cash', min_weight: 3 },
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {
@@ -899,8 +895,13 @@ async function fetchCurrentPrices(tickers) {
   prices['SGOV'] = { price: 100.00, change_pct: 0 }
   console.log(`  SGOV: $100.00 (hardcoded)`)
 
-  // Alpha Vantage free tier: 25 calls/day, 5/min
-  // Fetch the most important tickers first; skip if rate-limited
+  // Alpha Vantage free tier: 25 calls/day, 5/min.
+  // Cooldown before the first price call in case an earlier pipeline (SPY series,
+  // narrative, quant) just hit the API — prevents an instant rate-limit on the first ticker.
+  await new Promise((r) => setTimeout(r, 13000))
+
+  // Fetch the most important tickers first; skip if rate-limited.
+  // 13s between calls keeps us comfortably under the ~5/min limit.
   for (const ticker of tickers) {
     if (ticker === 'SGOV') continue  // SGOV hardcoded; GLDM now fetched via Alpha Vantage
     try {
@@ -923,8 +924,8 @@ async function fetchCurrentPrices(tickers) {
         console.warn(`  ${ticker}: no quote data`)
       }
 
-      // Respect rate limit: wait 1.5s between calls
-      await new Promise((r) => setTimeout(r, 1500))
+      // Respect rate limit: wait 13s between calls (Alpha Vantage free tier ~5/min)
+      await new Promise((r) => setTimeout(r, 13000))
     } catch (error) {
       console.warn(`  ${ticker}: fetch error — ${error.message}`)
     }
