@@ -77,34 +77,8 @@ const VOICES: VoiceSection[] = [
   },
 ]
 
-// Rich thesis context per ticker — shown in bullish asset descriptions
-const TICKER_THESIS: Record<string, string> = {
-  IBIT: 'Visser thesis: over 100% of Bitcoin\'s cumulative returns since 2010 come from negative real yields + Fed on hold/easing. Current macro setup points directly at this quadrant.',
-  XSD: 'Visser thesis: semiconductors are now 17% of the S&P 500 and growing. The physical AI upgrade cycle is in early innings — equal-weight captures the breadth beyond mega-caps.',
-  GRID: 'Visser thesis: the grid buildout required to power AI is a multi-year capex cycle most investors are underestimating. Data center demand is overwhelming existing infrastructure.',
-  GLW: 'Visser thesis: Corning is the dominant fiber play. East-west data center traffic is exploding, driving demand for optical fiber and silicon photonics.',
-  GLDM: 'Visser thesis: negative real yields and monetary debasement make gold a structural long. Finite resource in a world printing infinite currency.',
-  SLV: 'Visser thesis: silver benefits from the same scarcity dynamics as gold, with additional industrial demand from electrification and solar.',
-  COPX: 'Visser thesis: copper is the metal of electrification. Every EV, data center, and grid upgrade requires massive copper input — supply cannot keep up.',
-  XLE: 'Visser thesis: US has a structural natural gas advantage, making domestic energy producers attractive. Chemical companies are "at the beginning of a bull market."',
-  XLU: 'Visser thesis: data center power demand is creating a supply crisis for utilities. The grid cannot keep up with AI\'s appetite for electricity.',
-  BE: 'Camillo thesis: Bloom Energy\'s 800V DC platform solves the data center power bottleneck that traditional utilities cannot. The pick-and-shovel play on AI infrastructure.',
-  AMZN: 'Camillo thesis: Amazon sits at the intersection of AI automation, robotics, and logistics — the company most positioned to turn AI efficiency into real-world margin expansion.',
-  HOOD: 'Camillo thesis: Robinhood captures the retail fintech revolution and crypto accessibility for the next generation of investors.',
-  SGOV: 'Quant-driven cash allocation. Increases when RSI signals overbought conditions to reduce portfolio risk.',
-  SPY: 'Broad market proxy. Appears in rankings when narrative or quant signals reference overall market conditions.',
-}
 
-// Crowd signal context per ticker
-const CROWD_CONTEXT: Record<string, string> = {
-  IBIT: 'Low probability of forced Bitcoin selling by major holders is supportive for price stability and continued accumulation.',
-  GLDM: 'Prediction markets on inflation, Fed policy, or geopolitical risk have implications for gold demand as a safe haven.',
-  XSD: 'Trade policy or tech sector prediction markets mapped to semiconductor exposure.',
-  XLE: 'Energy-related geopolitical markets (sanctions, conflict, oil prices) mapped to energy sector.',
-  SPY: 'Broad macro prediction markets (recession probability, GDP, employment) mapped to S&P 500.',
-  COPX: 'Commodity-related prediction markets mapped to copper exposure.',
-  SLV: 'Precious metals and inflation-related prediction markets mapped to silver.',
-}
+
 
 export default function SignalRecap({ snapshot, theme: t, activeVoices }: SignalRecapProps) {
   if (!snapshot) {
