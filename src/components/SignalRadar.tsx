@@ -32,7 +32,7 @@ interface RadarData {
 // Swap this whole const when new transcripts are uploaded.
 // ============================================================================
 const RADAR: RadarData = {
-  asOf: 'May 2026',
+  asOf: 'May 2026 · Visser',
   stageCall: {
     stage: 3,
     name: 'Power + Silver',
@@ -46,15 +46,15 @@ const RADAR: RadarData = {
     { name: 'Copper',            direction: 'up',   note: 'Rotation target alongside silver — grid + EV/humanoid demand.' },
     { name: 'Power / Nuclear',   direction: 'flat', note: 'Still the binding bottleneck (Stage 3). Structural hold, not adding aggressively.' },
     { name: 'Semiconductors',    direction: 'down', note: 'Taking profits in parabolic semis. Exhaustion model flagging extended AI momentum names.' },
-    { name: 'Memory (MU)',       direction: 'down', note: 'Sold all his Micron. Less about MU, more about trimming names that already had their move.' },
+    { name: 'Memory (MU)',       direction: 'down', note: 'Trimmed two-thirds of his Micron (still holds a third). Less about MU itself, more about trimming names that already had their parabolic move.' },
   ],
   notableMoves: [
-    'Sold all Micron (MU) — trimming parabolic runners',
+    'Trimmed two-thirds of Micron (MU), keeping a third — trimming parabolic runners',
     'Bought Ether (ETH) — tokenization / AI-agent demand thesis',
     'Watching Bitcoin & ETH 50-day moving average as the next-parabola signal',
     'Dogecoin as the "retail fire" canary for crypto risk-on',
   ],
-  sources: 'Last ~5 Visser & Pomp podcasts',
+  sources: 'Visser — last ~5 podcasts (his own + Pomp). Visser-only; Camillo not feeding radar.',
 }
 
 const DIR: Record<Direction, { arrow: string; color: string; label: string }> = {
