@@ -62,7 +62,7 @@ const VOICES: VoiceSection[] = [
       },
       {
         name: 'Semiconductors & Memory — Trimming',
-        editorial: 'Where he\'s reducing, not adding. Sold two-thirds of his Micron position; memory is rolling over after its parabolic 18-month run. Equal-weight semis still capture breadth, but this is a profit-taking sleeve in the "bubbles, parabolas and speed crashes" framework — the exhaustion side of the book.',
+        editorial: 'Where he\'s reducing, not adding. Sold his entire Micron position; memory is rolling over after its parabolic 18-month run. Equal-weight semis still capture breadth, but this is a profit-taking sleeve in the "bubbles, parabolas and speed crashes" framework — the exhaustion side of the book.',
         tickers: ['MU', 'XSD', 'CRWV'],
         bucket: 'Compute',
       },

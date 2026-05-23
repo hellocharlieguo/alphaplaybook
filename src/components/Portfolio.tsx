@@ -21,23 +21,23 @@ interface ThemeDef {
 // ============================================================================
 const THEMES: ThemeDef[] = [
   { name: 'Power & Infrastructure', voices: ['Visser', 'Aschenbrenner', 'Camillo'], tickers: [
-    { symbol: 'CEG', name: 'Constellation (Nuclear)', defaultWeight: 18, action: 'Strong Entry' },
-    { symbol: 'BE', name: 'Bloom Energy (Fuel Cells)', defaultWeight: 9, action: 'Enter' },
-    { symbol: 'AIPO', name: 'Defiance AI & Power Infrastructure ETF', defaultWeight: 9, action: 'Strong Entry' },
+    { symbol: 'CEG', name: 'Constellation (Nuclear)', defaultWeight: 12, action: 'Strong Entry' },
+    { symbol: 'BE', name: 'Bloom Energy (Fuel Cells)', defaultWeight: 9.5, action: 'Enter' },
+    { symbol: 'AIPO', name: 'Defiance AI & Power Infrastructure ETF', defaultWeight: 10, action: 'Strong Entry' },
     { symbol: 'COPX', name: 'Copper Miners ETF', defaultWeight: 7, action: 'Enter' },
     { symbol: 'WGMI', name: 'Bitcoin Miners ETF (Power Real Estate)', defaultWeight: 6.5, action: 'Enter' },
-    { symbol: 'GLW', name: 'Corning (Optical Fiber)', defaultWeight: 3.5, action: 'Enter' },
+    { symbol: 'GLW', name: 'Corning (Optical Fiber)', defaultWeight: 3, action: 'Enter' },
   ]},
   { name: 'Compute', voices: ['Visser', 'Aschenbrenner'], tickers: [
-    { symbol: 'CRWV', name: 'CoreWeave (Neocloud)', defaultWeight: 3.5, action: 'Starter / Watch' },
-    { symbol: 'MU', name: 'Micron (Memory)', defaultWeight: 3, action: 'Starter / Watch' },
-    { symbol: 'XSD', name: 'Equal-Weight Semis ETF', defaultWeight: 2.5, action: 'Starter / Watch' },
+    { symbol: 'CRWV', name: 'CoreWeave (Neocloud)', defaultWeight: 3, action: 'Starter / Watch' },
+    { symbol: 'MU', name: 'Micron (Memory)', defaultWeight: 2, action: 'Starter / Watch' },
+    { symbol: 'XSD', name: 'Equal-Weight Semis ETF', defaultWeight: 2, action: 'Starter / Watch' },
   ]},
   { name: 'Monetary Scarcity & Tokenization', voices: ['Visser', 'Camillo'], tickers: [
-    { symbol: 'SLV', name: 'Silver ETF', defaultWeight: 15, action: 'Strong Entry' },
-    { symbol: 'IBIT', name: 'Bitcoin ETF', defaultWeight: 9, action: 'Enter' },
-    { symbol: 'GLDM', name: 'Gold ETF', defaultWeight: 6, action: 'Enter' },
-    { symbol: 'HOOD', name: 'Robinhood (Tokenization)', defaultWeight: 3.5, action: 'Starter / Watch' },
+    { symbol: 'SLV', name: 'Silver ETF', defaultWeight: 18, action: 'Strong Entry' },
+    { symbol: 'IBIT', name: 'Bitcoin ETF', defaultWeight: 12, action: 'Enter' },
+    { symbol: 'GLDM', name: 'Gold ETF', defaultWeight: 5.5, action: 'Enter' },
+    { symbol: 'HOOD', name: 'Robinhood (Tokenization)', defaultWeight: 4, action: 'Starter / Watch' },
   ]},
 ]
 const TICKER_COLORS: Record<string, string> = {
@@ -65,7 +65,7 @@ const VOICE_COLORS: Record<string, { bg: string; text: string }> = {
   Aschenbrenner: { bg: 'rgba(59,130,246,0.12)', text: '#60a5fa' },
 }
 
-const STORAGE_KEY = 'ap-portfolio-v7'
+const STORAGE_KEY = 'ap-portfolio-v8'
 
 interface SavedState { checkedThemes: string[]; portfolioValue: number; weightOverrides: Record<string, number> }
 
@@ -135,7 +135,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
       }
     }
     if (!tickers.find(t => t.symbol === 'SGOV')) {
-      tickers.push({ symbol: 'SGOV', name: 'T-Bills / Cash', price: livePrices['SGOV'] || 100, theme: 'Cash', voices: [], defaultWeight: 4.5, action: 'Hold' })
+      tickers.push({ symbol: 'SGOV', name: 'T-Bills / Cash', price: livePrices['SGOV'] || 100, theme: 'Cash', voices: [], defaultWeight: 5.5, action: 'Hold' })
     }
     return tickers
   }, [checkedThemes, livePrices])
