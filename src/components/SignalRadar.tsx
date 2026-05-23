@@ -46,10 +46,10 @@ const RADAR: RadarData = {
     { name: 'Copper',            direction: 'up',   note: 'Rotation target alongside silver — grid + EV/humanoid demand.' },
     { name: 'Power / Nuclear',   direction: 'flat', note: 'Still the binding bottleneck (Stage 3). Structural hold, not adding aggressively.' },
     { name: 'Semiconductors',    direction: 'down', note: 'Taking profits in parabolic semis. Exhaustion model flagging extended AI momentum names.' },
-    { name: 'Memory (MU)',       direction: 'down', note: 'Trimmed two-thirds of his Micron (still holds a third). Less about MU itself, more about trimming names that already had their parabolic move.' },
+    { name: 'Memory (MU)',       direction: 'down', note: 'Fully out of Micron (5/17) after a 5-8x run. Explicitly profit-taking, NOT bearish — "I will be looking to accumulate" silver and Bitcoin instead. The rotation in one move.' },
   ],
   notableMoves: [
-    'Trimmed two-thirds of Micron (MU), keeping a third — trimming parabolic runners',
+    'Sold entire Micron (MU) position — trimming names that already had their parabolic move',
     'Bought Ether (ETH) — tokenization / AI-agent demand thesis',
     'Watching Bitcoin & ETH 50-day moving average as the next-parabola signal',
     'Dogecoin as the "retail fire" canary for crypto risk-on',
