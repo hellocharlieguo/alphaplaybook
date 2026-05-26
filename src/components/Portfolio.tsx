@@ -14,36 +14,40 @@ interface ThemeDef {
 }
 
 // ============================================================================
-// AGGRESSIVE sleeve — Decision Engine v2.0 conviction weights (2026-05-20)
-// Conviction-proportional (top ~18%, 2% floor, no single-stock cap).
-// Anti-momentum; two scarcity spines (AI power + hard money).
+// AGGRESSIVE sleeve — Decision Engine v2.0 conviction weights
+// RESCORED 2026-05-25: post Leopold-freeze + S1 stage-decay + convergence redefinition.
+//   - REMOVED CRWV (Leopold-only) + MU (S1 stage-decay → composite 44.7, below 45 floor)
+//   - ADDED MRVL (optical / non-memory semi, Visser-named, Stage-2 still-working)
+//   - BE cut 9.5 → 5.3 (lost Leopold convergence leg + parabolic S5 penalty)
+// Conviction-proportional (k≈2.8, top ETF anchor ~17%, 2% floor, single-stock cap 12%).
+// Anti-momentum; two scarcity spines (AI power + hard money). Voices: Visser live;
+// Aschenbrenner/Camillo frozen reference (no longer feed the engine).
 // `action` = engine entry signal shown in the Action column.
 // ============================================================================
 const THEMES: ThemeDef[] = [
-  { name: 'Power & Infrastructure', voices: ['Visser', 'Aschenbrenner', 'Camillo'], tickers: [
+  { name: 'Power & Infrastructure', voices: ['Visser'], tickers: [
     { symbol: 'CEG', name: 'Constellation (Nuclear)', defaultWeight: 12, action: 'Strong Entry' },
-    { symbol: 'BE', name: 'Bloom Energy (Fuel Cells)', defaultWeight: 9.5, action: 'Enter' },
-    { symbol: 'AIPO', name: 'Defiance AI & Power Infrastructure ETF', defaultWeight: 10, action: 'Strong Entry' },
-    { symbol: 'COPX', name: 'Copper Miners ETF', defaultWeight: 7, action: 'Enter' },
-    { symbol: 'WGMI', name: 'Bitcoin Miners ETF (Power Real Estate)', defaultWeight: 6.5, action: 'Enter' },
-    { symbol: 'GLW', name: 'Corning (Optical Fiber)', defaultWeight: 3, action: 'Enter' },
+    { symbol: 'AIPO', name: 'Defiance AI & Power Infrastructure ETF', defaultWeight: 9.8, action: 'Strong Entry' },
+    { symbol: 'WGMI', name: 'Bitcoin Miners ETF (Power Real Estate)', defaultWeight: 7.4, action: 'Enter' },
+    { symbol: 'COPX', name: 'Copper Miners ETF', defaultWeight: 6.7, action: 'Enter' },
+    { symbol: 'BE', name: 'Bloom Energy (Fuel Cells)', defaultWeight: 5.3, action: 'Hold' },
+    { symbol: 'GLW', name: 'Corning (Optical Fiber)', defaultWeight: 5, action: 'Enter' },
   ]},
-  { name: 'Compute', voices: ['Visser', 'Aschenbrenner'], tickers: [
-    { symbol: 'CRWV', name: 'CoreWeave (Neocloud)', defaultWeight: 3, action: 'Starter / Watch' },
-    { symbol: 'MU', name: 'Micron (Memory)', defaultWeight: 2, action: 'Starter / Watch' },
-    { symbol: 'XSD', name: 'Equal-Weight Semis ETF', defaultWeight: 2, action: 'Starter / Watch' },
+  { name: 'Compute', voices: ['Visser'], tickers: [
+    { symbol: 'MRVL', name: 'Marvell (Optical / Interconnect)', defaultWeight: 4, action: 'Starter / Watch' },
+    { symbol: 'XSD', name: 'Equal-Weight Semis ETF', defaultWeight: 3.1, action: 'Starter / Watch' },
   ]},
-  { name: 'Monetary Scarcity & Tokenization', voices: ['Visser', 'Camillo'], tickers: [
-    { symbol: 'SLV', name: 'Silver ETF', defaultWeight: 18, action: 'Strong Entry' },
-    { symbol: 'IBIT', name: 'Bitcoin ETF', defaultWeight: 12, action: 'Enter' },
-    { symbol: 'GLDM', name: 'Gold ETF', defaultWeight: 5.5, action: 'Enter' },
-    { symbol: 'HOOD', name: 'Robinhood (Tokenization)', defaultWeight: 4, action: 'Starter / Watch' },
+  { name: 'Monetary Scarcity & Tokenization', voices: ['Visser'], tickers: [
+    { symbol: 'SLV', name: 'Silver ETF', defaultWeight: 16.8, action: 'Strong Entry' },
+    { symbol: 'IBIT', name: 'Bitcoin ETF', defaultWeight: 14.2, action: 'Enter' },
+    { symbol: 'GLDM', name: 'Gold ETF', defaultWeight: 8.7, action: 'Enter' },
+    { symbol: 'HOOD', name: 'Robinhood (Tokenization)', defaultWeight: 2, action: 'Starter / Watch' },
   ]},
 ]
 const TICKER_COLORS: Record<string, string> = {
   CEG: '#10b981', BE: '#f59e0b', AIPO: '#14b8a6', SLV: '#94a3b8', GLDM: '#eab308',
-  IBIT: '#8b5cf6', COPX: '#ef4444', WGMI: '#a855f7', GLW: '#f97316', CRWV: '#06b6d4',
-  MU: '#3b82f6', XSD: '#0ea5e9', HOOD: '#22c55e', SGOV: '#6b7280',
+  IBIT: '#8b5cf6', COPX: '#ef4444', WGMI: '#a855f7', GLW: '#f97316', MRVL: '#06b6d4',
+  XSD: '#0ea5e9', HOOD: '#22c55e', SGOV: '#6b7280',
 }
 
 const THEME_COLORS: Record<string, string> = {
@@ -65,7 +69,7 @@ const VOICE_COLORS: Record<string, { bg: string; text: string }> = {
   Aschenbrenner: { bg: 'rgba(59,130,246,0.12)', text: '#60a5fa' },
 }
 
-const STORAGE_KEY = 'ap-portfolio-v8'
+const STORAGE_KEY = 'ap-portfolio-v9'
 
 interface SavedState { checkedThemes: string[]; portfolioValue: number; weightOverrides: Record<string, number> }
 
@@ -135,7 +139,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
       }
     }
     if (!tickers.find(t => t.symbol === 'SGOV')) {
-      tickers.push({ symbol: 'SGOV', name: 'T-Bills / Cash', price: livePrices['SGOV'] || 100, theme: 'Cash', voices: [], defaultWeight: 5.5, action: 'Hold' })
+      tickers.push({ symbol: 'SGOV', name: 'T-Bills / Cash', price: livePrices['SGOV'] || 100, theme: 'Cash', voices: [], defaultWeight: 5, action: 'Hold' })
     }
     return tickers
   }, [checkedThemes, livePrices])
@@ -148,7 +152,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
       raw[tk.symbol] = weightOverrides[tk.symbol] !== undefined ? weightOverrides[tk.symbol] : tk.defaultWeight
     }
 
-    const SGOV_FLOOR = 4.5
+    const SGOV_FLOOR = 5
     const sgovRaw = raw['SGOV'] !== undefined ? raw['SGOV'] : 0
     const nonSgov = Object.entries(raw).filter(([k]) => k !== 'SGOV')
     const nonSgovTotal = nonSgov.reduce((s, [, w]) => s + w, 0)

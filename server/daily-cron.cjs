@@ -795,27 +795,30 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // MODEL PORTFOLIO COMPUTATION
 // ============================================================================
 
-// AlphaPlaybook model portfolio — 13 tickers across 6 themes + cash
-// North star: "Long scarcity, short abundance"
-// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.0, single-stock cap = 12% (2026-05-22)
-// Conviction-weighted; top ETF (SLV) anchors at 18%, CEG (top stock) capped at 12%.
+// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.0
+// RESCORED 2026-05-25: post Leopold-freeze + S1 stage-decay + convergence redefinition.
+//   - REMOVED CRWV (Leopold-only, 0 Visser sponsorship) + MU (S1 stage-decay → composite 44.7, below 45 floor)
+//   - ADDED MRVL (optical / non-memory semi, Visser-named, Stage-2 still-working)
+//   - BE cut 9.5 → 5.3 (lost Leopold convergence leg + parabolic S5 penalty)
+// Weights below are FINAL engine output (conviction-weighted, k≈2.8, top ETF anchor,
+// single-stock cap 12%, 5% cash floor). The nightly boost logic is DISABLED (see
+// computeModelPortfolio) — these base_weights ship as-is; the engine prices signals upstream.
 // `action` = engine entry signal, shown in the Portfolio tab Action column.
 // 3 themes: Power & Infrastructure / Compute / Monetary Scarcity & Tokenization.
 const BASE_PORTFOLIO = {
-  SLV:  { base_weight: 18,  theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },
-  IBIT: { base_weight: 12,  theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },
-  CEG:  { base_weight: 12,  theme: 'Power & Infrastructure',           action: 'Strong Entry' },
-  AIPO: { base_weight: 10,  theme: 'Power & Infrastructure',           action: 'Strong Entry' },
-  BE:   { base_weight: 9.5, theme: 'Power & Infrastructure',           action: 'Enter' },
-  COPX: { base_weight: 7,   theme: 'Power & Infrastructure',           action: 'Enter' },
-  WGMI: { base_weight: 6.5, theme: 'Power & Infrastructure',           action: 'Enter' },
-  GLDM: { base_weight: 5.5, theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },
-  HOOD: { base_weight: 4,   theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },
-  GLW:  { base_weight: 3,   theme: 'Power & Infrastructure',           action: 'Enter' },
-  CRWV: { base_weight: 3,   theme: 'Compute',                          action: 'Starter / Watch' },
-  MU:   { base_weight: 2,   theme: 'Compute',                          action: 'Starter / Watch' },
-  XSD:  { base_weight: 2,   theme: 'Compute',                          action: 'Starter / Watch' },
-  SGOV: { base_weight: 5.5, theme: 'Cash', min_weight: 3,              action: 'Hold' },
+  SLV:  { base_weight: 16.8, theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },
+  IBIT: { base_weight: 14.2, theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },
+  CEG:  { base_weight: 12,   theme: 'Power & Infrastructure',           action: 'Strong Entry' },
+  AIPO: { base_weight: 9.8,  theme: 'Power & Infrastructure',           action: 'Strong Entry' },
+  GLDM: { base_weight: 8.7,  theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },
+  WGMI: { base_weight: 7.4,  theme: 'Power & Infrastructure',           action: 'Enter' },
+  COPX: { base_weight: 6.7,  theme: 'Power & Infrastructure',           action: 'Enter' },
+  BE:   { base_weight: 5.3,  theme: 'Power & Infrastructure',           action: 'Hold' },
+  GLW:  { base_weight: 5,    theme: 'Power & Infrastructure',           action: 'Enter' },
+  MRVL: { base_weight: 4,    theme: 'Compute',                          action: 'Starter / Watch' },
+  XSD:  { base_weight: 3.1,  theme: 'Compute',                          action: 'Starter / Watch' },
+  HOOD: { base_weight: 2,    theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },
+  SGOV: { base_weight: 5,    theme: 'Cash', min_weight: 3,              action: 'Hold' },
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {
@@ -823,43 +826,22 @@ function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('COMPUTING MODEL PORTFOLIO')
   console.log('========================================')
 
-  // Start with base weights
+  // Start with base weights.
+  // NOTE (2026-05-25): The nightly convergence-boost logic is DISABLED. base_weights
+  // are now FINAL Decision Engine output (conviction-weighted, post-rescore). The old
+  // boost (+1..+5% per converging ticker) double-counted the very signals the engine
+  // already prices into the weight, and made live weights drift from the validated
+  // sleeve. Principle: "fix scores, not weights." The cron now reports engine weights
+  // and tracks P&L; it does not re-adjust weights. (Re-enable only when T3 wires the
+  // six sub-scores into a live composite that REPLACES base_weight.)
+  // Params bullishAssets/quantResult are retained in the signature (still passed by main)
+  // for when signal-driven scoring is reintroduced via the engine.
   const portfolio = {}
   for (const [ticker, config] of Object.entries(BASE_PORTFOLIO)) {
     portfolio[ticker] = { ...config, weight: config.base_weight, adjustments: [] }
   }
 
-  // Apply signal-driven adjustments
-  // Tickers with bullish convergence get a boost; max +5% per ticker
-  for (const asset of bullishAssets) {
-    const ticker = asset.ticker
-    if (!portfolio[ticker]) continue
-
-    let boost = 0
-    if (asset.source_count >= 3) boost = 5        // 3/3 convergence: strong boost
-    else if (asset.source_count >= 2) boost = 3    // 2/3 convergence: moderate boost
-    else if (asset.score >= 3) boost = 2           // single source but high conviction
-    else boost = 1                                  // single source, moderate
-
-    portfolio[ticker].weight += boost
-    portfolio[ticker].adjustments.push(`+${boost}% (${asset.convergence} convergence)`)
-  }
-
-  // If RSI is overbought, trim higher-risk themes slightly
-  if (quantResult.signal === 'overbought') {
-    const riskThemes = ['Semiconductors', 'AI Platform Winners', 'Bitcoin / Digital Scarcity']
-    for (const [ticker, pos] of Object.entries(portfolio)) {
-      if (riskThemes.includes(pos.theme)) {
-        const reduction = Math.round(pos.weight * 0.1) // Reduce by 10%
-        portfolio[ticker].weight -= reduction
-        portfolio[ticker].adjustments.push(`-${reduction}% (RSI overbought)`)
-      }
-    }
-    portfolio['SGOV'].weight += 3
-    portfolio['SGOV'].adjustments.push('+3% (RSI overbought → safety)')
-  }
-
-  // Enforce SGOV floor
+  // Enforce SGOV floor (cash floor still applies as a guardrail).
   if (portfolio['SGOV'].weight < (portfolio['SGOV'].min_weight || 3)) {
     portfolio['SGOV'].weight = portfolio['SGOV'].min_weight || 3
   }
@@ -873,8 +855,7 @@ function computeModelPortfolio(bullishAssets, quantResult) {
   // Log
   const sorted = Object.entries(portfolio).sort((a, b) => b[1].weight_pct - a[1].weight_pct)
   for (const [ticker, pos] of sorted) {
-    const adj = pos.adjustments.length > 0 ? ` (${pos.adjustments.join(', ')})` : ''
-    console.log(`  ${ticker}: ${pos.weight_pct}%${adj}`)
+    console.log(`  ${ticker}: ${pos.weight_pct}%`)
   }
 
   return portfolio

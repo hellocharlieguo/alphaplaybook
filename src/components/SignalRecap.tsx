@@ -61,9 +61,9 @@ const VOICES: VoiceSection[] = [
         bucket: 'Monetary Scarcity & Tokenization',
       },
       {
-        name: 'Semiconductors & Memory — Trimming',
-        editorial: 'Where he\'s reducing, not adding. Sold his entire Micron position; memory is rolling over after its parabolic 18-month run. Equal-weight semis still capture breadth, but this is a profit-taking sleeve in the "bubbles, parabolas and speed crashes" framework — the exhaustion side of the book.',
-        tickers: ['MU', 'XSD', 'CRWV'],
+        name: 'Optical & Semiconductors — Selective',
+        editorial: 'Where memory exits and optical stays. He sold his entire Micron position — memory (Stage 1) is exhausted after its parabolic run. But optical/interconnect is still working (Stage 2): Marvell and Corning are the non-memory semis he still wants, the picks-and-shovels of the bandwidth bottleneck. Equal-weight semis capture breadth without the memory mega-cap concentration.',
+        tickers: ['MRVL', 'GLW', 'XSD'],
         bucket: 'Compute',
       },
     ],
