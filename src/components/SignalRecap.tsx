@@ -119,7 +119,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                 <span style={{ display: 'inline-block', marginTop: 8, fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
                   background: voice.active ? 'rgba(125,186,106,0.15)' : 'rgba(138,126,110,0.15)',
                   color: voice.active ? '#7dba6a' : t.textTertiary }}>
-                  {voice.active ? '\u25CF Live signal' : '\u25CB Reference'} \u00B7 {voice.asOf}
+                  {voice.active ? '● Live signal' : '○ Reference'} · {voice.asOf}
                 </span>
               </div>
 
