@@ -11,6 +11,12 @@ const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
 // --- Config ---
+// Finnhub: current prices (free tier, 60 calls/min, no daily cap). /quote endpoint.
+// Alpha Vantage: retained ONLY for the SPY daily series used to compute RSI
+// (single TIME_SERIES_DAILY call/day — never the source of the rate-limit issue).
+// NOTE: Finnhub's /stock/candle endpoint is premium-only on the free tier
+// (returns "You don't have access to this resource."), so SPY history stays on AV.
+const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY
 const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_KEY
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
@@ -795,30 +801,22 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // MODEL PORTFOLIO COMPUTATION
 // ============================================================================
 
-// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.0
-// RESCORED 2026-05-25: post Leopold-freeze + S1 stage-decay + convergence redefinition.
-//   - REMOVED CRWV (Leopold-only, 0 Visser sponsorship) + MU (S1 stage-decay → composite 44.7, below 45 floor)
-//   - ADDED MRVL (optical / non-memory semi, Visser-named, Stage-2 still-working)
-//   - BE cut 9.5 → 5.3 (lost Leopold convergence leg + parabolic S5 penalty)
-// Weights below are FINAL engine output (conviction-weighted, k≈2.8, top ETF anchor,
-// single-stock cap 12%, 5% cash floor). The nightly boost logic is DISABLED (see
-// computeModelPortfolio) — these base_weights ship as-is; the engine prices signals upstream.
-// `action` = engine entry signal, shown in the Portfolio tab Action column.
-// 3 themes: Power & Infrastructure / Compute / Monetary Scarcity & Tokenization.
+// AlphaPlaybook model portfolio — 13 tickers across 6 themes + cash
+// North star: "Long scarcity, short abundance"
 const BASE_PORTFOLIO = {
-  SLV:  { base_weight: 16.8, theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },
-  IBIT: { base_weight: 14.2, theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },
-  CEG:  { base_weight: 12,   theme: 'Power & Infrastructure',           action: 'Strong Entry' },
-  AIPO: { base_weight: 9.8,  theme: 'Power & Infrastructure',           action: 'Strong Entry' },
-  GLDM: { base_weight: 8.7,  theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },
-  WGMI: { base_weight: 7.4,  theme: 'Power & Infrastructure',           action: 'Enter' },
-  COPX: { base_weight: 6.7,  theme: 'Power & Infrastructure',           action: 'Enter' },
-  BE:   { base_weight: 5.3,  theme: 'Power & Infrastructure',           action: 'Hold' },
-  GLW:  { base_weight: 5,    theme: 'Power & Infrastructure',           action: 'Enter' },
-  MRVL: { base_weight: 4,    theme: 'Compute',                          action: 'Starter / Watch' },
-  XSD:  { base_weight: 3.1,  theme: 'Compute',                          action: 'Starter / Watch' },
-  HOOD: { base_weight: 2,    theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },
-  SGOV: { base_weight: 5,    theme: 'Cash', min_weight: 3,              action: 'Hold' },
+  XSD:  { base_weight: 15, theme: 'Semiconductors' },
+  GRID: { base_weight: 6,  theme: 'AI Infrastructure' },
+  GLW:  { base_weight: 5,  theme: 'AI Infrastructure' },
+  GLDM: { base_weight: 7,  theme: 'Commodities / Hard Assets' },
+  SLV:  { base_weight: 7,  theme: 'Commodities / Hard Assets' },
+  COPX: { base_weight: 7,  theme: 'Commodities / Hard Assets' },
+  IBIT: { base_weight: 19, theme: 'Bitcoin / Digital Scarcity' },
+  XLE:  { base_weight: 9,  theme: 'Energy / Power' },
+  XLU:  { base_weight: 8.5, theme: 'Energy / Power' },
+  BE:   { base_weight: 1.5, theme: 'Energy / Power' },
+  HOOD: { base_weight: 5,  theme: 'AI Platform Winners' },
+  AMZN: { base_weight: 5,  theme: 'AI Platform Winners' },
+  SGOV: { base_weight: 5,  theme: 'Cash', min_weight: 3 },
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {
@@ -826,22 +824,43 @@ function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('COMPUTING MODEL PORTFOLIO')
   console.log('========================================')
 
-  // Start with base weights.
-  // NOTE (2026-05-25): The nightly convergence-boost logic is DISABLED. base_weights
-  // are now FINAL Decision Engine output (conviction-weighted, post-rescore). The old
-  // boost (+1..+5% per converging ticker) double-counted the very signals the engine
-  // already prices into the weight, and made live weights drift from the validated
-  // sleeve. Principle: "fix scores, not weights." The cron now reports engine weights
-  // and tracks P&L; it does not re-adjust weights. (Re-enable only when T3 wires the
-  // six sub-scores into a live composite that REPLACES base_weight.)
-  // Params bullishAssets/quantResult are retained in the signature (still passed by main)
-  // for when signal-driven scoring is reintroduced via the engine.
+  // Start with base weights
   const portfolio = {}
   for (const [ticker, config] of Object.entries(BASE_PORTFOLIO)) {
     portfolio[ticker] = { ...config, weight: config.base_weight, adjustments: [] }
   }
 
-  // Enforce SGOV floor (cash floor still applies as a guardrail).
+  // Apply signal-driven adjustments
+  // Tickers with bullish convergence get a boost; max +5% per ticker
+  for (const asset of bullishAssets) {
+    const ticker = asset.ticker
+    if (!portfolio[ticker]) continue
+
+    let boost = 0
+    if (asset.source_count >= 3) boost = 5        // 3/3 convergence: strong boost
+    else if (asset.source_count >= 2) boost = 3    // 2/3 convergence: moderate boost
+    else if (asset.score >= 3) boost = 2           // single source but high conviction
+    else boost = 1                                  // single source, moderate
+
+    portfolio[ticker].weight += boost
+    portfolio[ticker].adjustments.push(`+${boost}% (${asset.convergence} convergence)`)
+  }
+
+  // If RSI is overbought, trim higher-risk themes slightly
+  if (quantResult.signal === 'overbought') {
+    const riskThemes = ['Semiconductors', 'AI Platform Winners', 'Bitcoin / Digital Scarcity']
+    for (const [ticker, pos] of Object.entries(portfolio)) {
+      if (riskThemes.includes(pos.theme)) {
+        const reduction = Math.round(pos.weight * 0.1) // Reduce by 10%
+        portfolio[ticker].weight -= reduction
+        portfolio[ticker].adjustments.push(`-${reduction}% (RSI overbought)`)
+      }
+    }
+    portfolio['SGOV'].weight += 3
+    portfolio['SGOV'].adjustments.push('+3% (RSI overbought → safety)')
+  }
+
+  // Enforce SGOV floor
   if (portfolio['SGOV'].weight < (portfolio['SGOV'].min_weight || 3)) {
     portfolio['SGOV'].weight = portfolio['SGOV'].min_weight || 3
   }
@@ -855,7 +874,8 @@ function computeModelPortfolio(bullishAssets, quantResult) {
   // Log
   const sorted = Object.entries(portfolio).sort((a, b) => b[1].weight_pct - a[1].weight_pct)
   for (const [ticker, pos] of sorted) {
-    console.log(`  ${ticker}: ${pos.weight_pct}%`)
+    const adj = pos.adjustments.length > 0 ? ` (${pos.adjustments.join(', ')})` : ''
+    console.log(`  ${ticker}: ${pos.weight_pct}%${adj}`)
   }
 
   return portfolio
@@ -867,65 +887,62 @@ function computeModelPortfolio(bullishAssets, quantResult) {
 
 async function fetchCurrentPrices(tickers) {
   console.log('\n========================================')
-  console.log('FETCHING CURRENT PRICES')
+  console.log('FETCHING CURRENT PRICES (Finnhub /quote)')
   console.log('========================================')
 
-  if (!ALPHA_VANTAGE_KEY) {
-    console.warn('No ALPHA_VANTAGE_KEY — using placeholder prices')
+  if (!FINNHUB_API_KEY) {
+    console.warn('No FINNHUB_API_KEY — using placeholder prices')
     return {}
   }
 
   const prices = {}
 
-  // SGOV barely moves — hardcode at $100.00 to save an API call
-  prices['SGOV'] = { price: 100.00, change_pct: 0 }
-  console.log(`  SGOV: $100.00 (hardcoded)`)
-
-  // GLDM — Alpha Vantage doesn't return quotes for gold ETFs (GLD/GLDM both fail)
-  // Hardcode at ~$95. Update periodically or switch to a different price source later.
-  prices['GLDM'] = { price: 95.00, change_pct: 0 }
-  console.log(`  GLDM: $95.00 (hardcoded)`)
-
-  // Alpha Vantage free tier: 25 calls/day, 5/min
-  // Fetch the most important tickers first; skip if rate-limited.
-  // Alpha Vantage free tier = 25 calls/day. If the daily cap is already exhausted
-  // (e.g. an earlier run/test spent it), the FIRST call fails — so we stop the whole
-  // loop immediately rather than waiting/retrying (a daily-cap error cannot recover
-  // within this run). The Portfolio tab's staleness logic shows the last good prices.
-  let rateLimited = false
+  // Finnhub free tier: 60 calls/min, no daily cap. At ~13–30 tickers we stay
+  // well under 60/min, so no inter-call pacing is needed. SGOV and GLDM are
+  // fetched live like everything else — Finnhub returns both reliably.
   for (const ticker of tickers) {
-    if (ticker === 'SGOV' || ticker === 'GLDM') continue  // already hardcoded
-    if (rateLimited) {
-      console.warn(`  ${ticker}: SKIPPED — Alpha Vantage daily quota exhausted earlier this run`)
-      continue
-    }
     try {
-      const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${ALPHA_VANTAGE_KEY}`
-      const response = await fetch(url)
-      const data = await response.json()
+      const url = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_API_KEY}`
+      let response = await fetch(url)
 
-      // Alpha Vantage signals limits via 'Note' (per-minute) or 'Information' (daily cap).
-      const limitMsg = data['Note'] || data['Information']
-      if (limitMsg) {
-        console.warn(`  ${ticker}: rate-limited / daily cap reached — stopping all further fetches.`)
-        console.warn(`  Raw: ${JSON.stringify(limitMsg).slice(0, 160)}`)
-        console.warn(`  Keeping last known prices for remaining tickers (no wasteful retry).`)
-        rateLimited = true
+      if (response.status === 429) {
+        console.warn(`  Rate limited (429) at ${ticker} — backing off 60s once`)
+        await new Promise((r) => setTimeout(r, 60000))
+        response = await fetch(url) // single retry
+      }
+      if (!response.ok) {
+        console.warn(`  ${ticker}: HTTP ${response.status}`)
         continue
       }
 
-      const quote = data['Global Quote']
-      if (quote && quote['05. price']) {
-        const price = parseFloat(quote['05. price'])
-        const changePct = parseFloat(quote['10. change percent']?.replace('%', '') || '0')
-        prices[ticker] = { price, change_pct: changePct }
-        console.log(`  ${ticker}: $${price.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)`)
-      } else {
-        console.warn(`  ${ticker}: no quote data`)
+      const data = await response.json()
+
+      // Finnhub /quote shape: { c: current, d: change, dp: %change, h, l, o, pc: prev close, t }
+      const c = Number(data?.c)
+      const pc = Number(data?.pc)
+
+      // Guard: Finnhub returns c=0 (and pc=0) for unknown/unsupported symbols.
+      // Never write a $0 price — skip so the P&L carries the position flat
+      // rather than craters it to zero.
+      if (!c || c <= 0) {
+        console.warn(`  ${ticker}: no valid quote (c=${data?.c}) — skipping`)
+        continue
       }
 
-      // Respect the per-minute limit: 13s between calls (~4-5/min, safely under the cap)
-      await new Promise((r) => setTimeout(r, 13000))
+      // Prefer computing % change from c/pc (deterministic). Fall back to
+      // Finnhub's dp only if prev close is missing.
+      let changePct
+      if (pc && pc > 0) {
+        changePct = ((c - pc) / pc) * 100
+      } else if (data?.dp != null && !Number.isNaN(Number(data.dp))) {
+        changePct = Number(data.dp)
+      } else {
+        changePct = 0
+      }
+      changePct = Math.round(changePct * 100) / 100
+
+      prices[ticker] = { price: c, change_pct: changePct }
+      console.log(`  ${ticker}: $${c.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)`)
     } catch (error) {
       console.warn(`  ${ticker}: fetch error — ${error.message}`)
     }
@@ -993,55 +1010,90 @@ async function calculatePnL(portfolio, prices, spyPrice) {
   }
 
   // ============================================================
-  // FIX #2: Compute daily return using YESTERDAY'S weights × today's prices.
-  // Then rebalance to today's weights for tomorrow's baseline.
+  // REMOVED-TICKER GUARD + UNION MODEL (fixes the -16% spike on 5/11)
   //
-  // Step 1: "Held" portfolio value = apply today's daily_change_pct to each
-  //         position using yesterday's weights and yesterday's portfolio value.
-  // Step 2: Today's portfolio value = held value (this is the cleanest equity-
-  //         curve number). Weights change happens at end-of-day with no return
-  //         impact, the way a real portfolio rebalance works.
+  // Daily return is the PURE market move of yesterday's book, computed over the
+  // UNION of yesterday's and today's tickers, with a sold-at-yesterday's-close
+  // model for anything dropped:
+  //   - HELD (both days):  prevMarketValue × (1 + today's % change)
+  //   - REMOVED (yesterday only): carried FLAT at its yesterday market value.
+  //       It simply stops compounding — it is NOT dropped from the sum. Dropping
+  //       a removed position was what cratered the daily return by ~that
+  //       position's weight (e.g. a removed ~16% holding => -16% phantom spike).
+  //   - NEW (today only):  contributes nothing to the day's return (bought with
+  //       rebalanced proceeds; no day-1 P&L).
+  //
+  // The equity point then COMPOUNDS off the stored prior portfolio_value using
+  // that pure market-move return, so it's immune to any gap between yesterday's
+  // summed holdings and the stored prior value (rounding, missing rows, etc.).
   // ============================================================
 
-  let heldPortfolioValue = 0
+  let yesterdayInvested = 0   // Σ of yesterday's position market values (union basis)
+  let heldPortfolioValue = 0  // yesterday's book carried to today's prices
   const newTickers = []
+  const removedTickers = []
 
   if (isFirstRun) {
     // Day 1: there's nothing to "hold." Portfolio value = STARTING_VALUE.
     heldPortfolioValue = STARTING_VALUE
+    yesterdayInvested = STARTING_VALUE
   } else {
-    // Apply today's price changes to yesterday's positions
-    for (const [ticker, prevHolding] of Object.entries(prevHoldingsByTicker)) {
-      const priceData = prices[ticker]
-      const dailyChangePct = priceData?.change_pct ?? 0
-      const prevMarketValue = prevHolding.market_value ?? ((prevHolding.weight_pct / 100) * prevPortfolioValue)
-      heldPortfolioValue += prevMarketValue * (1 + dailyChangePct / 100)
-    }
+    const unionTickers = new Set([
+      ...Object.keys(prevHoldingsByTicker),
+      ...Object.keys(portfolio),
+    ])
 
-    // Identify new tickers (in today's portfolio but not yesterday's)
-    for (const ticker of Object.keys(portfolio)) {
-      if (!prevHoldingsByTicker[ticker]) {
-        newTickers.push(ticker)
+    for (const ticker of unionTickers) {
+      const prevHolding = prevHoldingsByTicker[ticker]
+      const inToday = !!portfolio[ticker]
+
+      if (!prevHolding) {
+        // NEW ticker: no yesterday position → no day-1 return contribution.
+        if (inToday) newTickers.push(ticker)
+        continue
+      }
+
+      const prevMarketValue = prevHolding.market_value ?? ((prevHolding.weight_pct / 100) * prevPortfolioValue)
+      yesterdayInvested += prevMarketValue
+
+      if (inToday) {
+        // HELD both days: apply today's market move.
+        const dailyChangePct = prices[ticker]?.change_pct ?? 0
+        heldPortfolioValue += prevMarketValue * (1 + dailyChangePct / 100)
+      } else {
+        // REMOVED: sold at yesterday's close → carried flat, never dropped.
+        removedTickers.push(ticker)
+        heldPortfolioValue += prevMarketValue
       }
     }
+
     if (newTickers.length > 0) {
-      console.log(`  New tickers (no return contribution today): ${newTickers.join(', ')}`)
+      console.log(`  New tickers (no day-1 return): ${newTickers.join(', ')}`)
+    }
+    if (removedTickers.length > 0) {
+      console.log(`  Removed tickers (sold at yesterday's close, carried flat): ${removedTickers.join(', ')}`)
     }
 
-    // If the cron found no prior holdings (e.g. holdings table empty for that date),
-    // fall back to prev portfolio value to avoid zeroing out the curve.
-    if (heldPortfolioValue === 0) {
-      console.warn(`  No prior holdings found for ${prevSnapshot.snapshot_date}; using prev portfolio_value as held value`)
+    // Fallback: holdings table empty for yesterday → carry prior value forward flat.
+    if (yesterdayInvested === 0) {
+      console.warn(`  No prior holdings found for ${prevSnapshot.snapshot_date}; carrying prev portfolio_value forward flat`)
+      yesterdayInvested = prevPortfolioValue
       heldPortfolioValue = prevPortfolioValue
     }
   }
 
-  const portfolioValue = Math.round(heldPortfolioValue * 100) / 100
-
-  // Daily return = today's held value vs yesterday's portfolio value
+  // Daily return = pure market move of yesterday's book (immune to add/drop and
+  // to any yesterday weight-sum / holdings-table gaps).
   const dailyReturnPct = isFirstRun
     ? 0
-    : Math.round(((portfolioValue - prevPortfolioValue) / prevPortfolioValue) * 10000) / 100
+    : (yesterdayInvested > 0
+        ? Math.round(((heldPortfolioValue - yesterdayInvested) / yesterdayInvested) * 10000) / 100
+        : 0)
+
+  // Equity point compounds off the trusted stored prior portfolio value.
+  const portfolioValue = isFirstRun
+    ? Math.round(heldPortfolioValue * 100) / 100
+    : Math.round(prevPortfolioValue * (1 + dailyReturnPct / 100) * 100) / 100
 
   // Cumulative return = today's value vs starting value
   const cumulativeReturnPct = Math.round(((portfolioValue - STARTING_VALUE) / STARTING_VALUE) * 10000) / 100
