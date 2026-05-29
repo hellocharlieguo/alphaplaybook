@@ -10,66 +10,60 @@ interface PortfolioProps {
 interface ThemeDef {
   name: string
   voices: string[]
-  tickers: { symbol: string; name: string; defaultWeight: number; action: string }[]
+  tickers: { symbol: string; name: string; fallbackPrice: number; defaultWeight: number }[]
 }
 
-// ============================================================================
-// AGGRESSIVE sleeve — Decision Engine v2.0 conviction weights
-// RESCORED 2026-05-25: post Leopold-freeze + S1 stage-decay + convergence redefinition.
-//   - REMOVED CRWV (Leopold-only) + MU (S1 stage-decay → composite 44.7, below 45 floor)
-//   - ADDED MRVL (optical / non-memory semi, Visser-named, Stage-2 still-working)
-//   - BE cut 9.5 → 5.3 (lost Leopold convergence leg + parabolic S5 penalty)
-// Conviction-proportional (k≈2.8, top ETF anchor ~17%, 2% floor, single-stock cap 12%).
-// Anti-momentum; two scarcity spines (AI power + hard money). Voices: Visser live;
-// Aschenbrenner/Camillo frozen reference (no longer feed the engine).
-// `action` = engine entry signal shown in the Action column.
-// ============================================================================
+// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.1 (5/28/26).
+// 17 holdings, grouped into the 3 engine themes (+ SGOV cash, auto-added below).
+// defaultWeight = final engine weight (sums to 100 with SGOV's 4.5). fallbackPrice is
+// only used if Finnhub hasn't supplied a live price yet for that ticker.
 const THEMES: ThemeDef[] = [
   { name: 'Power & Infrastructure', voices: ['Visser'], tickers: [
-    { symbol: 'CEG', name: 'Constellation (Nuclear)', defaultWeight: 12, action: 'Strong Entry' },
-    { symbol: 'AIPO', name: 'Defiance AI & Power Infrastructure ETF', defaultWeight: 9.8, action: 'Strong Entry' },
-    { symbol: 'WGMI', name: 'Bitcoin Miners ETF (Power Real Estate)', defaultWeight: 7.4, action: 'Enter' },
-    { symbol: 'COPX', name: 'Copper Miners ETF', defaultWeight: 6.7, action: 'Enter' },
-    { symbol: 'BE', name: 'Bloom Energy (Fuel Cells)', defaultWeight: 5.3, action: 'Hold' },
-    { symbol: 'GLW', name: 'Corning (Optical Fiber)', defaultWeight: 5, action: 'Enter' },
+    { symbol: 'CEG',  name: 'Constellation (Nuclear)',          fallbackPrice: 286, defaultWeight: 12 },
+    { symbol: 'WGMI', name: 'Bitcoin Miners ETF (→ AI Compute)', fallbackPrice: 69,  defaultWeight: 10 },
+    { symbol: 'AIPO', name: 'Defiance AI & Power Infra ETF',     fallbackPrice: 33,  defaultWeight: 10 },
+    { symbol: 'TXN',  name: 'Texas Instruments (Power Semis)',   fallbackPrice: 200, defaultWeight: 4 },
+    { symbol: 'FLNC', name: 'Fluence Energy (Batteries)',        fallbackPrice: 8,   defaultWeight: 4 },
+    { symbol: 'BE',   name: 'Bloom Energy (Fuel Cells)',         fallbackPrice: 290, defaultWeight: 4 },
+    { symbol: 'COPX', name: 'Copper Miners ETF',                 fallbackPrice: 88,  defaultWeight: 2.5 },
   ]},
   { name: 'Compute', voices: ['Visser'], tickers: [
-    { symbol: 'MRVL', name: 'Marvell (Optical / Interconnect)', defaultWeight: 4, action: 'Starter / Watch' },
-    { symbol: 'XSD', name: 'Equal-Weight Semis ETF', defaultWeight: 3.1, action: 'Starter / Watch' },
+    { symbol: 'GLW',  name: 'Corning (Optical Fiber)',           fallbackPrice: 183, defaultWeight: 5 },
+    { symbol: 'MRVL', name: 'Marvell (Optical / Interconnect)',  fallbackPrice: 205, defaultWeight: 4 },
+    { symbol: 'ENTG', name: 'Entegris (Semi Chemicals)',         fallbackPrice: 110, defaultWeight: 2.5 },
+    { symbol: 'XSD',  name: 'Equal-Weight Semis ETF',            fallbackPrice: 631, defaultWeight: 2 },
   ]},
   { name: 'Monetary Scarcity & Tokenization', voices: ['Visser'], tickers: [
-    { symbol: 'SLV', name: 'Silver ETF', defaultWeight: 16.8, action: 'Strong Entry' },
-    { symbol: 'IBIT', name: 'Bitcoin ETF', defaultWeight: 14.2, action: 'Enter' },
-    { symbol: 'GLDM', name: 'Gold ETF', defaultWeight: 8.7, action: 'Enter' },
-    { symbol: 'HOOD', name: 'Robinhood (Tokenization)', defaultWeight: 2, action: 'Starter / Watch' },
+    { symbol: 'SLV',  name: 'Silver ETF',                        fallbackPrice: 68,  defaultWeight: 18 },
+    { symbol: 'IBIT', name: 'Bitcoin ETF',                       fallbackPrice: 42,  defaultWeight: 6.5 },
+    { symbol: 'GLDM', name: 'Gold ETF',                          fallbackPrice: 89,  defaultWeight: 6 },
+    { symbol: 'ETHA', name: 'Ethereum ETF',                      fallbackPrice: 25,  defaultWeight: 3 },
+    { symbol: 'HOOD', name: 'Robinhood (Tokenization)',          fallbackPrice: 85,  defaultWeight: 2 },
   ]},
 ]
+
 const TICKER_COLORS: Record<string, string> = {
-  CEG: '#10b981', BE: '#f59e0b', AIPO: '#14b8a6', SLV: '#94a3b8', GLDM: '#eab308',
-  IBIT: '#8b5cf6', COPX: '#ef4444', WGMI: '#a855f7', GLW: '#f97316', MRVL: '#06b6d4',
-  XSD: '#0ea5e9', HOOD: '#22c55e', SGOV: '#6b7280',
+  SLV: '#94a3b8', CEG: '#10b981', WGMI: '#a855f7', AIPO: '#14b8a6', IBIT: '#8b5cf6',
+  GLDM: '#eab308', GLW: '#f97316', SGOV: '#6b7280', TXN: '#0ea5e9', FLNC: '#84cc16',
+  BE: '#f59e0b', MRVL: '#3b82f6', ETHA: '#6366f1', ENTG: '#ec4899', COPX: '#ef4444',
+  HOOD: '#22c55e', XSD: '#06b6d4',
 }
 
 const THEME_COLORS: Record<string, string> = {
   'Power & Infrastructure': '#10b981',
   'Compute': '#06b6d4',
-  'Monetary Scarcity & Tokenization': '#eab308',
-}
-
-const ACTION_COLORS: Record<string, { bg: string; text: string }> = {
-  'Strong Entry':    { bg: 'rgba(16,185,129,0.15)',  text: '#34d399' },
-  'Enter':           { bg: 'rgba(16,185,129,0.10)',  text: '#6ee7b7' },
-  'Starter / Watch': { bg: 'rgba(234,179,8,0.12)',   text: '#eab308' },
-  'Hold':            { bg: 'rgba(148,163,184,0.12)', text: '#94a3b8' },
+  'Monetary Scarcity & Tokenization': '#8b5cf6',
 }
 
 const VOICE_COLORS: Record<string, { bg: string; text: string }> = {
   Visser: { bg: 'rgba(139,92,246,0.12)', text: '#a78bfa' },
   Camillo: { bg: 'rgba(234,179,8,0.12)', text: '#eab308' },
-  Aschenbrenner: { bg: 'rgba(59,130,246,0.12)', text: '#60a5fa' },
 }
 
-const STORAGE_KEY = 'ap-portfolio-v9'
+// Bumped v2 -> v3: the v2.1 sleeve uses new theme NAMES, so old saved checkedThemes
+// would no longer match and every theme would load unchecked. Bumping the key
+// discards stale localStorage and loads the new sleeve fresh (all themes checked).
+const STORAGE_KEY = 'ap-portfolio-v3'
 
 interface SavedState { checkedThemes: string[]; portfolioValue: number; weightOverrides: Record<string, number> }
 
@@ -85,40 +79,21 @@ function roundShares(raw: number): number {
   return Math.floor(raw / 5) * 5
 }
 
-const PRICE_STALENESS_DAYS = 3
-
-function isPriceFresh(snapshotDate: string): boolean {
-  const snap = new Date(snapshotDate + 'T00:00:00Z')
-  const now = new Date()
-  const ageDays = (now.getTime() - snap.getTime()) / (1000 * 60 * 60 * 24)
-  return ageDays <= PRICE_STALENESS_DAYS
-}
-
 export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const [saved] = useState(loadState)
   const [checkedThemes, setCheckedThemes] = useState<Set<string>>(new Set(saved.checkedThemes))
   const [portfolioValue, setPortfolioValue] = useState(saved.portfolioValue)
-  const [portfolioInput, setPortfolioInput] = useState(saved.portfolioValue.toLocaleString('en-US'))
+  const [portfolioInput, setPortfolioInput] = useState(String(saved.portfolioValue))
   const [weightOverrides, setWeightOverrides] = useState<Record<string, number>>(saved.weightOverrides)
   const [livePrices, setLivePrices] = useState<Record<string, number>>({})
-  const [priceStale, setPriceStale] = useState(false)
 
   useEffect(() => {
     async function fetchPrices() {
       if (!snapshot?.snapshot_date) return
-      const fresh = isPriceFresh(snapshot.snapshot_date)
-      setPriceStale(!fresh)
-      if (!fresh) {
-        setLivePrices({})
-        return
-      }
-      const { data } = await supabase
-        .from('portfolio_holdings')
-        .select('ticker, price')
-        .eq('snapshot_date', snapshot.snapshot_date)
+      const { data } = await supabase.from('portfolio_holdings').select('ticker, price').eq('snapshot_date', snapshot.snapshot_date)
       if (data) {
         const prices: Record<string, number> = {}
-        for (const row of data) { if (row.price && row.price > 0) prices[row.ticker] = row.price }
+        for (const row of data) { if (row.price) prices[row.ticker] = row.price }
         setLivePrices(prices)
       }
     }
@@ -128,18 +103,18 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   useEffect(() => { saveState({ checkedThemes: Array.from(checkedThemes), portfolioValue, weightOverrides }) }, [checkedThemes, portfolioValue, weightOverrides])
 
   const activeTickers = useCallback(() => {
-    const tickers: { symbol: string; name: string; price: number | undefined; theme: string; voices: string[]; defaultWeight: number; action: string }[] = []
+    const tickers: { symbol: string; name: string; price: number; theme: string; voices: string[]; defaultWeight: number }[] = []
     for (const theme of THEMES) {
       if (!checkedThemes.has(theme.name)) continue
       for (const ticker of theme.tickers) {
         const existing = tickers.find(t => t.symbol === ticker.symbol)
         if (existing) continue
-        const price = livePrices[ticker.symbol]
-        tickers.push({ symbol: ticker.symbol, name: ticker.name, price, theme: theme.name, voices: [...theme.voices], defaultWeight: ticker.defaultWeight, action: ticker.action })
+        const price = livePrices[ticker.symbol] || ticker.fallbackPrice
+        tickers.push({ symbol: ticker.symbol, name: ticker.name, price, theme: theme.name, voices: [...theme.voices], defaultWeight: ticker.defaultWeight })
       }
     }
     if (!tickers.find(t => t.symbol === 'SGOV')) {
-      tickers.push({ symbol: 'SGOV', name: 'T-Bills / Cash', price: livePrices['SGOV'] || 100, theme: 'Cash', voices: [], defaultWeight: 5, action: 'Hold' })
+      tickers.push({ symbol: 'SGOV', name: 'T-Bills / Cash', price: livePrices['SGOV'] || 100, theme: 'Cash', voices: [], defaultWeight: 4.5 })
     }
     return tickers
   }, [checkedThemes, livePrices])
@@ -147,37 +122,11 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const tickers = activeTickers()
 
   const computeWeights = useCallback(() => {
-    const raw: Record<string, number> = {}
-    for (const tk of tickers) {
-      raw[tk.symbol] = weightOverrides[tk.symbol] !== undefined ? weightOverrides[tk.symbol] : tk.defaultWeight
-    }
-
-    const SGOV_FLOOR = 5
-    const sgovRaw = raw['SGOV'] !== undefined ? raw['SGOV'] : 0
-    const nonSgov = Object.entries(raw).filter(([k]) => k !== 'SGOV')
-    const nonSgovTotal = nonSgov.reduce((s, [, w]) => s + w, 0)
-
-    const sgovTarget = Math.max(SGOV_FLOOR, sgovRaw)
-    const nonSgovBudget = 100 - sgovTarget
-
     const weights: Record<string, number> = {}
-    if (nonSgovTotal > 0 && nonSgov.length > 0) {
-      const scale = nonSgovBudget / nonSgovTotal
-      let assigned = 0
-      for (let i = 0; i < nonSgov.length; i++) {
-        const [sym, w] = nonSgov[i]
-        if (i === nonSgov.length - 1) {
-          weights[sym] = Math.round((nonSgovBudget - assigned) * 10) / 10
-        } else {
-          const scaled = Math.round(w * scale * 10) / 10
-          weights[sym] = scaled
-          assigned += scaled
-        }
-      }
-    } else {
-      for (const [sym] of nonSgov) weights[sym] = 0
+    // Use default weights from theme definitions, overridden by slider changes
+    for (const tk of tickers) {
+      weights[tk.symbol] = weightOverrides[tk.symbol] !== undefined ? weightOverrides[tk.symbol] : tk.defaultWeight
     }
-    weights['SGOV'] = sgovTarget
     return weights
   }, [tickers, weightOverrides])
 
@@ -186,15 +135,16 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const allocations = tickers.map(tk => {
     const weight = weights[tk.symbol] || 0
     const dollarAlloc = (weight / 100) * portfolioValue
-    const rawShares = tk.price ? dollarAlloc / tk.price : 0
+    const rawShares = dollarAlloc / tk.price
     const shares = roundShares(rawShares)
-    const actualCost = tk.price ? shares * tk.price : 0
+    const actualCost = shares * tk.price
     return { ...tk, weight, dollarAlloc, shares, actualCost }
   })
 
+  // Add cash remainder to SGOV
   const nonSgovCost = allocations.filter(a => a.symbol !== 'SGOV').reduce((s, a) => s + a.actualCost, 0)
   const sgovAlloc = allocations.find(a => a.symbol === 'SGOV')
-  if (sgovAlloc && sgovAlloc.price) {
+  if (sgovAlloc) {
     const remainingCash = portfolioValue - nonSgovCost
     const sgovShares = Math.max(0, Math.floor(remainingCash / sgovAlloc.price))
     sgovAlloc.shares = sgovShares
@@ -218,16 +168,22 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   }
 
   const handleSlider = (symbol: string, newValue: number) => {
+    // Prevent slider from going below 0
     newValue = Math.max(0, newValue)
+
     const currentWeights: Record<string, number> = {}
     for (const tk of tickers) {
       currentWeights[tk.symbol] = weightOverrides[tk.symbol] !== undefined ? weightOverrides[tk.symbol] : tk.defaultWeight
     }
+
     const others = tickers.filter(tk => tk.symbol !== symbol)
     const othersTotal = others.reduce((s, tk) => s + (currentWeights[tk.symbol] || 0), 0)
+
     if (others.length === 0) return
+
     const remaining = Math.max(0, 100 - newValue)
     const newOverrides: Record<string, number> = { [symbol]: newValue }
+
     if (othersTotal === 0) {
       const each = remaining / others.length
       for (const tk of others) newOverrides[tk.symbol] = Math.max(0, Math.round(each * 10) / 10)
@@ -246,28 +202,15 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
         }
       }
     }
+
     setWeightOverrides(newOverrides)
   }
   const resetWeights = () => setWeightOverrides({})
-  const handlePortfolioSubmit = () => {
-    const cleaned = portfolioInput.replace(/,/g, '').replace(/[^0-9.]/g, '')
-    const val = parseFloat(cleaned)
-    if (!isNaN(val) && val > 0) {
-      setPortfolioValue(val)
-      setPortfolioInput(val.toLocaleString('en-US'))
-    } else {
-      setPortfolioInput(portfolioValue.toLocaleString('en-US'))
-    }
-  }
+  const handlePortfolioSubmit = () => { const val = parseFloat(portfolioInput); if (!isNaN(val) && val > 0) setPortfolioValue(val) }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {priceStale && (
-        <div style={{ background: 'rgba(245,158,11,0.08)', border: `1px solid rgba(245,158,11,0.3)`, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#f59e0b' }}>
-          ⚠️ Price data is more than {PRICE_STALENESS_DAYS} days old. Live prices will refresh after the next daily cron run.
-        </div>
-      )}
-
+      {/* Theme Checkboxes + Portfolio Value */}
       <div className="ap-portfolio-grid">
         <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20 }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, marginBottom: 12 }}>Select themes</div>
@@ -303,17 +246,15 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
             <span style={{ fontSize: 18, fontWeight: 500, color: t.textTertiary }}>$</span>
             <input type="text" value={portfolioInput} onChange={e => setPortfolioInput(e.target.value)}
               onBlur={handlePortfolioSubmit} onKeyDown={e => e.key === 'Enter' && handlePortfolioSubmit()}
-              style={{ width: 140, fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '6px 10px', color: t.textPrimary, outline: 'none' }} />
+              style={{ width: 120, fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '6px 10px', color: t.textPrimary, outline: 'none' }} />
           </div>
           <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 8 }}>
             Invested: ${totalActualCost.toLocaleString(undefined, { maximumFractionDigits: 0 })} · Remainder: ${cashRemainder.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
-          <div style={{ fontSize: 10, color: t.textTertiary, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${t.border}`, fontStyle: 'italic', lineHeight: 1.4 }}>
-            Illustrative portfolio — for educational purposes only. Not investment advice.
-          </div>
         </div>
       </div>
 
+      {/* Donut + Table */}
       <div className="ap-donut-grid">
         <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <DonutChart data={allocations.filter(a => a.weight > 0)} t={t} />
@@ -336,7 +277,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                   <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Shares</th>
                   <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Cost</th>
                   <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Theme</th>
-                  <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -359,15 +299,12 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                         <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, color: t.textSecondary, minWidth: 40, textAlign: 'right' }}>{a.weight.toFixed(1)}%</span>
                       </div>
                     </td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{a.price ? `$${a.price.toFixed(2)}` : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${a.price.toFixed(0)}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${a.dollarAlloc.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textPrimary }}>{a.shares}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${a.actualCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                     <td style={{ padding: '8px 16px' }}>
                       <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: a.theme === 'Cash' ? t.badgeBg : `${THEME_COLORS[a.theme] || '#64748b'}20`, color: a.theme === 'Cash' ? t.badgeText : THEME_COLORS[a.theme] || '#64748b' }}>{a.theme}</span>
-                    </td>
-                    <td style={{ padding: '8px 16px' }}>
-                      {a.action && <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: (ACTION_COLORS[a.action] || ACTION_COLORS['Hold']).bg, color: (ACTION_COLORS[a.action] || ACTION_COLORS['Hold']).text }}>{a.action}</span>}
                     </td>
                   </tr>
                 ))}
@@ -383,10 +320,9 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                   <td style={{ padding: '10px 16px' }} />
                   <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textSecondary }}>${totalActualCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                   <td style={{ padding: '10px 16px' }} />
-                  <td style={{ padding: '10px 16px' }} />
                 </tr>
                 {cashRemainder > 0 && (
-                  <tr><td colSpan={8} style={{ padding: '8px 16px', fontSize: 11, color: t.textTertiary }}>${cashRemainder.toLocaleString(undefined, { maximumFractionDigits: 0 })} uninvested (from rounding) — consider adding to SGOV</td></tr>
+                  <tr><td colSpan={7} style={{ padding: '8px 16px', fontSize: 11, color: t.textTertiary }}>${cashRemainder.toLocaleString(undefined, { maximumFractionDigits: 0 })} uninvested (from rounding) — consider adding to SGOV</td></tr>
                 )}
               </tfoot>
             </table>
