@@ -18,6 +18,7 @@ require('dotenv').config({ path: '.env.local' })
 // (returns "You don't have access to this resource."), so SPY history stays on AV.
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY
 const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_KEY
+const FRED_API_KEY = process.env.FRED_API_KEY
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY
@@ -637,7 +638,7 @@ async function fetchSPYPrices() {
     console.warn('No ALPHA_VANTAGE_KEY — skipping quant pipeline')
     return null
   }
-  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=SPY&outputsize=compact&apikey=${ALPHA_VANTAGE_KEY}`
+  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=SPY&outputsize=full&apikey=${ALPHA_VANTAGE_KEY}`
   console.log('Fetching SPY daily prices...')
   const response = await fetch(url)
   const data = await response.json()
@@ -700,15 +701,19 @@ async function runQuantPipeline() {
   console.log('========================================')
 
   const prices = await fetchSPYPrices()
-  if (!prices) return { rsi: null, signal: null, spyPrice: null }
+  if (!prices) return { rsi: null, signal: null, spyPrice: null, spyAth: null, spyPctOffAth: null }
 
   const rsi = calculateRSI(prices)
   const signal = getRSISignal(rsi)
   const latest = prices[prices.length - 1]
   const mappedTickers = getRSIMappedTickers(signal)
 
+  // All-time high over the full series (outputsize=full) + distance from it.
+  const ath = Math.round(Math.max(...prices.map((p) => p.close)) * 100) / 100
+  const pctOffAth = Math.round(((latest.close - ath) / ath) * 10000) / 100
+
   console.log(`RSI (14): ${rsi} → ${signal}`)
-  console.log(`SPY: $${latest.close} (${latest.date})`)
+  console.log(`SPY: $${latest.close} (${latest.date})  ATH $${ath}  (${pctOffAth}% off)`)
 
   // Write to signals table
   await supabase.from('signals').upsert({
@@ -723,8 +728,96 @@ async function runQuantPipeline() {
   }, { onConflict: 'snapshot_date,source', ignoreDuplicates: false })
 
   console.log(`\n✓ Quant: RSI ${rsi} (${signal}) written`)
-  return { rsi, signal, spyPrice: latest.close }
+  return { rsi, signal, spyPrice: latest.close, spyAth: ath, spyPctOffAth: pctOffAth }
 }
+
+// ============================================================================
+// MACRO: CPI (BLS via FRED) + Cleveland Fed nowcast + 4% regime
+// Display-first. All values stored as RAW NUMBERS (engine-ready for future T3).
+// Every fetch is skip-safe: missing key / endpoint / data => null => panel "—".
+// ============================================================================
+
+const REGIME_THRESHOLD = 4.0 // CPI YoY %. >= 4% historically bearish for S&P.
+
+// CPI-U headline, Not Seasonally Adjusted — the YoY most commentators quote.
+async function fetchFredCPI() {
+  if (!FRED_API_KEY) {
+    console.warn('No FRED_API_KEY — skipping CPI (panel will show "—")')
+    return null
+  }
+  try {
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCNS&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=13`
+    const res = await fetch(url)
+    if (!res.ok) { console.warn(`FRED CPI: HTTP ${res.status} — skipping`); return null }
+    const data = await res.json()
+    const obs = (data?.observations || []).filter((o) => o.value !== '.')
+    if (obs.length < 13) { console.warn(`FRED CPI: only ${obs.length} obs, need 13 for YoY — skipping`); return null }
+    const latest = obs[0]            // most recent month
+    const yearAgo = obs[12]          // 12 months prior
+    const yoy = Math.round(((parseFloat(latest.value) - parseFloat(yearAgo.value)) / parseFloat(yearAgo.value)) * 1000) / 10
+    const dataMonth = latest.date.slice(0, 7) // YYYY-MM (FRED obs date = 1st of data month)
+    // BLS releases CPI ~mid the following month. Approximate (labeled ~ in UI).
+    const d = new Date(latest.date); d.setMonth(d.getMonth() + 1); d.setDate(13)
+    const releaseApprox = d.toISOString().split('T')[0]
+    console.log(`CPI (CPIAUCNS): ${yoy}% YoY · data month ${dataMonth}`)
+    return { yoy, data_month: dataMonth, release_date: releaseApprox, release_approx: true, source: 'BLS/FRED CPIAUCNS' }
+  } catch (e) {
+    console.warn(`FRED CPI: fetch error — ${e.message}`); return null
+  }
+}
+
+// Cleveland Fed daily CPI inflation nowcast (current-month YoY estimate).
+// NOTE: the live data endpoint is NOT on FRED (FRED only has long-horizon
+// expected-inflation series). It's published on clevelandfed.org. The exact
+// data URL must be confirmed on first run — it's isolated here as ONE constant.
+// Until confirmed, this returns null and the panel shows "—" for the nowcast;
+// CPI + regime still render off the FRED value above.
+const CLEVELAND_NOWCAST_URL = '' // TODO: pin exact CSV/JSON endpoint, then this is the only change.
+
+async function fetchClevelandNowcast() {
+  if (!CLEVELAND_NOWCAST_URL) {
+    console.warn('Cleveland nowcast URL not yet pinned — skipping (panel shows "—" for nowcast). Verify endpoint, set CLEVELAND_NOWCAST_URL.')
+    return null
+  }
+  try {
+    const res = await fetch(CLEVELAND_NOWCAST_URL)
+    if (!res.ok) { console.warn(`Cleveland nowcast: HTTP ${res.status} — skipping. Re-verify CLEVELAND_NOWCAST_URL.`); return null }
+    const raw = await res.text()
+    // Parsing depends on the confirmed payload shape (CSV vs JSON). Once the URL
+    // is pinned, parse here -> { yoy, data_month, as_of }. Log raw on first run.
+    console.warn('Cleveland nowcast: endpoint returned data but parser not yet wired. Raw head:', raw.slice(0, 200))
+    return null
+  } catch (e) {
+    console.warn(`Cleveland nowcast: fetch error — ${e.message}`); return null
+  }
+}
+
+// Assemble the macro_signals blob (spec §4). Regime keys off the nowcast when
+// available (the live read), else falls back to official CPI.
+function buildMacroSignals(quantResult, cpi, nowcast) {
+  const regimeBasis = (nowcast && typeof nowcast.yoy === 'number') ? nowcast.yoy
+    : (cpi && typeof cpi.yoy === 'number') ? cpi.yoy : null
+  const regime = regimeBasis === null ? null : {
+    threshold: REGIME_THRESHOLD,
+    basis: (nowcast && typeof nowcast.yoy === 'number') ? 'nowcast' : 'cpi',
+    value: regimeBasis,
+    above: regimeBasis >= REGIME_THRESHOLD,
+    note: regimeBasis >= REGIME_THRESHOLD
+      ? 'Above 4% — S&P historically negative (1928–present)'
+      : 'Below 4% — S&P historically ~+12% annual',
+  }
+  return {
+    spy: quantResult.spyPrice === null ? null : {
+      price: quantResult.spyPrice, ath: quantResult.spyAth, pct_off_ath: quantResult.spyPctOffAth,
+    },
+    rsi: quantResult.rsi === null ? null : { value: quantResult.rsi, signal: quantResult.signal },
+    cpi: cpi || null,
+    nowcast: nowcast || null,
+    regime,
+    kalshi: null, // reserved for Kalshi Tier 2/3 (inflation/Fed odds) — code-only add later
+  }
+}
+
 
 // ============================================================================
 // AGGREGATION: Bullish Assets Ranking
@@ -1152,7 +1245,7 @@ async function calculatePnL(portfolio, prices, spyPrice) {
 // WRITE COMPLETE DAILY SNAPSHOT
 // ============================================================================
 
-async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl) {
+async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals) {
   console.log('\n========================================')
   console.log('WRITING DAILY SNAPSHOT')
   console.log('========================================')
@@ -1197,6 +1290,7 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
     daily_return_pct: pnl.daily_return_pct,
     cumulative_return_pct: pnl.cumulative_return_pct,
     spy_cumulative_return_pct: pnl.spy_cumulative_return_pct,
+    macro_signals: macroSignals || null,
   }
 
   // Upsert into daily_snapshots
@@ -1256,6 +1350,12 @@ async function main() {
     const crowdSignals = await runCrowdPipeline()
     const quantResult = await runQuantPipeline()
 
+    // Step 1b: Macro signals — CPI (FRED) + Cleveland nowcast + 4% regime.
+    // Both skip-safe; macroSignals always returns a blob (fields null if missing).
+    const cpi = await fetchFredCPI()
+    const nowcast = await fetchClevelandNowcast()
+    const macroSignals = buildMacroSignals(quantResult, cpi, nowcast)
+
     // Step 2: Aggregate bullish assets across all sources
     const bullishAssets = aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult)
 
@@ -1270,7 +1370,7 @@ async function main() {
     const pnl = await calculatePnL(portfolio, prices, quantResult.spyPrice)
 
     // Step 6: Write complete daily snapshot
-    await writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl)
+    await writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals)
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
     console.log('\n╔══════════════════════════════════════════╗')

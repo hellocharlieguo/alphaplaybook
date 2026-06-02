@@ -1,5 +1,4 @@
 import type { Theme } from './Dashboard'
-import SignalRadar from './SignalRadar'
 
 interface SignalRecapProps {
   snapshot: {
@@ -9,6 +8,7 @@ interface SignalRecapProps {
     polymarket_signals: any[] | null
     narrative_signals: any[] | null
     bullish_assets: any[] | null
+    macro_signals?: any | null
   } | null
   theme: Theme
   activeVoices: Set<string>
@@ -18,13 +18,10 @@ interface VoiceSection {
   name: string
   headline: string
   subtitle: string
-  asOf: string          // freshness stamp — when this voice last produced signal
-  active: boolean        // true = feeds radar/engine; false = frozen reference card
   themes: {
     name: string
     editorial: string
     tickers: string[]
-    bucket?: string      // which engine portfolio bucket these tickers map to
   }[]
 }
 
@@ -32,64 +29,82 @@ const VOICES: VoiceSection[] = [
   {
     name: 'Visser',
     headline: 'LONG SCARCITY, SHORT ABUNDANCE',
-    subtitle: 'Jordi Visser — macro framework for the physical AI upgrade',
-    asOf: 'May 2026 (live)',
-    active: true,
+    subtitle: 'Jordi Visser — Macro framework for the physical AI upgrade',
     themes: [
       {
-        name: 'Power & the Physical AI Upgrade',
-        editorial: 'The defining rotation: "I don\'t want to be in semis as much as I want to be in power." Data-center electricity demand is a supply crisis the grid can\'t meet — nuclear, fuel cells, and grid buildout are the binding bottleneck (Stage 3). Power semis are "going through the roof," but the parabolic AI names are where he\'s taking profits, not adding.',
-        tickers: ['CEG', 'BE', 'AIPO', 'COPX', 'WGMI', 'GLW'],
-        bucket: 'Power & Infrastructure',
+        name: 'Semiconductors',
+        editorial: 'The semiconductor industry now represents 17% of the S&P 500 and growing. Visser sees the physical upgrade cycle as early innings — equal-weight exposure captures the breadth of the semi move beyond just the mega-caps, while power semis are "going through the roof" as every data center, EV, and grid node demands more silicon.',
+        tickers: ['XSD'],
       },
       {
-        name: 'Hard Assets & Monetary Scarcity',
-        editorial: 'Gold doubled and silver ran 4-5x last year, then "have been consolidating." With a regime shift toward inflation and pressure on the Fed, he wants to own the scarcity trade: "I want to be in gold. I want to be in silver." Silver is the standout — dual industrial + monetary, sixth-year supply deficit. Copper is the metal of electrification.',
-        tickers: ['SLV', 'GLDM', 'COPX'],
-        bucket: 'Monetary Scarcity & Tokenization',
+        name: 'AI Infrastructure',
+        editorial: 'East-west data center traffic is exploding, driving demand for optical fiber, silicon photonics, and grid infrastructure. Corning is the dominant fiber play, repeatedly named as a core holding. The grid buildout required to power AI is a multi-year capex cycle that most investors are underestimating.',
+        tickers: ['GRID', 'GLW'],
+      },
+      {
+        name: 'Commodities & Hard Assets',
+        editorial: 'Negative real yields and ongoing monetary debasement make hard assets a structural long. Gold, silver, and copper all benefit from the scarcity thesis — these are finite resources in a world printing infinite currency. Copper in particular is the metal of electrification.',
+        tickers: ['GLDM', 'SLV', 'COPX'],
       },
       {
         name: 'Bitcoin & Digital Scarcity',
-        editorial: 'Over 100% of Bitcoin\'s cumulative returns come from one quadrant: negative real yields + an accommodative Fed — exactly the setup he sees forming. He calls BTC the "next parabola," tracing the same long consolidation Micron did before its run, and watches Bitcoin and Dogecoin as signals of when it fires.',
+        editorial: 'Over 100% of Bitcoin\'s cumulative returns since 2010 have come from one quadrant: negative real yields combined with the Fed on hold or easing. When real rates are negative and the Fed is accommodative, BTC outperforms everything. The current macro setup is pointing directly at this quadrant.',
         tickers: ['IBIT'],
-        bucket: 'Monetary Scarcity & Tokenization',
       },
       {
-        name: 'Tokenization — Ownership Becomes Programmable',
-        editorial: 'The next wave, building toward Stage 4. "I bought Ethereum because tokenization reality is going to set in this summer" — referencing the July launch. AI agents "need food and that food is tokens," driving demand for tokens, compute, and real-time coordination, while pressuring traditional SaaS. AI and crypto are "two parts of the same transition."',
-        tickers: ['HOOD'],
-        bucket: 'Monetary Scarcity & Tokenization',
-      },
-      {
-        name: 'Optical & Semiconductors — Selective',
-        editorial: 'Where memory exits and optical stays. He sold his entire Micron position — memory (Stage 1) is exhausted after its parabolic run. But optical/interconnect is still working (Stage 2): Marvell and Corning are the non-memory semis he still wants, the picks-and-shovels of the bandwidth bottleneck. Equal-weight semis capture breadth without the memory mega-cap concentration.',
-        tickers: ['MRVL', 'GLW', 'XSD'],
-        bucket: 'Compute',
+        name: 'Energy & Power',
+        editorial: 'The US has a structural advantage in natural gas, making domestic chemical and energy producers attractive. Meanwhile, data center power demand is creating a supply crisis for utilities — the grid simply cannot keep up with AI\'s appetite for electricity.',
+        tickers: ['XLE', 'XLU'],
       },
     ],
   },
   {
     name: 'Camillo',
     headline: 'BET ON WHAT PEOPLE DO, NOT WHAT MARKETS THINK',
-    subtitle: 'Chris Camillo — social arbitrage and the companies AI will make dominant',
-    asOf: 'Apr 2026 (reference — no recent signal)',
-    active: false,
+    subtitle: 'Chris Camillo — Social arbitrage and the companies AI will make dominant',
     themes: [
       {
         name: 'AI Platform Winners',
-        editorial: 'Amazon is Camillo\'s biggest trade of his career — positioned at the intersection of AI automation, robotics, and logistics to turn efficiency into real-world margin at scale. Robinhood captures the retail fintech and crypto-accessibility wave. (Last reaffirmed Apr 2026; not in the live signal set.)',
+        editorial: 'Amazon is Camillo\'s biggest trade of his career. His thesis: Amazon sits at the intersection of AI automation, robotics, and logistics — the company most positioned to turn AI efficiency into real-world margin expansion at unprecedented scale. Robinhood captures the retail fintech revolution and crypto accessibility for the next generation of investors.',
         tickers: ['AMZN', 'HOOD'],
       },
       {
         name: 'Data Center Energy',
-        editorial: 'Bloom Energy\'s 800-volt DC platform solves a power bottleneck utilities can\'t — on-site power faster than the grid delivers it. Camillo\'s pick-and-shovel play on AI infrastructure: the company that powers the companies that power AI. (Reference view as of Apr 2026.)',
+        editorial: 'Bloom Energy\'s 800-volt DC power platform solves a critical bottleneck that traditional utilities cannot. Data centers need clean, reliable, on-site power faster than the grid can deliver it. Camillo sees BE as the pick-and-shovel play on AI infrastructure demand — the company that powers the companies that power AI.',
         tickers: ['BE'],
       },
     ],
   },
 ]
 
+// Rich thesis context per ticker — shown in bullish asset descriptions
+const TICKER_THESIS: Record<string, string> = {
+  IBIT: 'Visser thesis: over 100% of Bitcoin\'s cumulative returns since 2010 come from negative real yields + Fed on hold/easing. Current macro setup points directly at this quadrant.',
+  XSD: 'Visser thesis: semiconductors are now 17% of the S&P 500 and growing. The physical AI upgrade cycle is in early innings — equal-weight captures the breadth beyond mega-caps.',
+  GRID: 'Visser thesis: the grid buildout required to power AI is a multi-year capex cycle most investors are underestimating. Data center demand is overwhelming existing infrastructure.',
+  GLW: 'Visser thesis: Corning is the dominant fiber play. East-west data center traffic is exploding, driving demand for optical fiber and silicon photonics.',
+  GLDM: 'Visser thesis: negative real yields and monetary debasement make gold a structural long. Finite resource in a world printing infinite currency.',
+  SLV: 'Visser thesis: silver benefits from the same scarcity dynamics as gold, with additional industrial demand from electrification and solar.',
+  COPX: 'Visser thesis: copper is the metal of electrification. Every EV, data center, and grid upgrade requires massive copper input — supply cannot keep up.',
+  XLE: 'Visser thesis: US has a structural natural gas advantage, making domestic energy producers attractive. Chemical companies are "at the beginning of a bull market."',
+  XLU: 'Visser thesis: data center power demand is creating a supply crisis for utilities. The grid cannot keep up with AI\'s appetite for electricity.',
+  BE: 'Camillo thesis: Bloom Energy\'s 800V DC platform solves the data center power bottleneck that traditional utilities cannot. The pick-and-shovel play on AI infrastructure.',
+  AMZN: 'Camillo thesis: Amazon sits at the intersection of AI automation, robotics, and logistics — the company most positioned to turn AI efficiency into real-world margin expansion.',
+  HOOD: 'Camillo thesis: Robinhood captures the retail fintech revolution and crypto accessibility for the next generation of investors.',
+  SGOV: 'Quant-driven cash allocation. Increases when RSI signals overbought conditions to reduce portfolio risk.',
+  SPY: 'Broad market proxy. Appears in rankings when narrative or quant signals reference overall market conditions.',
+}
 
+// Crowd signal context per ticker
+const CROWD_CONTEXT: Record<string, string> = {
+  IBIT: 'Low probability of forced Bitcoin selling by major holders is supportive for price stability and continued accumulation.',
+  GLDM: 'Prediction markets on inflation, Fed policy, or geopolitical risk have implications for gold demand as a safe haven.',
+  XSD: 'Trade policy or tech sector prediction markets mapped to semiconductor exposure.',
+  XLE: 'Energy-related geopolitical markets (sanctions, conflict, oil prices) mapped to energy sector.',
+  SPY: 'Broad macro prediction markets (recession probability, GDP, employment) mapped to S&P 500.',
+  COPX: 'Commodity-related prediction markets mapped to copper exposure.',
+  SLV: 'Precious metals and inflation-related prediction markets mapped to silver.',
+}
 
 export default function SignalRecap({ snapshot, theme: t, activeVoices }: SignalRecapProps) {
   if (!snapshot) {
@@ -98,7 +113,14 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
 
   const crowdSignals = snapshot.polymarket_signals || []
   const rsi = snapshot.spy_rsi
-  const rsiSignal = snapshot.rsi_signal
+  const bullishAssets = snapshot.bullish_assets || []
+  const macro = snapshot.macro_signals || null
+  const fmtMonth = (m: string | null | undefined) => {
+    if (!m) return ''
+    const [y, mo] = m.split('-')
+    const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    return `${names[parseInt(mo, 10) - 1]} ${y}`
+  }
   const visibleVoices = VOICES.filter(v => activeVoices.has(v.name))
 
   return (
@@ -116,11 +138,6 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                 <p style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 13, color: t.textSecondary, margin: '8px 0 0', fontStyle: 'italic' }}>
                   {voice.subtitle}
                 </p>
-                <span style={{ display: 'inline-block', marginTop: 8, fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
-                  background: voice.active ? 'rgba(125,186,106,0.15)' : 'rgba(138,126,110,0.15)',
-                  color: voice.active ? '#7dba6a' : t.textTertiary }}>
-                  {voice.active ? '● Live signal' : '○ Reference'} · {voice.asOf}
-                </span>
               </div>
 
               {/* Theme sections — editorial style */}
@@ -144,14 +161,6 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                   <p style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 13, lineHeight: 1.7, color: t.textSecondary, margin: 0, textAlign: 'justify' }}>
                     {theme.editorial}
                   </p>
-
-                  {/* Engine bucket mapping — shows how this narrative theme maps to a portfolio weighting bucket */}
-                  {theme.bucket && (
-                    <div style={{ marginTop: 8, fontSize: 10, color: t.textTertiary }}>
-                      <span style={{ fontStyle: 'italic' }}>maps to engine bucket:</span>{' '}
-                      <span style={{ fontWeight: 600, color: t.textSecondary }}>{theme.bucket}</span>
-                    </div>
-                  )}
 
                   {/* Separator between themes */}
                   {i < voice.themes.length - 1 && (
@@ -197,38 +206,199 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
           )}
         </div>
 
-        {/* Quant Signal */}
+        {/* Quant Signal — macro regime panel */}
         <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#5ba3c9' }} />
             <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, fontFamily: "'Playfair Display', Georgia, serif" }}>Quant Signal</span>
           </div>
-          {rsi === null ? (
-            <div style={{ fontSize: 13, color: t.textTertiary, padding: '16px 0', fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>No RSI data today.</div>
+          {(rsi === null && !macro) ? (
+            <div style={{ fontSize: 13, color: t.textTertiary, padding: '16px 0', fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>No quant data today.</div>
           ) : (
             <>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
-                <span style={{ fontSize: 13, color: t.textTertiary }}>SPY RSI (14)</span>
-                <span style={{ fontSize: 28, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textPrimary }}>{rsi.toFixed(1)}</span>
-              </div>
-              <div style={{ position: 'relative', height: 6, background: t.sliderTrack, borderRadius: 3, marginBottom: 6 }}>
-                <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${rsi}%`, background: t.mode === 'dark' ? 'linear-gradient(90deg, #7dba6a, #c9a96e, #c9705a)' : 'linear-gradient(90deg, #2d8a5e, #c9a96e, #c44e4e)', borderRadius: 3 }} />
-                <div style={{ position: 'absolute', left: '25%', top: -2, width: 1, height: 10, background: t.border }} />
-                <div style={{ position: 'absolute', left: '70%', top: -2, width: 1, height: 10, background: t.border }} />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: t.textTertiary }}>
-                <span>0</span><span>Oversold &lt;25</span><span>Overbought &gt;70</span><span>100</span>
-              </div>
-              <p style={{ marginTop: 12, fontSize: 13, color: t.textSecondary, fontFamily: "'Libre Baskerville', Georgia, serif", lineHeight: 1.6 }}>
-                {rsiSignal === 'oversold' ? 'The market is oversold — historically a signal for a near-term bounce. Favoring risk-on positions.' : rsiSignal === 'overbought' ? 'The market is overbought — prudent to trim risk exposure and rotate toward safety positions until conditions normalize.' : 'Neutral positioning — the market is neither stretched nor compressed. Holding current allocations steady.'}
-              </p>
+              {/* SPY price + off ATH */}
+              {macro?.spy && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 13, color: t.textTertiary }}>SPY</span>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: 22, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary }}>${macro.spy.price?.toFixed(2)}</span>
+                      {macro.spy.pct_off_ath != null && (
+                        <span style={{ fontSize: 12, color: macro.spy.pct_off_ath > -1 ? t.negative : t.textTertiary, marginLeft: 8 }}>{Math.abs(macro.spy.pct_off_ath).toFixed(1)}% off ATH</span>
+                      )}
+                    </div>
+                  </div>
+                  {macro.spy.ath != null && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+                      <span style={{ fontSize: 11, color: t.textTertiary }}>ATH ${macro.spy.ath?.toFixed(2)}</span>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* SPY RSI — demoted compact line + bar */}
+              {rsi !== null && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, color: t.textTertiary }}>SPY RSI (14)</span>
+                    <span style={{ fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textPrimary }}>{rsi.toFixed(1)}</span>
+                  </div>
+                  <div style={{ position: 'relative', height: 6, background: t.sliderTrack, borderRadius: 3, marginBottom: 4 }}>
+                    <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${rsi}%`, background: t.mode === 'dark' ? 'linear-gradient(90deg, #7dba6a, #c9a96e, #c9705a)' : 'linear-gradient(90deg, #2d8a5e, #c9a96e, #c44e4e)', borderRadius: 3 }} />
+                    <div style={{ position: 'absolute', left: '25%', top: -2, width: 1, height: 10, background: t.border }} />
+                    <div style={{ position: 'absolute', left: '70%', top: -2, width: 1, height: 10, background: t.border }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: t.textTertiary, marginBottom: 16 }}>
+                    <span>0</span><span>Oversold &lt;25</span><span>Overbought &gt;70</span><span>100</span>
+                  </div>
+                </>
+              )}
+
+              {/* Inflation block */}
+              {macro && (macro.cpi || macro.nowcast) && (
+                <div style={{ borderTop: `1px solid ${t.border}`, paddingTop: 16 }}>
+                  {/* Official CPI */}
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <span style={{ fontSize: 13, color: t.textTertiary }}>CPI</span>
+                      <span style={{ fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', background: t.badgeBg, color: t.badgeText, padding: '2px 6px', borderRadius: 3, fontFamily: "'Playfair Display', Georgia, serif" }}>official</span>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary }}>{macro.cpi?.yoy != null ? `${macro.cpi.yoy.toFixed(1)}%` : '—'}</span>
+                      {macro.cpi?.yoy != null && <span style={{ fontSize: 11, color: t.textTertiary, marginLeft: 4 }}>YoY</span>}
+                    </div>
+                  </div>
+                  {macro.cpi?.data_month && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+                      <span style={{ fontSize: 11, color: t.textTertiary }}>{fmtMonth(macro.cpi.data_month)}{macro.cpi.release_date ? ` · ${macro.cpi.release_approx ? '~' : ''}released ${fmtMonth(macro.cpi.release_date.slice(0, 7))}` : ''}</span>
+                    </div>
+                  )}
+
+                  {/* Cleveland Fed nowcast */}
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <span style={{ fontSize: 13, color: t.textTertiary }}>Cleveland Fed nowcast</span>
+                      <span style={{ fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', background: 'rgba(91,163,201,0.16)', color: '#5ba3c9', padding: '2px 6px', borderRadius: 3, fontFamily: "'Playfair Display', Georgia, serif" }}>forecast</span>
+                    </div>
+                    <span style={{ fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: macro.nowcast?.yoy != null ? (macro.nowcast.yoy >= 4 ? t.negative : t.textPrimary) : t.textTertiary }}>{macro.nowcast?.yoy != null ? `${macro.nowcast.yoy.toFixed(1)}%` : '—'}</span>
+                  </div>
+                  {macro.nowcast?.data_month && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+                      <span style={{ fontSize: 11, color: t.textTertiary }}>{fmtMonth(macro.nowcast.data_month)} est{macro.nowcast.as_of ? ` · as of ${fmtMonth(macro.nowcast.as_of.slice(0, 7))}` : ''}</span>
+                    </div>
+                  )}
+
+                  {/* 4% regime line */}
+                  {macro.regime && (
+                    <div style={{ background: macro.regime.above ? 'rgba(201,112,90,0.13)' : 'rgba(125,186,106,0.12)', border: `1px solid ${macro.regime.above ? 'rgba(201,112,90,0.3)' : 'rgba(125,186,106,0.3)'}`, borderRadius: 7, padding: '12px 14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
+                        <span style={{ fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase', color: macro.regime.above ? t.negative : t.positive, fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 700 }}>{macro.regime.above ? 'Above 4% regime' : 'Below 4% regime'}</span>
+                        <span style={{ fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: macro.regime.above ? t.negative : t.positive }}>{macro.regime.value?.toFixed(1)}% {macro.regime.above ? '>' : '<'} {macro.regime.threshold?.toFixed(1)}%</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: 12, color: t.textSecondary, fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic', lineHeight: 1.6 }}>{macro.regime.note}.</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
       </div>
 
-      {/* Signal Radar — what Visser is emphasizing now (themes + stage, not weights) */}
-      <SignalRadar theme={t} />
+      {/* Bullish Assets */}
+      {bullishAssets.length > 0 && (
+        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: '20px 24px', marginTop: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: t.textPrimary, fontFamily: "'Playfair Display', Georgia, serif" }}>Bullish Asset Rankings</span>
+            <span style={{ fontSize: 11, color: t.textTertiary }}>{bullishAssets.length} tickers</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {bullishAssets.map((asset: any, i: number) => {
+              const sourceColors: Record<string, { bg: string; text: string; label: string }> = {
+                narrative: { bg: 'rgba(176,140,214,0.12)', text: '#b08cd6', label: 'Narrative' },
+                crowd: { bg: 'rgba(201,169,110,0.12)', text: t.accent, label: 'Crowd' },
+                quant: { bg: 'rgba(91,163,201,0.12)', text: '#5ba3c9', label: 'Quant' },
+              }
+
+              return (
+                <div key={i} style={{ padding: '12px 14px', background: t.surfaceSubtle, borderRadius: 8 }}>
+                  {/* Top row: rank, ticker, convergence */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 11, color: t.textTertiary, fontFamily: 'ui-monospace, SFMono-Regular, monospace', width: 20 }}>#{i + 1}</span>
+                      <span style={{ fontSize: 16, fontWeight: 600, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary }}>{asset.ticker}</span>
+                      {/* Source badges */}
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        {(asset.sources || []).map((src: string, j: number) => {
+                          const sc = sourceColors[src] || sourceColors.narrative
+                          return <span key={j} style={{ fontSize: 10, background: sc.bg, color: sc.text, padding: '2px 7px', borderRadius: 3 }}>{sc.label}</span>
+                        })}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', padding: '2px 8px', borderRadius: 4, background: asset.source_count >= 3 ? 'rgba(125,186,106,0.15)' : asset.source_count >= 2 ? 'rgba(201,169,110,0.15)' : t.badgeBg, color: asset.source_count >= 3 ? t.positive : asset.source_count >= 2 ? t.accent : t.textTertiary }}>{asset.convergence}</span>
+                  </div>
+
+                  {/* Signal descriptions */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 32 }}>
+                    {(asset.signals || []).map((sig: any, k: number) => {
+                      const sc = sourceColors[sig.source] || sourceColors.narrative
+                      const conviction = sig.conviction || 'medium'
+                      const convictionExplain = conviction === 'high'
+                        ? 'High conviction — strong bullish language detected ("pounding the table", "biggest opportunity", "generational")'
+                        : conviction === 'medium'
+                          ? 'Medium conviction — bullish language present but no extreme phrases'
+                          : 'Low conviction — mentioned but without strong directional language'
+
+                      let description: { main: string; context: string } = { main: '', context: '' }
+
+                      if (sig.source === 'narrative') {
+                        const videoTitle = sig.video_title || sig.quote || ''
+                        const thesisContext = TICKER_THESIS[asset.ticker] || ''
+                        description = {
+                          main: videoTitle
+                            ? `Visser's latest: "${videoTitle}"`
+                            : `${sig.asset || asset.ticker} detected in narrative pipeline`,
+                          context: thesisContext
+                            ? `${thesisContext} ${convictionExplain}.`
+                            : `${convictionExplain}.`,
+                        }
+                      } else if (sig.source === 'crowd') {
+                        const prob = ((sig.probability || 0) * 100).toFixed(0)
+                        const marketQ = sig.market || 'Polymarket signal'
+                        const crowdContext = CROWD_CONTEXT[asset.ticker] || `Prediction market activity mapped to ${asset.ticker}.`
+                        description = {
+                          main: `"${marketQ}" at ${prob}%`,
+                          context: crowdContext,
+                        }
+                      } else if (sig.source === 'quant') {
+                        const indicator = sig.indicator || 'SPY RSI'
+                        description = {
+                          main: `${indicator}`,
+                          context: conviction === 'medium'
+                            ? 'RSI below 25 signals market is oversold — historically a bounce follows within days. Favoring risk-on positions.'
+                            : 'RSI signal active — monitoring for positioning opportunity.',
+                        }
+                      }
+
+                      return (
+                        <div key={k} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 12, lineHeight: 1.6 }}>
+                          <span style={{ color: sc.text, flexShrink: 0, marginTop: 2 }}>•</span>
+                          <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif" }}>
+                            <span style={{ color: t.textPrimary }}>{description.main}</span>
+                            {description.context && (
+                              <span style={{ color: t.textSecondary }}> — {description.context}</span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
