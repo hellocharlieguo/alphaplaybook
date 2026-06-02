@@ -767,14 +767,17 @@ async function fetchFredCPI() {
     return null
   }
   try {
-    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCNS&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=13`
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCNS&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=25`
     const res = await fetch(url)
     if (!res.ok) { console.warn(`FRED CPI: HTTP ${res.status} — skipping`); return null }
     const data = await res.json()
-    const obs = (data?.observations || []).filter((o) => o.value !== '.')
-    if (obs.length < 13) { console.warn(`FRED CPI: only ${obs.length} obs, need 13 for YoY — skipping`); return null }
-    const latest = obs[0]            // most recent month
-    const yearAgo = obs[12]          // 12 months prior
+    const obs = (data?.observations || []).filter((o) => o.value && o.value !== '.')
+    if (obs.length < 13) { console.warn(`FRED CPI: only ${obs.length} valid obs, need 13 for YoY — skipping`); return null }
+    const latest = obs[0]            // most recent released month
+    // Year-ago value: match by year-month (robust to gaps/missing months), fall back to index 12.
+    const ld = new Date(latest.date)
+    const targetYM = `${ld.getFullYear() - 1}-${String(ld.getMonth() + 1).padStart(2, '0')}`
+    const yearAgo = obs.find((o) => o.date.slice(0, 7) === targetYM) || obs[12]
     const yoy = Math.round(((parseFloat(latest.value) - parseFloat(yearAgo.value)) / parseFloat(yearAgo.value)) * 1000) / 10
     const dataMonth = latest.date.slice(0, 7) // YYYY-MM (FRED obs date = 1st of data month)
     // BLS releases CPI ~mid the following month. Approximate (labeled ~ in UI).
