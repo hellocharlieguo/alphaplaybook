@@ -801,39 +801,44 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // MODEL PORTFOLIO COMPUTATION
 // ============================================================================
 
-// AlphaPlaybook model portfolio — 13 tickers across 6 themes + cash
+// AlphaPlaybook model portfolio — 17 tickers across 6 themes + cash
 // North star: "Long scarcity, short abundance"
-// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.1 (RESCORED 2026-05-28)
-// Source: AlphaPlaybook_Sleeves_5_28_26.md + "Portfolio Construction" session.
-// Rescored from the latest 5 Visser transcripts (5/10, 5/16, 5/17, 5/23, 5/24).
-// v2.1 changes baked into these weights:
-//   - S5 anti-momentum penalizes VELOCITY + STAGE-EXHAUSTION, not proximity-to-high.
-//   - WGMI up 74.1 -> 79.0 (miners pivoting to AI compute / signed HPC contracts).
-//   - GLW 68.7 -> 74.8, MRVL 67.2 -> 72.4 (optical = Stage-2 EARLY, not mid-cycle).
-//   - Chemicals name corrected to ENTG (Entegris).
-// Params: 17 holdings, top weight 18%, CEG capped 12%, cash floor ~5% (SGOV 4.5%), k=6.75.
+// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.2 (RESCORED 2026-05-28, REWEIGHTED 2026-06-01)
+// Source: AlphaPlaybook_Sleeves_5_28_26.md + "Portfolio Construction" session (Rule B).
+// v2.2 change (2026-06-01): SINGLE-NAME REDUNDANCY DISCOUNT ("Rule B").
+//   A single stock whose THEME is already held via a thematic ETF takes an
+//   idiosyncratic-risk haircut on its WEIGHTING SCORE only:
+//     weighting_score = 45 + (composite - 45) * lambda,  lambda = 0.814
+//   composite/tier labels are UNCHANGED (raw scores still drive trim/exit logic).
+//   Redundant names (inside AIPO): CEG (~3.5% of AIPO) + BE (~6% of AIPO).
+//   Exempt: ETFs, and optical single names GLW/MRVL (no thematic ETF covers optical;
+//   trivial XSD membership does NOT count as theme coverage).
+//   This REPLACES the old ad-hoc 12% single-stock cap on CEG — the scoring rule
+//   now does that job. Effect: CEG 12.0 -> 7.5, AIPO 10.0 -> 10.5 (theme now
+//   outweighs the single name), BE 4.0 -> 2.5; freed weight lifts GLW/MRVL/ETFs.
+// Params: 17 holdings, top weight 18%, cash floor ~5% (SGOV 5.5%), k=6.03. NO single-stock cap.
 // These are FINAL engine output and ship as-is — the nightly boost is DISABLED below.
 // `action` = composite-tier label for the Portfolio tab Action column
 //   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
-// Comments after each line are the engine composite scores.
+// Comments after each line are the engine composite scores (UNDISCOUNTED).
 const BASE_PORTFOLIO = {
-  SLV:  { base_weight: 18,  theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },     // 82.8
-  CEG:  { base_weight: 12,  theme: 'Power & Infrastructure',           action: 'Strong Entry' },     // 83.9 (capped)
-  WGMI: { base_weight: 10,  theme: 'Power & Infrastructure',           action: 'Enter' },             // 79.0
-  AIPO: { base_weight: 10,  theme: 'Power & Infrastructure',           action: 'Enter' },             // 79.0
-  IBIT: { base_weight: 6.5, theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },             // 76.2
-  GLDM: { base_weight: 6,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },             // 75.8
-  GLW:  { base_weight: 5,   theme: 'Compute',                          action: 'Enter' },             // 74.8
-  SGOV: { base_weight: 4.5, theme: 'Cash', min_weight: 3,              action: 'Hold' },              // cash floor
-  TXN:  { base_weight: 4,   theme: 'Power & Infrastructure',           action: 'Enter' },             // 73.1
-  FLNC: { base_weight: 4,   theme: 'Power & Infrastructure',           action: 'Starter / Watch' },   // 72.8
-  BE:   { base_weight: 4,   theme: 'Power & Infrastructure',           action: 'Hold' },              // 72.4
-  MRVL: { base_weight: 4,   theme: 'Compute',                          action: 'Starter / Watch' },   // 72.4
-  ETHA: { base_weight: 3,   theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },   // 69.5
-  ENTG: { base_weight: 2.5, theme: 'Compute',                          action: 'Starter / Watch' },   // 69.2
-  COPX: { base_weight: 2.5, theme: 'Power & Infrastructure',           action: 'Hold' },              // 67.2 (structural)
-  HOOD: { base_weight: 2,   theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },   // 58.4
-  XSD:  { base_weight: 2,   theme: 'Compute',                          action: 'Starter / Watch' },   // 51.2
+  SLV:  { base_weight: 18,   theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },     // 82.8
+  WGMI: { base_weight: 10.5, theme: 'Power & Infrastructure',           action: 'Enter' },             // 79.0
+  AIPO: { base_weight: 10.5, theme: 'Power & Infrastructure',           action: 'Enter' },             // 79.0
+  CEG:  { base_weight: 7.5,  theme: 'Power & Infrastructure',           action: 'Strong Entry' },     // 83.9 (Rule B: redundant w/ AIPO -> 7.5)
+  IBIT: { base_weight: 7,    theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },             // 76.2
+  GLDM: { base_weight: 6.5,  theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },             // 75.8
+  GLW:  { base_weight: 6,    theme: 'Compute',                          action: 'Enter' },             // 74.8
+  SGOV: { base_weight: 5.5,  theme: 'Cash', min_weight: 3,              action: 'Hold' },              // cash floor
+  TXN:  { base_weight: 4.5,  theme: 'Power & Infrastructure',           action: 'Enter' },             // 73.1
+  FLNC: { base_weight: 4.5,  theme: 'Power & Infrastructure',           action: 'Starter / Watch' },   // 72.8
+  MRVL: { base_weight: 4.5,  theme: 'Compute',                          action: 'Starter / Watch' },   // 72.4
+  ETHA: { base_weight: 3,    theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },   // 69.5
+  ENTG: { base_weight: 3,    theme: 'Compute',                          action: 'Starter / Watch' },   // 69.2
+  BE:   { base_weight: 2.5,  theme: 'Power & Infrastructure',           action: 'Hold' },              // 72.4 (Rule B: redundant w/ AIPO -> 2.5)
+  COPX: { base_weight: 2.5,  theme: 'Power & Infrastructure',           action: 'Hold' },              // 67.2 (structural)
+  HOOD: { base_weight: 2,    theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },   // 58.4
+  XSD:  { base_weight: 2,    theme: 'Compute',                          action: 'Starter / Watch' },   // 51.2
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {

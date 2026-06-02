@@ -1,13 +1,8 @@
 // server/daily-cron.cjs
-// AlphaPlaybook Daily Orchestrator — v4 (11-ticker portfolio)
+// AlphaPlaybook Daily Orchestrator
 // Runs: narrative → crowd → quant → aggregate bullish assets →
 //       compute model portfolio → fetch prices → calculate P&L →
 //       write complete daily_snapshot to Supabase
-//
-// v4 changes (5/11/26):
-//   - Portfolio: dropped GRID/BE/XLE, added AIPO at 16.5% (AI Power Stack)
-//   - Price freshness guard: skip writing rows if Alpha Vantage returns
-//     no quote, so bad/stale values never pollute portfolio_holdings
 //
 // Schedule: 0 23 * * * (7pm ET = 23:00 UTC)
 // Deploy: Render.com cron job
@@ -16,6 +11,12 @@ const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
 // --- Config ---
+// Finnhub: current prices (free tier, 60 calls/min, no daily cap). /quote endpoint.
+// Alpha Vantage: retained ONLY for the SPY daily series used to compute RSI
+// (single TIME_SERIES_DAILY call/day — never the source of the rate-limit issue).
+// NOTE: Finnhub's /stock/candle endpoint is premium-only on the free tier
+// (returns "You don't have access to this resource."), so SPY history stays on AV.
+const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY
 const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_KEY
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
@@ -66,11 +67,11 @@ const ASSET_KEYWORDS = {
   'gold': { ticker: 'GLDM', asset: 'Gold', category: 'commodity', exact: true },
   'silver': { ticker: 'SLV', asset: 'Silver', category: 'commodity' },
   'copper': { ticker: 'COPX', asset: 'Copper', category: 'commodity' },
-  'oil price': { ticker: 'AIPO', asset: 'Oil', category: 'commodity' },
-  'crude oil': { ticker: 'AIPO', asset: 'Oil/Energy', category: 'commodity' },
-  'energy sector': { ticker: 'AIPO', asset: 'Energy', category: 'commodity' },
-  'energy stocks': { ticker: 'AIPO', asset: 'Energy', category: 'commodity' },
-  'natural gas': { ticker: 'AIPO', asset: 'Natural Gas', category: 'commodity' },
+  'oil price': { ticker: 'XLE', asset: 'Oil', category: 'commodity' },
+  'crude oil': { ticker: 'XLE', asset: 'Oil/Energy', category: 'commodity' },
+  'energy sector': { ticker: 'XLE', asset: 'Energy', category: 'commodity' },
+  'energy stocks': { ticker: 'XLE', asset: 'Energy', category: 'commodity' },
+  'natural gas': { ticker: 'XLE', asset: 'Natural Gas', category: 'commodity' },
   'uranium': { ticker: 'URA', asset: 'Uranium', category: 'commodity' },
   'commodities': { ticker: 'COPX', asset: 'Commodities', category: 'commodity' },
   'semiconductor': { ticker: 'XSD', asset: 'Semiconductors', category: 'equity' },
@@ -92,18 +93,9 @@ const ASSET_KEYWORDS = {
   'emerging market': { ticker: 'VWO', asset: 'Emerging Markets', category: 'equity' },
   'data center': { ticker: 'XSD', asset: 'Data Centers', category: 'equity' },
   'data centers': { ticker: 'XSD', asset: 'Data Centers', category: 'equity' },
-  'infrastructure': { ticker: 'AIPO', asset: 'Infrastructure', category: 'equity' },
-  'power grid': { ticker: 'AIPO', asset: 'Power Grid', category: 'equity' },
-  'electric grid': { ticker: 'AIPO', asset: 'Electric Grid', category: 'equity' },
-  'data center power': { ticker: 'AIPO', asset: 'Data Center Power', category: 'equity' },
-  'power demand': { ticker: 'AIPO', asset: 'Power Demand', category: 'equity' },
-  'gas turbine': { ticker: 'AIPO', asset: 'Gas Turbines', category: 'equity' },
-  'electrification': { ticker: 'AIPO', asset: 'Electrification', category: 'equity' },
-  'fuel cell': { ticker: 'AIPO', asset: 'Fuel Cells (Bloom)', category: 'equity' },
-  'bloom energy': { ticker: 'AIPO', asset: 'Bloom Energy', category: 'equity' },
-  'quanta': { ticker: 'AIPO', asset: 'Quanta Services', category: 'equity' },
-  'vertiv': { ticker: 'AIPO', asset: 'Vertiv', category: 'equity' },
-  'ge vernova': { ticker: 'AIPO', asset: 'GE Vernova', category: 'equity' },
+  'infrastructure': { ticker: 'GRID', asset: 'Infrastructure', category: 'equity' },
+  'power grid': { ticker: 'GRID', asset: 'Power Grid', category: 'equity' },
+  'electric grid': { ticker: 'GRID', asset: 'Electric Grid', category: 'equity' },
   'bonds': { ticker: 'TLT', asset: 'Bonds', category: 'fixed_income' },
   'treasuries': { ticker: 'TLT', asset: 'Treasuries', category: 'fixed_income' },
   'treasury': { ticker: 'TLT', asset: 'Treasuries', category: 'fixed_income' },
@@ -129,13 +121,13 @@ const ASSET_KEYWORDS = {
   'abundance': { ticker: 'XSD', asset: 'Abundance Trade', category: 'macro' },
   'tariff': { ticker: 'VEA', asset: 'Tariffs/Trade', category: 'macro' },
   'trade war': { ticker: 'VEA', asset: 'Trade War', category: 'macro_bearish' },
-  'sanctions': { ticker: 'GLDM', asset: 'Sanctions', category: 'macro' },
+  'sanctions': { ticker: 'XLE', asset: 'Sanctions', category: 'macro' },
   'war': { ticker: 'GLDM', asset: 'War/Conflict', category: 'geopolitical', exact: true },
   'military': { ticker: 'PPA', asset: 'Military/Defense', category: 'geopolitical' },
   'geopolitical': { ticker: 'GLDM', asset: 'Geopolitical Risk', category: 'geopolitical' },
-  'iran': { ticker: 'GLDM', asset: 'Iran Risk', category: 'geopolitical', exact: true },
+  'iran': { ticker: 'XLE', asset: 'Iran Risk', category: 'geopolitical', exact: true },
   'china': { ticker: 'XSD', asset: 'China Risk', category: 'geopolitical', exact: true },
-  'russia': { ticker: 'GLDM', asset: 'Russia Risk', category: 'geopolitical' },
+  'russia': { ticker: 'XLE', asset: 'Russia Risk', category: 'geopolitical' },
   'ukraine': { ticker: 'GLDM', asset: 'Ukraine Conflict', category: 'geopolitical' },
   'nuclear': { ticker: 'GLDM', asset: 'Nuclear Risk', category: 'geopolitical' },
 }
@@ -408,7 +400,7 @@ function mapMarketToAssets(question, probability) {
   // Inflation / CPI
   if (q.includes('inflation') || q.includes('cpi')) {
     if ((q.includes('above') || q.includes('over') || q.includes('high') || q.includes('rise')) && probability > 0.60) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'COPX', 'AIPO', 'IBIT'], conviction: 'medium' }
+      return { direction: 'bullish', mapped_assets: ['GLDM', 'COPX', 'XLE', 'IBIT'], conviction: 'medium' }
     }
     if ((q.includes('below') || q.includes('under') || q.includes('fall') || q.includes('drop')) && probability > 0.60) {
       return { direction: 'bullish', mapped_assets: ['TLT', 'XSD', 'SPY'], conviction: 'medium' }
@@ -461,16 +453,15 @@ function mapMarketToAssets(question, probability) {
     return { direction: 'neutral', mapped_assets: ['IBIT'], conviction: 'low' }
   }
 
-  // Oil / crude (mapped to AIPO since XLE was dropped; AIPO has GE Vernova
-  // gas turbines + nuclear utilities which benefit from energy demand)
+  // Oil / crude
   if (q.includes('oil') || q.includes('crude') || q.includes('wti') || q.includes('brent')) {
     if ((q.includes('above') || q.includes('over') || q.includes('rise') || q.includes('spike')) && probability > 0.50) {
-      return { direction: 'bullish', mapped_assets: ['AIPO'], conviction: 'medium' }
+      return { direction: 'bullish', mapped_assets: ['XLE'], conviction: 'medium' }
     }
     if ((q.includes('below') || q.includes('under') || q.includes('drop') || q.includes('fall')) && probability > 0.50) {
-      return { direction: 'bearish', mapped_assets: ['AIPO'], conviction: 'medium' }
+      return { direction: 'bearish', mapped_assets: ['XLE'], conviction: 'medium' }
     }
-    return { direction: 'neutral', mapped_assets: ['AIPO'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['XLE'], conviction: 'low' }
   }
 
   // Gold
@@ -499,12 +490,12 @@ function mapMarketToAssets(question, probability) {
   if (q.includes('russia') || q.includes('ukraine') || q.includes('putin') || q.includes('zelensky')) {
     if (q.includes('ceasefire') || q.includes('peace') || q.includes('deal') || q.includes('end')) {
       if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['VEA', 'SPY'], conviction: 'medium' }
-      return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
+      return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
     }
     if ((q.includes('escalat') || q.includes('nuclear') || q.includes('nato') || q.includes('expand')) && probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'SGOV'], conviction: 'high' }
+      return { direction: 'bullish', mapped_assets: ['GLDM', 'XLE', 'SGOV'], conviction: 'high' }
     }
-    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['GLDM', 'XLE'], conviction: 'low' }
   }
 
   // China-Taiwan
@@ -513,21 +504,21 @@ function mapMarketToAssets(question, probability) {
     return { direction: 'neutral', mapped_assets: ['XSD', 'GLDM'], conviction: 'low' }
   }
 
-  // Iran (oil/gas disruption → AIPO via energy demand, GLDM as classic hedge)
+  // Iran
   if (q.includes('iran') && (q.includes('war') || q.includes('strike') || q.includes('attack') || q.includes('nuclear') || q.includes('military'))) {
-    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['GLDM', 'AIPO'], conviction: 'high' }
-    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
+    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['XLE', 'GLDM'], conviction: 'high' }
+    return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
   }
 
   // Israel / Middle East
   if (q.includes('israel') || q.includes('gaza') || q.includes('hamas') || q.includes('hezbollah') || q.includes('middle east')) {
     if (q.includes('ceasefire') || q.includes('peace') || q.includes('deal')) {
-      if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['GLDM'], conviction: 'low' }
+      if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
     }
     if ((q.includes('escalat') || q.includes('war') || q.includes('invasion') || q.includes('expand')) && probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'AIPO', 'SGOV'], conviction: 'high' }
+      return { direction: 'bullish', mapped_assets: ['XLE', 'GLDM', 'SGOV'], conviction: 'high' }
     }
-    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
+    return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
   }
 
   // North Korea
@@ -543,13 +534,13 @@ function mapMarketToAssets(question, probability) {
     if (q.includes('ceasefire') || q.includes('peace') || q.includes('end') || q.includes('withdraw')) {
       if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['VEA', 'SPY'], conviction: 'medium' }
     }
-    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['GLDM', 'AIPO', 'SGOV'], conviction: 'medium' }
-    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
+    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['GLDM', 'XLE', 'SGOV'], conviction: 'medium' }
+    return { direction: 'neutral', mapped_assets: ['GLDM', 'XLE'], conviction: 'low' }
   }
 
   // Sanctions
   if (q.includes('sanction')) {
-    if (probability > 0.50) return { direction: 'neutral', mapped_assets: ['GLDM', 'COPX'], conviction: 'medium' }
+    if (probability > 0.50) return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM', 'COPX'], conviction: 'medium' }
     return { direction: 'neutral', mapped_assets: ['SPY'], conviction: 'low' }
   }
 
@@ -810,21 +801,39 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // MODEL PORTFOLIO COMPUTATION
 // ============================================================================
 
-// AlphaPlaybook model portfolio — v4: 11 tickers across 7 themes + cash
+// AlphaPlaybook model portfolio — 13 tickers across 6 themes + cash
 // North star: "Long scarcity, short abundance"
-// v4 changes: GRID + BE + XLE → consolidated into AIPO (16.5%)
+// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.1 (RESCORED 2026-05-28)
+// Source: AlphaPlaybook_Sleeves_5_28_26.md + "Portfolio Construction" session.
+// Rescored from the latest 5 Visser transcripts (5/10, 5/16, 5/17, 5/23, 5/24).
+// v2.1 changes baked into these weights:
+//   - S5 anti-momentum penalizes VELOCITY + STAGE-EXHAUSTION, not proximity-to-high.
+//   - WGMI up 74.1 -> 79.0 (miners pivoting to AI compute / signed HPC contracts).
+//   - GLW 68.7 -> 74.8, MRVL 67.2 -> 72.4 (optical = Stage-2 EARLY, not mid-cycle).
+//   - Chemicals name corrected to ENTG (Entegris).
+// Params: 17 holdings, top weight 18%, CEG capped 12%, cash floor ~5% (SGOV 4.5%), k=6.75.
+// These are FINAL engine output and ship as-is — the nightly boost is DISABLED below.
+// `action` = composite-tier label for the Portfolio tab Action column
+//   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
+// Comments after each line are the engine composite scores.
 const BASE_PORTFOLIO = {
-  XSD:  { base_weight: 15,  theme: 'Semiconductors' },
-  GLW:  { base_weight: 5,   theme: 'AI Infrastructure' },
-  AIPO: { base_weight: 16.5, theme: 'AI Infrastructure' },
-  GLDM: { base_weight: 7,   theme: 'Commodities / Hard Assets' },
-  SLV:  { base_weight: 7,   theme: 'Commodities / Hard Assets' },
-  COPX: { base_weight: 7,   theme: 'Commodities / Hard Assets' },
-  IBIT: { base_weight: 19,  theme: 'Bitcoin / Digital Scarcity' },
-  XLU:  { base_weight: 8.5, theme: 'Utilities' },
-  HOOD: { base_weight: 5,   theme: 'AI Platform Winners' },
-  AMZN: { base_weight: 5,   theme: 'AI Platform Winners' },
-  SGOV: { base_weight: 5,   theme: 'Cash', min_weight: 3 },
+  SLV:  { base_weight: 18,  theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },     // 82.8
+  CEG:  { base_weight: 12,  theme: 'Power & Infrastructure',           action: 'Strong Entry' },     // 83.9 (capped)
+  WGMI: { base_weight: 10,  theme: 'Power & Infrastructure',           action: 'Enter' },             // 79.0
+  AIPO: { base_weight: 10,  theme: 'Power & Infrastructure',           action: 'Enter' },             // 79.0
+  IBIT: { base_weight: 6.5, theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },             // 76.2
+  GLDM: { base_weight: 6,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },             // 75.8
+  GLW:  { base_weight: 5,   theme: 'Compute',                          action: 'Enter' },             // 74.8
+  SGOV: { base_weight: 4.5, theme: 'Cash', min_weight: 3,              action: 'Hold' },              // cash floor
+  TXN:  { base_weight: 4,   theme: 'Power & Infrastructure',           action: 'Enter' },             // 73.1
+  FLNC: { base_weight: 4,   theme: 'Power & Infrastructure',           action: 'Starter / Watch' },   // 72.8
+  BE:   { base_weight: 4,   theme: 'Power & Infrastructure',           action: 'Hold' },              // 72.4
+  MRVL: { base_weight: 4,   theme: 'Compute',                          action: 'Starter / Watch' },   // 72.4
+  ETHA: { base_weight: 3,   theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },   // 69.5
+  ENTG: { base_weight: 2.5, theme: 'Compute',                          action: 'Starter / Watch' },   // 69.2
+  COPX: { base_weight: 2.5, theme: 'Power & Infrastructure',           action: 'Hold' },              // 67.2 (structural)
+  HOOD: { base_weight: 2,   theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },   // 58.4
+  XSD:  { base_weight: 2,   theme: 'Compute',                          action: 'Starter / Watch' },   // 51.2
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {
@@ -832,43 +841,21 @@ function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('COMPUTING MODEL PORTFOLIO')
   console.log('========================================')
 
-  // Start with base weights
+  // Start with base weights.
+  // NOTE (2026-05-28): The nightly convergence-boost + RSI-trim logic is DISABLED.
+  // base_weights are now FINAL Decision Engine v2.1 output. The old boost
+  // (+1..+5% per converging ticker, -10% RSI trim) double-counted the very signals
+  // the engine already prices into the weight, and made live weights drift from the
+  // validated sleeve. Principle: "fix scores, not weights." The cron reports engine
+  // weights and tracks P&L; it does not re-adjust them. (Re-enable only when T3 wires
+  // the six sub-scores into a live composite that REPLACES base_weight.)
+  // bullishAssets/quantResult stay in the signature (passed by main) for that future.
   const portfolio = {}
   for (const [ticker, config] of Object.entries(BASE_PORTFOLIO)) {
     portfolio[ticker] = { ...config, weight: config.base_weight, adjustments: [] }
   }
 
-  // Apply signal-driven adjustments
-  // Tickers with bullish convergence get a boost; max +5% per ticker
-  for (const asset of bullishAssets) {
-    const ticker = asset.ticker
-    if (!portfolio[ticker]) continue
-
-    let boost = 0
-    if (asset.source_count >= 3) boost = 5        // 3/3 convergence: strong boost
-    else if (asset.source_count >= 2) boost = 3    // 2/3 convergence: moderate boost
-    else if (asset.score >= 3) boost = 2           // single source but high conviction
-    else boost = 1                                  // single source, moderate
-
-    portfolio[ticker].weight += boost
-    portfolio[ticker].adjustments.push(`+${boost}% (${asset.convergence} convergence)`)
-  }
-
-  // If RSI is overbought, trim higher-risk themes slightly
-  if (quantResult.signal === 'overbought') {
-    const riskThemes = ['Semiconductors', 'AI Platform Winners', 'Bitcoin / Digital Scarcity']
-    for (const [ticker, pos] of Object.entries(portfolio)) {
-      if (riskThemes.includes(pos.theme)) {
-        const reduction = Math.round(pos.weight * 0.1) // Reduce by 10%
-        portfolio[ticker].weight -= reduction
-        portfolio[ticker].adjustments.push(`-${reduction}% (RSI overbought)`)
-      }
-    }
-    portfolio['SGOV'].weight += 3
-    portfolio['SGOV'].adjustments.push('+3% (RSI overbought → safety)')
-  }
-
-  // Enforce SGOV floor
+  // Enforce SGOV floor (cash floor still applies as a guardrail).
   if (portfolio['SGOV'].weight < (portfolio['SGOV'].min_weight || 3)) {
     portfolio['SGOV'].weight = portfolio['SGOV'].min_weight || 3
   }
@@ -882,8 +869,7 @@ function computeModelPortfolio(bullishAssets, quantResult) {
   // Log
   const sorted = Object.entries(portfolio).sort((a, b) => b[1].weight_pct - a[1].weight_pct)
   for (const [ticker, pos] of sorted) {
-    const adj = pos.adjustments.length > 0 ? ` (${pos.adjustments.join(', ')})` : ''
-    console.log(`  ${ticker}: ${pos.weight_pct}%${adj}`)
+    console.log(`  ${ticker}: ${pos.weight_pct}% [${pos.action}]`)
   }
 
   return portfolio
@@ -895,119 +881,65 @@ function computeModelPortfolio(bullishAssets, quantResult) {
 
 async function fetchCurrentPrices(tickers) {
   console.log('\n========================================')
-  console.log('FETCHING CURRENT PRICES')
+  console.log('FETCHING CURRENT PRICES (Finnhub /quote)')
   console.log('========================================')
 
-  if (!ALPHA_VANTAGE_KEY) {
-    console.warn('No ALPHA_VANTAGE_KEY — using placeholder prices')
+  if (!FINNHUB_API_KEY) {
+    console.warn('No FINNHUB_API_KEY — using placeholder prices')
     return {}
   }
 
-  // ============================================================
-  // Sanity floor only — reject zero/near-zero prices (Alpha Vantage
-  // occasionally returns $0.00 for tickers it can't quote). No upper
-  // bound: real markets can move dramatically and any hardcoded ceiling
-  // will eventually reject correct data.
-  // ============================================================
-  const PRICE_FLOOR = 1.00
-
   const prices = {}
 
-  // SGOV barely moves — hardcode at $100.00 to save an API call
-  prices['SGOV'] = { price: 100.00, change_pct: 0 }
-  console.log(`  SGOV: $100.00 (hardcoded)`)
-
-  // GLDM — Alpha Vantage doesn't return quotes for gold ETFs (GLD/GLDM both fail)
-  // Hardcode at ~$92 (May 2026). Update periodically or switch to a different price source later.
-  prices['GLDM'] = { price: 92.00, change_pct: 0 }
-  console.log(`  GLDM: $92.00 (hardcoded)`)
-
-  // ============================================================
-  // Alpha Vantage free tier: 25 calls/day, 5 calls/minute.
-  // We pace calls at 13 seconds (< 5/min) and retry once with a
-  // 60-second backoff if we hit a per-minute rate limit. If the
-  // retry also fails, that means we're at the daily cap — abort.
-  // ============================================================
-  const PACING_MS = 13000      // 13s between calls = ~4.6/min, safely under 5/min cap
-  const RETRY_BACKOFF_MS = 60000  // 1-min wait before retry on rate-limit hit
-
-  // Helper: fetch a single ticker quote. Returns { kind, ...payload }.
-  //   kind: 'ok' | 'invalid' | 'rate_limit' | 'error' | 'no_data'
-  async function fetchOneQuote(ticker) {
-    try {
-      const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${ALPHA_VANTAGE_KEY}`
-      const response = await fetch(url)
-      const data = await response.json()
-
-      if (data['Note'] || data['Information']) {
-        return { kind: 'rate_limit', raw: JSON.stringify(data).slice(0, 300) }
-      }
-      if (data['Error Message']) {
-        return { kind: 'error', raw: JSON.stringify(data).slice(0, 300) }
-      }
-
-      const quote = data['Global Quote']
-      if (!quote || !quote['05. price']) {
-        return { kind: 'no_data', raw: JSON.stringify(data).slice(0, 300) }
-      }
-
-      const price = parseFloat(quote['05. price'])
-      const changePct = parseFloat(quote['10. change percent']?.replace('%', '') || '0')
-
-      if (!price || isNaN(price) || price < PRICE_FLOOR) {
-        return { kind: 'invalid', price }
-      }
-      return { kind: 'ok', price, change_pct: changePct }
-    } catch (error) {
-      return { kind: 'error', raw: `fetch threw: ${error.message}` }
-    }
-  }
-
-  // Main fetch loop with retry-on-rate-limit
-  let rateLimited = false
+  // Finnhub free tier: 60 calls/min, no daily cap. At ~13–30 tickers we stay
+  // well under 60/min, so no inter-call pacing is needed. SGOV and GLDM are
+  // fetched live like everything else — Finnhub returns both reliably.
   for (const ticker of tickers) {
-    if (ticker === 'SGOV' || ticker === 'GLDM') continue  // already hardcoded
-    if (rateLimited) {
-      console.warn(`  ${ticker}: SKIPPED — daily quota exhausted earlier`)
-      continue
-    }
+    try {
+      const url = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_API_KEY}`
+      let response = await fetch(url)
 
-    let result = await fetchOneQuote(ticker)
-
-    // RESILIENCE: if rate-limited, wait 60s and retry once. If retry also
-    // fails, we're at the daily cap, not just per-minute — stop trying.
-    if (result.kind === 'rate_limit') {
-      console.warn(`  ${ticker}: rate-limit hit, waiting ${RETRY_BACKOFF_MS / 1000}s then retrying...`)
-      console.warn(`  Raw: ${result.raw}`)
-      await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS))
-      result = await fetchOneQuote(ticker)
-      if (result.kind === 'rate_limit') {
-        console.warn(`  ${ticker}: still rate-limited after retry — daily cap likely exhausted. Stopping fetches.`)
-        rateLimited = true
+      if (response.status === 429) {
+        console.warn(`  Rate limited (429) at ${ticker} — backing off 60s once`)
+        await new Promise((r) => setTimeout(r, 60000))
+        response = await fetch(url) // single retry
+      }
+      if (!response.ok) {
+        console.warn(`  ${ticker}: HTTP ${response.status}`)
         continue
       }
-      console.log(`  ${ticker}: retry succeeded`)
-    }
 
-    // Handle result
-    switch (result.kind) {
-      case 'ok':
-        prices[ticker] = { price: result.price, change_pct: result.change_pct }
-        console.log(`  ${ticker}: $${result.price.toFixed(2)} (${result.change_pct >= 0 ? '+' : ''}${result.change_pct.toFixed(2)}%)`)
-        break
-      case 'invalid':
-        console.warn(`  ${ticker}: SKIPPED — invalid price (${result.price})`)
-        break
-      case 'no_data':
-        console.warn(`  ${ticker}: no quote data — raw: ${result.raw}`)
-        break
-      case 'error':
-        console.warn(`  ${ticker}: error — ${result.raw}`)
-        break
-    }
+      const data = await response.json()
 
-    // Pace: wait 13s between calls to stay under 5/min limit
-    await new Promise((r) => setTimeout(r, PACING_MS))
+      // Finnhub /quote shape: { c: current, d: change, dp: %change, h, l, o, pc: prev close, t }
+      const c = Number(data?.c)
+      const pc = Number(data?.pc)
+
+      // Guard: Finnhub returns c=0 (and pc=0) for unknown/unsupported symbols.
+      // Never write a $0 price — skip so the P&L carries the position flat
+      // rather than craters it to zero.
+      if (!c || c <= 0) {
+        console.warn(`  ${ticker}: no valid quote (c=${data?.c}) — skipping`)
+        continue
+      }
+
+      // Prefer computing % change from c/pc (deterministic). Fall back to
+      // Finnhub's dp only if prev close is missing.
+      let changePct
+      if (pc && pc > 0) {
+        changePct = ((c - pc) / pc) * 100
+      } else if (data?.dp != null && !Number.isNaN(Number(data.dp))) {
+        changePct = Number(data.dp)
+      } else {
+        changePct = 0
+      }
+      changePct = Math.round(changePct * 100) / 100
+
+      prices[ticker] = { price: c, change_pct: changePct }
+      console.log(`  ${ticker}: $${c.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)`)
+    } catch (error) {
+      console.warn(`  ${ticker}: fetch error — ${error.message}`)
+    }
   }
 
   return prices
@@ -1072,55 +1004,90 @@ async function calculatePnL(portfolio, prices, spyPrice) {
   }
 
   // ============================================================
-  // FIX #2: Compute daily return using YESTERDAY'S weights × today's prices.
-  // Then rebalance to today's weights for tomorrow's baseline.
+  // REMOVED-TICKER GUARD + UNION MODEL (fixes the -16% spike on 5/11)
   //
-  // Step 1: "Held" portfolio value = apply today's daily_change_pct to each
-  //         position using yesterday's weights and yesterday's portfolio value.
-  // Step 2: Today's portfolio value = held value (this is the cleanest equity-
-  //         curve number). Weights change happens at end-of-day with no return
-  //         impact, the way a real portfolio rebalance works.
+  // Daily return is the PURE market move of yesterday's book, computed over the
+  // UNION of yesterday's and today's tickers, with a sold-at-yesterday's-close
+  // model for anything dropped:
+  //   - HELD (both days):  prevMarketValue × (1 + today's % change)
+  //   - REMOVED (yesterday only): carried FLAT at its yesterday market value.
+  //       It simply stops compounding — it is NOT dropped from the sum. Dropping
+  //       a removed position was what cratered the daily return by ~that
+  //       position's weight (e.g. a removed ~16% holding => -16% phantom spike).
+  //   - NEW (today only):  contributes nothing to the day's return (bought with
+  //       rebalanced proceeds; no day-1 P&L).
+  //
+  // The equity point then COMPOUNDS off the stored prior portfolio_value using
+  // that pure market-move return, so it's immune to any gap between yesterday's
+  // summed holdings and the stored prior value (rounding, missing rows, etc.).
   // ============================================================
 
-  let heldPortfolioValue = 0
+  let yesterdayInvested = 0   // Σ of yesterday's position market values (union basis)
+  let heldPortfolioValue = 0  // yesterday's book carried to today's prices
   const newTickers = []
+  const removedTickers = []
 
   if (isFirstRun) {
     // Day 1: there's nothing to "hold." Portfolio value = STARTING_VALUE.
     heldPortfolioValue = STARTING_VALUE
+    yesterdayInvested = STARTING_VALUE
   } else {
-    // Apply today's price changes to yesterday's positions
-    for (const [ticker, prevHolding] of Object.entries(prevHoldingsByTicker)) {
-      const priceData = prices[ticker]
-      const dailyChangePct = priceData?.change_pct ?? 0
-      const prevMarketValue = prevHolding.market_value ?? ((prevHolding.weight_pct / 100) * prevPortfolioValue)
-      heldPortfolioValue += prevMarketValue * (1 + dailyChangePct / 100)
-    }
+    const unionTickers = new Set([
+      ...Object.keys(prevHoldingsByTicker),
+      ...Object.keys(portfolio),
+    ])
 
-    // Identify new tickers (in today's portfolio but not yesterday's)
-    for (const ticker of Object.keys(portfolio)) {
-      if (!prevHoldingsByTicker[ticker]) {
-        newTickers.push(ticker)
+    for (const ticker of unionTickers) {
+      const prevHolding = prevHoldingsByTicker[ticker]
+      const inToday = !!portfolio[ticker]
+
+      if (!prevHolding) {
+        // NEW ticker: no yesterday position → no day-1 return contribution.
+        if (inToday) newTickers.push(ticker)
+        continue
+      }
+
+      const prevMarketValue = prevHolding.market_value ?? ((prevHolding.weight_pct / 100) * prevPortfolioValue)
+      yesterdayInvested += prevMarketValue
+
+      if (inToday) {
+        // HELD both days: apply today's market move.
+        const dailyChangePct = prices[ticker]?.change_pct ?? 0
+        heldPortfolioValue += prevMarketValue * (1 + dailyChangePct / 100)
+      } else {
+        // REMOVED: sold at yesterday's close → carried flat, never dropped.
+        removedTickers.push(ticker)
+        heldPortfolioValue += prevMarketValue
       }
     }
+
     if (newTickers.length > 0) {
-      console.log(`  New tickers (no return contribution today): ${newTickers.join(', ')}`)
+      console.log(`  New tickers (no day-1 return): ${newTickers.join(', ')}`)
+    }
+    if (removedTickers.length > 0) {
+      console.log(`  Removed tickers (sold at yesterday's close, carried flat): ${removedTickers.join(', ')}`)
     }
 
-    // If the cron found no prior holdings (e.g. holdings table empty for that date),
-    // fall back to prev portfolio value to avoid zeroing out the curve.
-    if (heldPortfolioValue === 0) {
-      console.warn(`  No prior holdings found for ${prevSnapshot.snapshot_date}; using prev portfolio_value as held value`)
+    // Fallback: holdings table empty for yesterday → carry prior value forward flat.
+    if (yesterdayInvested === 0) {
+      console.warn(`  No prior holdings found for ${prevSnapshot.snapshot_date}; carrying prev portfolio_value forward flat`)
+      yesterdayInvested = prevPortfolioValue
       heldPortfolioValue = prevPortfolioValue
     }
   }
 
-  const portfolioValue = Math.round(heldPortfolioValue * 100) / 100
-
-  // Daily return = today's held value vs yesterday's portfolio value
+  // Daily return = pure market move of yesterday's book (immune to add/drop and
+  // to any yesterday weight-sum / holdings-table gaps).
   const dailyReturnPct = isFirstRun
     ? 0
-    : Math.round(((portfolioValue - prevPortfolioValue) / prevPortfolioValue) * 10000) / 100
+    : (yesterdayInvested > 0
+        ? Math.round(((heldPortfolioValue - yesterdayInvested) / yesterdayInvested) * 10000) / 100
+        : 0)
+
+  // Equity point compounds off the trusted stored prior portfolio value.
+  const portfolioValue = isFirstRun
+    ? Math.round(heldPortfolioValue * 100) / 100
+    : Math.round(prevPortfolioValue * (1 + dailyReturnPct / 100) * 100) / 100
 
   // Cumulative return = today's value vs starting value
   const cumulativeReturnPct = Math.round(((portfolioValue - STARTING_VALUE) / STARTING_VALUE) * 10000) / 100
@@ -1250,13 +1217,7 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
   }
 
   // Write to portfolio_holdings table
-  // v4: if price is null (fetch failed or sanity-check rejected it), we still
-  // write the row but with null price — the frontend's freshness guard will
-  // then fall back to the in-app fallbackPrice rather than showing stale data.
-  let writtenCount = 0
-  let priceNullCount = 0
   for (const holding of pnl.holdings) {
-    if (holding.price === null || holding.price === undefined) priceNullCount++
     await supabase.from('portfolio_holdings').upsert({
       snapshot_date: TODAY,
       ticker: holding.ticker,
@@ -1266,10 +1227,9 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
       daily_change_pct: holding.daily_change_pct,
       signal_sources: holding.signal_sources,
     }, { onConflict: 'snapshot_date,ticker', ignoreDuplicates: false })
-    writtenCount++
   }
 
-  console.log(`Written ${writtenCount} holdings to portfolio_holdings table${priceNullCount > 0 ? ` (${priceNullCount} with null price)` : ''}`)
+  console.log(`Written ${pnl.holdings.length} holdings to portfolio_holdings table`)
 }
 
 // ============================================================================
