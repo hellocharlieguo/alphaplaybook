@@ -115,6 +115,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
   const rsi = snapshot.spy_rsi
   const bullishAssets = snapshot.bullish_assets || []
   const macro = snapshot.macro_signals || null
+  const hasQuant = rsi !== null || !!(macro && (macro.spy || macro.cpi || macro.nowcast))
   const fmtMonth = (m: string | null | undefined) => {
     if (!m) return ''
     const [y, mo] = m.split('-')
@@ -212,7 +213,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#5ba3c9' }} />
             <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, fontFamily: "'Playfair Display', Georgia, serif" }}>Quant Signal</span>
           </div>
-          {(rsi === null && !macro) ? (
+          {!hasQuant ? (
             <div style={{ fontSize: 13, color: t.textTertiary, padding: '16px 0', fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>No quant data today.</div>
           ) : (
             <>

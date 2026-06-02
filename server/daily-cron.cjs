@@ -638,13 +638,19 @@ async function fetchSPYPrices() {
     console.warn('No ALPHA_VANTAGE_KEY — skipping quant pipeline')
     return null
   }
-  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=SPY&outputsize=full&apikey=${ALPHA_VANTAGE_KEY}`
+  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=SPY&outputsize=compact&apikey=${ALPHA_VANTAGE_KEY}`
   console.log('Fetching SPY daily prices...')
   const response = await fetch(url)
   const data = await response.json()
 
   if (data['Error Message']) throw new Error(`Alpha Vantage: ${data['Error Message']}`)
   if (data['Note']) throw new Error(`Alpha Vantage rate limit: ${data['Note']}`)
+  // 'Information' = premium-feature notice OR free-tier rate limit (25/day, 1/sec).
+  // Return null (skip-safe) but LOG it so it's never a silent failure again.
+  if (data['Information']) {
+    console.warn(`Alpha Vantage Information (rate limit or premium): ${data['Information']}`)
+    return null
+  }
 
   const timeSeries = data['Time Series (Daily)']
   if (!timeSeries) {
@@ -708,8 +714,23 @@ async function runQuantPipeline() {
   const latest = prices[prices.length - 1]
   const mappedTickers = getRSIMappedTickers(signal)
 
-  // All-time high over the full series (outputsize=full) + distance from it.
-  const ath = Math.round(Math.max(...prices.map((p) => p.close)) * 100) / 100
+  // All-time high WITHOUT outputsize=full (premium): use a running ATH —
+  // seed from the 100-day high (compact), carry forward the max across snapshots.
+  // SPY's recent ATH is within 100 days, so this is accurate today and stays correct.
+  let priorAth = 0
+  try {
+    const { data: prev } = await supabase
+      .from('daily_snapshots')
+      .select('macro_signals')
+      .not('macro_signals', 'is', null)
+      .order('snapshot_date', { ascending: false })
+      .limit(1)
+    priorAth = prev?.[0]?.macro_signals?.spy?.ath || 0
+  } catch (e) {
+    console.warn(`Prior ATH lookup failed (${e.message}) — seeding from 100-day high`)
+  }
+  const recentHigh = Math.max(...prices.map((p) => p.close))
+  const ath = Math.round(Math.max(recentHigh, priorAth, latest.close) * 100) / 100
   const pctOffAth = Math.round(((latest.close - ath) / ath) * 10000) / 100
 
   console.log(`RSI (14): ${rsi} → ${signal}`)
