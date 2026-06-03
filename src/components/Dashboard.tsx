@@ -3,10 +3,9 @@ import { supabase } from '../supabase'
 import SignalRecap from './SignalRecap'
 import Portfolio from './Portfolio'
 import PnLTracker from './PnLTracker'
-import HistoryLog from './HistoryLog'
 import Methodology from './Methodology'
 
-type Tab = 'signals' | 'portfolio' | 'pnl' | 'history' | 'methodology'
+type Tab = 'signals' | 'portfolio' | 'pnl' | 'methodology'
 type ThemeMode = 'dark' | 'light'
 
 interface DailySnapshot {
@@ -137,7 +136,6 @@ export default function Dashboard() {
     { key: 'signals', label: 'Signals' },
     { key: 'portfolio', label: 'Portfolio' },
     { key: 'pnl', label: 'Performance' },
-    { key: 'history', label: 'History' },
     { key: 'methodology', label: 'Methodology' },
   ]
 
@@ -163,6 +161,7 @@ export default function Dashboard() {
         .ap-history-detail { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
         .ap-bestworst { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .ap-voices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .ap-tabs { display: flex; gap: 2px; flex-wrap: wrap; }
         @media (max-width: 768px) {
           .ap-stats { grid-template-columns: repeat(2, 1fr); }
           .ap-signals-grid { grid-template-columns: 1fr; }
@@ -225,7 +224,7 @@ export default function Dashboard() {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: `1px solid ${t.border}` }}>
+        <div className="ap-tabs" style={{ marginBottom: 24, borderBottom: `1px solid ${t.border}` }}>
           {tabs.map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
               padding: '8px 16px', fontSize: 13, fontWeight: activeTab === tab.key ? 500 : 400,
@@ -246,7 +245,6 @@ export default function Dashboard() {
               {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} activeVoices={activeVoices} />}
               {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} />}
               {activeTab === 'pnl' && <PnLTracker theme={t} />}
-              {activeTab === 'history' && <HistoryLog theme={t} />}
               {activeTab === 'methodology' && <Methodology snapshot={latestSnapshot} theme={t} />}
             </>
           )}

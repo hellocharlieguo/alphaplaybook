@@ -10,6 +10,7 @@ interface Snapshot {
   snapshot_date: string
   portfolio_value: number | null
   spy_value: number | null
+  spy_rsi: number | null
   daily_return_pct: number | null
   cumulative_return_pct: number | null
   spy_cumulative_return_pct: number | null
@@ -25,7 +26,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
     async function fetchSnapshots() {
       const { data, error } = await supabase
         .from('daily_snapshots')
-        .select('snapshot_date, portfolio_value, spy_value, daily_return_pct, cumulative_return_pct, spy_cumulative_return_pct')
+        .select('snapshot_date, portfolio_value, spy_value, spy_rsi, daily_return_pct, cumulative_return_pct, spy_cumulative_return_pct')
         .not('portfolio_value', 'is', null)
         .order('snapshot_date', { ascending: true })
       if (error) console.error('Error fetching snapshots:', error)
@@ -104,6 +105,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Cumulative</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>SPY Cumul.</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Alpha</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>RSI</th>
               </tr>
             </thead>
             <tbody>
@@ -112,6 +114,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
                 const cum = s.cumulative_return_pct ?? 0
                 const spyCum = s.spy_cumulative_return_pct ?? 0
                 const a = cum - spyCum
+                const rsi = s.spy_rsi
                 return (
                   <tr key={i} style={{ borderBottom: `1px solid ${t.border}` }}>
                     <td style={{ padding: '8px 20px', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>
@@ -128,6 +131,9 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
                     </td>
                     <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: a >= 0 ? t.positive : t.negative }}>
                       {a >= 0 ? '+' : ''}{a.toFixed(2)}%
+                    </td>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsi === null ? t.textTertiary : rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textSecondary }}>
+                      {rsi === null ? '—' : rsi.toFixed(1)}
                     </td>
                   </tr>
                 )
