@@ -70,7 +70,7 @@ export default function SignalRadar({ theme: t }: { theme: Theme }) {
   return (
     <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: '20px 24px', marginTop: 24 }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2px 12px', marginBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: t.textPrimary, fontFamily: display }}>Signal Radar</span>
         <span style={{ fontSize: 11, color: t.textTertiary }}>{RADAR.sources} · {RADAR.asOf}</span>
       </div>
@@ -80,7 +80,7 @@ export default function SignalRadar({ theme: t }: { theme: Theme }) {
 
       {/* Stage call — the thesis clock, front and center */}
       <div style={{ background: t.surfaceSubtle, borderRadius: 8, padding: '14px 16px', marginBottom: 16, borderLeft: `3px solid ${t.accent}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
           <span style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: t.accent, fontWeight: 700, fontFamily: serif }}>Thesis Clock</span>
           <span style={{ fontSize: 15, fontWeight: 700, color: t.textPrimary, fontFamily: display }}>
             Stage {RADAR.stageCall.stage} — {RADAR.stageCall.name}
@@ -97,8 +97,8 @@ export default function SignalRadar({ theme: t }: { theme: Theme }) {
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 14px', background: t.surfaceSubtle, borderRadius: 8 }}>
               <span style={{ fontSize: 18, fontWeight: 700, color: d.color, lineHeight: 1.2, minWidth: 18, textAlign: 'center' }}>{d.arrow}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 2 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
                   <span style={{ fontSize: 13.5, fontWeight: 700, color: t.textPrimary, fontFamily: serif }}>{th.name}</span>
                   <span style={{ fontSize: 10, color: d.color, fontWeight: 600 }}>{d.label}</span>
                 </div>
