@@ -1216,7 +1216,12 @@ async function calculatePnL(portfolio, prices, spyPrice) {
 
   // SPY benchmark — inception-to-date
   const spyValue = spyPrice || prevSnapshot?.spy_value || spyInceptionValue
-  const spyCumulativeReturnPct = spyInceptionValue && spyInceptionValue > 0
+  // On the inception day there is no prior trading day, so SPY return is 0 by
+  // definition (today's SPY IS the anchor). Without this guard, a mismatch
+  // between the reset's anchor source (Finnhub) and the cron's SPY source
+  // (Alpha Vantage close) shows up as a spurious day-1 SPY return / fake alpha.
+  const spyCumulativeReturnPct = isFirstRun ? 0
+    : spyInceptionValue && spyInceptionValue > 0
     ? Math.round(((spyValue - spyInceptionValue) / spyInceptionValue) * 10000) / 100
     : 0
 
