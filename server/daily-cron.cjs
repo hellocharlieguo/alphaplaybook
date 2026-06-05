@@ -11,13 +11,17 @@ const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
 // --- Config ---
-// Finnhub: current prices (free tier, 60 calls/min, no daily cap). /quote endpoint.
-// Alpha Vantage: retained ONLY for the SPY daily series used to compute RSI
-// (single TIME_SERIES_DAILY call/day — never the source of the rate-limit issue).
-// NOTE: Finnhub's /stock/candle endpoint is premium-only on the free tier
-// (returns "You don't have access to this resource."), so SPY history stays on AV.
+// Finnhub: ALL current prices — the 17 holdings AND the SPY benchmark price.
+//   /quote endpoint, free tier 60 calls/min, no daily cap.
+// Twelve Data: SPY daily close *series* (free tier ~800/day, 8/min). Used ONLY to
+//   compute RSI ourselves — TD's own RSI/SMA endpoints are premium; the raw
+//   time_series is free. (Step 2 will reuse this for per-ticker 10/50/200 DMAs.)
+// Alpha Vantage: REMOVED. It previously owned the SPY price *and* RSI, so any AV
+//   rate-limit/premium hiccup froze the benchmark (Jun 3: portfolio -1.95% while SPY
+//   showed flat). SPY price now rides the holdings' Finnhub feed, so the two can't
+//   diverge by source; only RSI depends on Twelve Data, and it fails independently.
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY
-const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_KEY
+const TWELVE_DATA_KEY = process.env.TWELVE_DATA_KEY
 const FRED_API_KEY = process.env.FRED_API_KEY
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
@@ -633,37 +637,87 @@ async function runCrowdPipeline() {
 // PLAY 3: QUANT PIPELINE
 // ============================================================================
 
-async function fetchSPYPrices() {
-  if (!ALPHA_VANTAGE_KEY) {
-    console.warn('No ALPHA_VANTAGE_KEY — skipping quant pipeline')
+// Single Finnhub /quote — used for every holding AND for SPY. Returns null on any
+// failure (caller decides how to degrade). Shape: { c, d, dp, h, l, o, pc, t }.
+async function finnhubQuote(symbol) {
+  if (!FINNHUB_API_KEY) {
+    console.warn(`  No FINNHUB_API_KEY — cannot fetch ${symbol}`)
     return null
   }
-  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=SPY&outputsize=compact&apikey=${ALPHA_VANTAGE_KEY}`
-  console.log('Fetching SPY daily prices...')
-  const response = await fetch(url)
+  const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`
+  let response = await fetch(url)
+  if (response.status === 429) {
+    console.warn(`  Finnhub rate limited (429) at ${symbol} — backing off 60s once`)
+    await new Promise((r) => setTimeout(r, 60000))
+    response = await fetch(url) // single retry
+  }
+  if (!response.ok) {
+    console.warn(`  ${symbol}: HTTP ${response.status}`)
+    return null
+  }
   const data = await response.json()
-
-  if (data['Error Message']) throw new Error(`Alpha Vantage: ${data['Error Message']}`)
-  if (data['Note']) throw new Error(`Alpha Vantage rate limit: ${data['Note']}`)
-  // 'Information' = premium-feature notice OR free-tier rate limit (25/day, 1/sec).
-  // Return null (skip-safe) but LOG it so it's never a silent failure again.
-  if (data['Information']) {
-    console.warn(`Alpha Vantage Information (rate limit or premium): ${data['Information']}`)
+  const c = Number(data?.c)
+  const pc = Number(data?.pc)
+  // Finnhub returns c=0 (pc=0) for unknown/unsupported symbols — never trust a $0.
+  if (!c || c <= 0) {
+    console.warn(`  ${symbol}: no valid quote (c=${data?.c})`)
     return null
   }
+  // Compute % change from c/pc (deterministic); fall back to Finnhub's dp.
+  let changePct
+  if (pc && pc > 0) changePct = ((c - pc) / pc) * 100
+  else if (data?.dp != null && !Number.isNaN(Number(data.dp))) changePct = Number(data.dp)
+  else changePct = 0
+  changePct = Math.round(changePct * 100) / 100
+  return { price: c, change_pct: changePct, prev_close: pc > 0 ? pc : null }
+}
 
-  const timeSeries = data['Time Series (Daily)']
-  if (!timeSeries) {
-    console.warn('No time series data returned — skipping quant pipeline')
+// Twelve Data daily close series (ascending). Free tier: ~800/day, 8/min, 1 credit
+// per single-symbol call. Used here for SPY RSI; reused in Step 2 for per-ticker DMAs.
+// Skip-safe: returns null on missing key / 429 / error status / too few rows.
+async function fetchTwelveDataSeries(symbol, outputsize = 250) {
+  if (!TWELVE_DATA_KEY) {
+    console.warn(`  No TWELVE_DATA_KEY — cannot fetch ${symbol} series`)
     return null
   }
-
-  const prices = Object.entries(timeSeries)
-    .map(([date, values]) => ({ date, close: parseFloat(values['4. close']) }))
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
-
-  console.log(`Got ${prices.length} days. Latest: ${prices[prices.length - 1].date} @ $${prices[prices.length - 1].close}`)
-  return prices
+  try {
+    const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1day&outputsize=${outputsize}&apikey=${TWELVE_DATA_KEY}`
+    let res = await fetch(url)
+    if (res.status === 429) {
+      console.warn(`  Twelve Data rate limited (429) at ${symbol} — backing off 60s once`)
+      await new Promise((r) => setTimeout(r, 60000))
+      res = await fetch(url) // single retry
+    }
+    if (!res.ok) {
+      console.warn(`  Twelve Data ${symbol}: HTTP ${res.status} — skipping`)
+      return null
+    }
+    const data = await res.json()
+    // Error payload shape: { code, message, status:"error" }. Success: { meta, values, status:"ok" }.
+    if (data?.status && data.status !== 'ok') {
+      console.warn(`  Twelve Data ${symbol}: status=${data.status} (${data.message || 'no message'}) — skipping`)
+      return null
+    }
+    const values = data?.values
+    if (!Array.isArray(values) || values.length === 0) {
+      console.warn(`  Twelve Data ${symbol}: no values returned — skipping`)
+      return null
+    }
+    // values come newest-first; reverse to ascending and parse closes.
+    const series = values
+      .map((v) => ({ date: v.datetime, close: parseFloat(v.close) }))
+      .filter((p) => p.date && Number.isFinite(p.close))
+      .reverse()
+    if (series.length < 15) {
+      console.warn(`  Twelve Data ${symbol}: only ${series.length} valid rows (<15 for RSI) — skipping`)
+      return null
+    }
+    console.log(`  Twelve Data ${symbol}: ${series.length} days. Latest: ${series[series.length - 1].date} @ $${series[series.length - 1].close}`)
+    return series
+  } catch (e) {
+    console.warn(`  Twelve Data ${symbol}: fetch error — ${e.message}`)
+    return null
+  }
 }
 
 function calculateRSI(prices, period = 14) {
@@ -706,17 +760,29 @@ async function runQuantPipeline() {
   console.log('PLAY 3: QUANT PIPELINE')
   console.log('========================================')
 
-  const prices = await fetchSPYPrices()
-  if (!prices) return { rsi: null, signal: null, spyPrice: null, spyAth: null, spyPctOffAth: null }
+  // SPY price + daily change from Finnhub — the SAME feed as the holdings, so the
+  // benchmark and the portfolio can never diverge by data source again.
+  const spyQuote = await finnhubQuote('SPY')
+  const spyPrice = spyQuote?.price ?? null
+  const spyChangePct = spyQuote?.change_pct ?? null
 
-  const rsi = calculateRSI(prices)
-  const signal = getRSISignal(rsi)
-  const latest = prices[prices.length - 1]
-  const mappedTickers = getRSIMappedTickers(signal)
+  // SPY daily close series from Twelve Data — used ONLY for RSI + recent-high.
+  // If this fails, RSI goes null but spyPrice above is unaffected. THIS is the Jun 3 fix:
+  // an RSI-source failure no longer freezes the SPY benchmark.
+  const series = await fetchTwelveDataSeries('SPY', 250)
 
-  // All-time high WITHOUT outputsize=full (premium): use a running ATH —
-  // seed from the 100-day high (compact), carry forward the max across snapshots.
-  // SPY's recent ATH is within 100 days, so this is accurate today and stays correct.
+  let rsi = null
+  let signal = null
+  if (series) {
+    rsi = calculateRSI(series)
+    signal = getRSISignal(rsi)
+  } else {
+    console.warn('SPY RSI unavailable (Twelve Data) — SPY price still set from Finnhub.')
+  }
+
+  // All-time high: running max carried across snapshots, seeded from the TD series
+  // recent-high and bounded below by today's LIVE Finnhub price so %off-ATH stays
+  // consistent with the SPY price we actually display.
   let priorAth = 0
   try {
     const { data: prev } = await supabase
@@ -727,29 +793,40 @@ async function runQuantPipeline() {
       .limit(1)
     priorAth = prev?.[0]?.macro_signals?.spy?.ath || 0
   } catch (e) {
-    console.warn(`Prior ATH lookup failed (${e.message}) — seeding from 100-day high`)
+    console.warn(`Prior ATH lookup failed (${e.message}) — seeding from series/price`)
   }
-  const recentHigh = Math.max(...prices.map((p) => p.close))
-  const ath = Math.round(Math.max(recentHigh, priorAth, latest.close) * 100) / 100
-  const pctOffAth = Math.round(((latest.close - ath) / ath) * 10000) / 100
+  const seriesHigh = series ? Math.max(...series.map((p) => p.close)) : 0
+  const athCandidates = [seriesHigh, priorAth, spyPrice || 0].filter((x) => x > 0)
+  const ath = athCandidates.length ? Math.round(Math.max(...athCandidates) * 100) / 100 : null
+  const pctOffAth = (ath && spyPrice) ? Math.round(((spyPrice - ath) / ath) * 10000) / 100 : null
 
-  console.log(`RSI (14): ${rsi} → ${signal}`)
-  console.log(`SPY: $${latest.close} (${latest.date})  ATH $${ath}  (${pctOffAth}% off)`)
+  if (spyPrice !== null) {
+    const chg = spyChangePct ?? 0
+    console.log(`SPY: $${spyPrice} (${chg >= 0 ? '+' : ''}${chg}% today)  ATH $${ath}  (${pctOffAth}% off)`)
+  } else {
+    console.warn('SPY price unavailable from Finnhub — benchmark will carry forward (check FINNHUB_API_KEY).')
+  }
+  if (rsi !== null) console.log(`RSI (14): ${rsi} → ${signal}`)
 
-  // Write to signals table
-  await supabase.from('signals').upsert({
-    snapshot_date: TODAY,
-    source: 'quant',
-    indicator_name: 'SPY_RSI_14',
-    indicator_value: rsi,
-    direction: signal === 'oversold' ? 'bullish' : signal === 'overbought' ? 'bearish' : 'neutral',
-    mapped_tickers: mappedTickers,
-    conviction: signal === 'neutral' ? 'low' : 'medium',
-    raw_data: { rsi, signal, latest_price: latest.close, latest_date: latest.date, period: 14 },
-  }, { onConflict: 'snapshot_date,source', ignoreDuplicates: false })
+  // Write the quant signal row only when RSI exists (preserves prior behavior).
+  if (rsi !== null) {
+    const mappedTickers = getRSIMappedTickers(signal)
+    await supabase.from('signals').upsert({
+      snapshot_date: TODAY,
+      source: 'quant',
+      indicator_name: 'SPY_RSI_14',
+      indicator_value: rsi,
+      direction: signal === 'oversold' ? 'bullish' : signal === 'overbought' ? 'bearish' : 'neutral',
+      mapped_tickers: mappedTickers,
+      conviction: signal === 'neutral' ? 'low' : 'medium',
+      raw_data: { rsi, signal, spy_price: spyPrice, latest_date: series[series.length - 1].date, period: 14 },
+    }, { onConflict: 'snapshot_date,source', ignoreDuplicates: false })
+    console.log(`\n✓ Quant: RSI ${rsi} (${signal}) written`)
+  } else {
+    console.log('\n✓ Quant: SPY price set from Finnhub; RSI row skipped (no series).')
+  }
 
-  console.log(`\n✓ Quant: RSI ${rsi} (${signal}) written`)
-  return { rsi, signal, spyPrice: latest.close, spyAth: ath, spyPctOffAth: pctOffAth }
+  return { rsi, signal, spyPrice, spyChangePct, spyAth: ath, spyPctOffAth: pctOffAth }
 }
 
 // ============================================================================
@@ -1013,52 +1090,16 @@ async function fetchCurrentPrices(tickers) {
 
   const prices = {}
 
-  // Finnhub free tier: 60 calls/min, no daily cap. At ~13–30 tickers we stay
-  // well under 60/min, so no inter-call pacing is needed. SGOV and GLDM are
-  // fetched live like everything else — Finnhub returns both reliably.
+  // Finnhub free tier: 60 calls/min, no daily cap. At ~17 tickers we stay well under
+  // 60/min, so no inter-call pacing is needed. SGOV/GLDM are fetched live like everything
+  // else. The c<=0 guard lives in finnhubQuote, which returns null → we skip so the P&L
+  // carries the position flat rather than cratering it to zero.
   for (const ticker of tickers) {
     try {
-      const url = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_API_KEY}`
-      let response = await fetch(url)
-
-      if (response.status === 429) {
-        console.warn(`  Rate limited (429) at ${ticker} — backing off 60s once`)
-        await new Promise((r) => setTimeout(r, 60000))
-        response = await fetch(url) // single retry
-      }
-      if (!response.ok) {
-        console.warn(`  ${ticker}: HTTP ${response.status}`)
-        continue
-      }
-
-      const data = await response.json()
-
-      // Finnhub /quote shape: { c: current, d: change, dp: %change, h, l, o, pc: prev close, t }
-      const c = Number(data?.c)
-      const pc = Number(data?.pc)
-
-      // Guard: Finnhub returns c=0 (and pc=0) for unknown/unsupported symbols.
-      // Never write a $0 price — skip so the P&L carries the position flat
-      // rather than craters it to zero.
-      if (!c || c <= 0) {
-        console.warn(`  ${ticker}: no valid quote (c=${data?.c}) — skipping`)
-        continue
-      }
-
-      // Prefer computing % change from c/pc (deterministic). Fall back to
-      // Finnhub's dp only if prev close is missing.
-      let changePct
-      if (pc && pc > 0) {
-        changePct = ((c - pc) / pc) * 100
-      } else if (data?.dp != null && !Number.isNaN(Number(data.dp))) {
-        changePct = Number(data.dp)
-      } else {
-        changePct = 0
-      }
-      changePct = Math.round(changePct * 100) / 100
-
-      prices[ticker] = { price: c, change_pct: changePct }
-      console.log(`  ${ticker}: $${c.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)`)
+      const q = await finnhubQuote(ticker)
+      if (!q) continue // null → no valid quote (already logged); skip, carry flat
+      prices[ticker] = { price: q.price, change_pct: q.change_pct }
+      console.log(`  ${ticker}: $${q.price.toFixed(2)} (${q.change_pct >= 0 ? '+' : ''}${q.change_pct.toFixed(2)}%)`)
     } catch (error) {
       console.warn(`  ${ticker}: fetch error — ${error.message}`)
     }
@@ -1217,9 +1258,10 @@ async function calculatePnL(portfolio, prices, spyPrice) {
   // SPY benchmark — inception-to-date
   const spyValue = spyPrice || prevSnapshot?.spy_value || spyInceptionValue
   // On the inception day there is no prior trading day, so SPY return is 0 by
-  // definition (today's SPY IS the anchor). Without this guard, a mismatch
-  // between the reset's anchor source (Finnhub) and the cron's SPY source
-  // (Alpha Vantage close) shows up as a spurious day-1 SPY return / fake alpha.
+  // definition (today's SPY IS the anchor). The guard is now belt-and-suspenders:
+  // the reset's anchor and the cron's SPY price are BOTH Finnhub since this swap,
+  // so the old AV-vs-Finnhub source mismatch (spurious day-1 SPY return / fake alpha)
+  // can no longer occur. Kept as a defensive zero on first run.
   const spyCumulativeReturnPct = isFirstRun ? 0
     : spyInceptionValue && spyInceptionValue > 0
     ? Math.round(((spyValue - spyInceptionValue) / spyInceptionValue) * 10000) / 100
@@ -1417,4 +1459,18 @@ async function main() {
   }
 }
 
-main()
+// Run the full orchestrator only when invoked directly (e.g. `node server/daily-cron.cjs`
+// or the Render cron). When this file is `require()`d by a test harness, main() does NOT
+// fire — so the harness can call individual functions (finnhubQuote, fetchTwelveDataSeries,
+// calculateRSI, ...) against live keys without writing anything to Supabase.
+if (require.main === module) {
+  main()
+}
+
+module.exports = {
+  finnhubQuote,
+  fetchTwelveDataSeries,
+  calculateRSI,
+  getRSISignal,
+  runQuantPipeline,
+}
