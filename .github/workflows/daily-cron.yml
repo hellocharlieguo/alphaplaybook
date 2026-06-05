@@ -1,0 +1,43 @@
+name: Daily cron
+
+# Replaces the Render cron job (which sits at Render's $1/mo minimum). A ~30s run
+# nightly uses ~13 min/month of Actions time — well within the free allowance.
+
+on:
+  schedule:
+    # 23:00 UTC = 7pm ET (EDT) / 6pm ET (EST) — same time the Render cron ran.
+    # GitHub cron is always UTC; the snapshot date is pinned to ET in the code,
+    # so the labeled day stays correct regardless of the runner's clock.
+    - cron: '0 23 * * *'
+  workflow_dispatch: {}   # adds a "Run workflow" button for manual verification
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20   # global fetch() is built in
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run daily cron
+        run: node server/daily-cron.cjs
+        env:
+          # The code reads VITE_SUPABASE_URL || SUPABASE_URL and
+          # SUPABASE_SERVICE_KEY || VITE_SUPABASE_ANON_KEY, so any unset ones are
+          # simply ignored — set whichever names match your Render env.
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          TWELVE_DATA_KEY: ${{ secrets.TWELVE_DATA_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
