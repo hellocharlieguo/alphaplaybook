@@ -5,10 +5,9 @@ name: Daily cron
 
 on:
   schedule:
-    # 23:00 UTC = 7pm ET (EDT) / 6pm ET (EST) — same time the Render cron ran.
-    # GitHub cron is always UTC; the snapshot date is pinned to ET in the code,
-    # so the labeled day stays correct regardless of the runner's clock.
-    - cron: '0 23 * * *'
+    # 23:00 UTC = 7pm ET (EDT) / 6pm ET (EST). 1-5 = Mon-Fri only, so it never fires
+    # on weekends. The code also guards against weekend runs (e.g. manual triggers).
+    - cron: '0 23 * * 1-5'
   workflow_dispatch: {}   # adds a "Run workflow" button for manual verification
 
 jobs:

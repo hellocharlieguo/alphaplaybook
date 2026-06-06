@@ -33,7 +33,11 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
-const TODAY = new Date().toISOString().split('T')[0]
+// Date the snapshot by the US MARKET day (ET), not UTC. A 23:00 UTC scheduled run
+// already maps to the same ET calendar day, but a manual trigger after ~8pm ET would
+// roll into the next UTC day and spawn a phantom future-dated row (e.g. a duplicate
+// Jun 5 created on the evening of Jun 4). en-CA → 'YYYY-MM-DD'; timeZone pins it to ET.
+const TODAY = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
 
 // ============================================================================
 // PLAY 1: NARRATIVE PIPELINE
@@ -1412,6 +1416,17 @@ async function main() {
   console.log('╚══════════════════════════════════════════╝')
   console.log(`Date: ${TODAY}`)
   console.log(`Time: ${new Date().toISOString()}`)
+
+  // Trading-day guard. The cron fires nightly, but US markets trade Mon-Fri. On a
+  // weekend run there's no new close, so the P&L pipeline would re-apply the prior
+  // trading day's move and compound the cumulative wrongly (the Jun 6 Saturday
+  // phantom: SPY/RSI identical to Friday, cumulative double-counted). Skip cleanly
+  // on Sat/Sun (ET). Holidays are a rarer edge — handle with a calendar later if needed.
+  const etDow = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' })
+  if (etDow === 'Sat' || etDow === 'Sun') {
+    console.log(`\nNon-trading day (${etDow} ET, ${TODAY}) — skipping daily run. No snapshot written.`)
+    return
+  }
 
   const startTime = Date.now()
 
