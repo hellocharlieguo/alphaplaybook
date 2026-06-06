@@ -59,6 +59,33 @@ const tickerColor = (s: string) => TICKER_META[s]?.color ?? '#64748b'
 const themeColor = (name: string) => THEME_META[name]?.color ?? '#64748b'
 const themeVoices = (name: string) => THEME_META[name]?.voices ?? ['Visser']
 
+// --- Step 3: action pill + momentum tag ---
+// Pill = where the LIVE price sits vs the 50/200-DMA trend (from daily_snapshots.technicals):
+//   Add   — price above both 50 & 200-DMA: uptrend intact, fine to move toward target.
+//   Hold  — above 200, below 50: pullback within an uptrend; don't chase, don't cut.
+//   Watch — below the 200-DMA: under the entry gate — "paused, not sold" (NO auto-trim).
+// There is intentionally NO "Trim". A static DMA position can't tell a structural
+// winner riding above its averages from a blow-off (the anti-momentum trap), so trim
+// is left to a future velocity/engine signal. SGOV (cash) and missing data get no pill.
+// The momentum tag (↓ mom) is a SEPARATE 20-DMA read (multi-day break + 20-DMA turning
+// down); it's informational and never changes the pill state.
+const PILL_STYLE: Record<string, { bg: string; text: string }> = {
+  add:   { bg: 'rgba(34,197,94,0.13)',  text: '#22c55e' },
+  hold:  { bg: 'rgba(148,163,184,0.14)', text: '#94a3b8' },
+  watch: { bg: 'rgba(245,158,11,0.14)',  text: '#f59e0b' },
+}
+
+function actionPill(symbol: string, price: number | null, tech: any): { label: string; state: keyof typeof PILL_STYLE } | null {
+  if (symbol === 'SGOV') return null
+  if (!tech || price === null || tech.dma200 == null || tech.dma50 == null) return null
+  if (price < tech.dma200) return { label: 'Watch', state: 'watch' }
+  if (price >= tech.dma50) return { label: 'Add', state: 'add' }
+  return { label: 'Hold', state: 'hold' }
+}
+
+const vs200Pct = (price: number | null, tech: any): number | null =>
+  (price !== null && tech?.dma200) ? ((price - tech.dma200) / tech.dma200) * 100 : null
+
 // Bumped to v4 + now tracks UNCHECKED themes (default = all checked). This way a new
 // theme arriving from a fresh snapshot shows up checked without another key bump.
 const STORAGE_KEY = 'ap-portfolio-v4'
@@ -88,6 +115,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const [portfolioInput, setPortfolioInput] = useState(saved.portfolioValue.toLocaleString('en-US'))
   const [weightOverrides, setWeightOverrides] = useState<Record<string, number>>(saved.weightOverrides)
   const [livePrices, setLivePrices] = useState<Record<string, number>>({})
+  const [technicals, setTechnicals] = useState<Record<string, any>>({})
 
   // Build model holdings straight from the cron's snapshot.
   const modelHoldings: ModelHolding[] = (snapshot?.portfolio ?? [])
@@ -110,16 +138,20 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const isThemeChecked = useCallback((name: string) => !uncheckedThemes.has(name), [uncheckedThemes])
 
   useEffect(() => {
-    async function fetchPrices() {
+    async function fetchData() {
       if (!snapshot?.snapshot_date) return
+      // Live prices from portfolio_holdings.
       const { data } = await supabase.from('portfolio_holdings').select('ticker, price').eq('snapshot_date', snapshot.snapshot_date)
       if (data) {
         const prices: Record<string, number> = {}
         for (const row of data) { if (row.price) prices[row.ticker] = row.price }
         setLivePrices(prices)
       }
+      // Technicals (10/20/50/200 DMAs + momentum) from the snapshot's jsonb blob.
+      const { data: snapRows } = await supabase.from('daily_snapshots').select('technicals').eq('snapshot_date', snapshot.snapshot_date).limit(1)
+      if (snapRows && snapRows[0]?.technicals) setTechnicals(snapRows[0].technicals)
     }
-    fetchPrices()
+    fetchData()
   }, [snapshot])
 
   useEffect(() => { saveState({ uncheckedThemes: Array.from(uncheckedThemes), portfolioValue, weightOverrides }) }, [uncheckedThemes, portfolioValue, weightOverrides])
@@ -296,33 +328,36 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
         </div>
       </div>
 
-      {/* Donut + Table */}
-      <div className="ap-donut-grid">
-        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <DonutChart data={allocations.filter(a => a.weight > 0)} t={t} />
+      {/* Holdings table (full width — donut removed) */}
+      <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: `1px solid ${t.border}` }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Holdings ({allocations.length})</span>
+          <button onClick={resetWeights} style={{ fontSize: 11, color: t.textTertiary, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Reset weights</button>
         </div>
 
-        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: `1px solid ${t.border}` }}>
-            <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Holdings ({allocations.length})</span>
-            <button onClick={resetWeights} style={{ fontSize: 11, color: t.textTertiary, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Reset weights</button>
-          </div>
-
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${t.border}` }}>
-                  <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Ticker</th>
-                  <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 400, fontSize: 11, color: t.textTertiary, width: 200 }}>Weight</th>
-                  <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Price</th>
-                  <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>$ Alloc</th>
-                  <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Shares</th>
-                  <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Cost</th>
-                  <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Theme</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allocations.map((a, i) => (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${t.border}` }}>
+                <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Ticker</th>
+                <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 400, fontSize: 11, color: t.textTertiary, width: 200 }}>Weight</th>
+                <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Price</th>
+                <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>50-DMA</th>
+                <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>200-DMA</th>
+                <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>vs 200</th>
+                <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Action</th>
+                <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>$ Alloc</th>
+                <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Shares</th>
+                <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Theme</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allocations.map((a, i) => {
+                const tech = technicals[a.symbol]
+                const pill = actionPill(a.symbol, a.price, tech)
+                const v200 = vs200Pct(a.price, tech)
+                const momDown = !!tech?.mom?.down
+                return (
                   <tr key={a.symbol} style={{ borderBottom: i < allocations.length - 1 ? `1px solid ${t.border}` : 'none' }}>
                     <td style={{ padding: '8px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -342,63 +377,49 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                       </div>
                     </td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{a.price !== null ? `$${a.price.toFixed(2)}` : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textTertiary }}>{tech?.dma50 != null ? `$${tech.dma50.toFixed(2)}` : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textTertiary }}>{tech?.dma200 != null ? `$${tech.dma200.toFixed(2)}` : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: v200 === null ? t.textTertiary : (v200 >= 0 ? t.positive : t.negative) }}>
+                      {v200 === null ? '—' : `${v200 >= 0 ? '+' : ''}${v200.toFixed(1)}%`}
+                    </td>
+                    <td style={{ padding: '8px 16px' }}>
+                      {pill ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start' }}>
+                          <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: PILL_STYLE[pill.state].bg, color: PILL_STYLE[pill.state].text }}>{pill.label}</span>
+                          {momDown && <span style={{ fontSize: 9, color: t.negative, fontWeight: 500 }}>↓ mom</span>}
+                        </div>
+                      ) : <span style={{ color: t.textTertiary }}>—</span>}
+                    </td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${fmt(a.dollarAlloc)}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textPrimary }}>{a.price !== null ? a.shares : '—'}</td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{a.price !== null ? `$${fmt(a.actualCost)}` : '—'}</td>
                     <td style={{ padding: '8px 16px' }}>
                       <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: a.theme === 'Cash' ? t.badgeBg : `${themeColor(a.theme)}20`, color: a.theme === 'Cash' ? t.badgeText : themeColor(a.theme) }}>{a.theme}</span>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr style={{ borderTop: `2px solid ${t.border}` }}>
-                  <td style={{ padding: '10px 16px', fontWeight: 500, color: t.textSecondary }}>Total</td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, fontWeight: 500, color: totalWeight > 100.5 ? t.negative : t.textSecondary }}>{totalWeight.toFixed(1)}%</span>
-                  </td>
-                  <td style={{ padding: '10px 16px' }} />
-                  <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textSecondary }}>${fmt(portfolioValue)}</td>
-                  <td style={{ padding: '10px 16px' }} />
-                  <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textSecondary }}>${fmt(totalActualCost)}</td>
-                  <td style={{ padding: '10px 16px' }} />
-                </tr>
-                {cashRemainder > 0 && (
-                  <tr><td colSpan={7} style={{ padding: '8px 16px', fontSize: 11, color: t.textTertiary }}>${fmt(cashRemainder)} uninvested (from rounding) — consider adding to SGOV</td></tr>
-                )}
-              </tfoot>
-            </table>
-          </div>
+                )
+              })}
+            </tbody>
+            <tfoot>
+              <tr style={{ borderTop: `2px solid ${t.border}` }}>
+                <td style={{ padding: '10px 16px', fontWeight: 500, color: t.textSecondary }}>Total</td>
+                <td style={{ padding: '10px 12px' }}>
+                  <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, fontWeight: 500, color: totalWeight > 100.5 ? t.negative : t.textSecondary }}>{totalWeight.toFixed(1)}%</span>
+                </td>
+                <td style={{ padding: '10px 16px' }} />
+                <td style={{ padding: '10px 16px' }} />
+                <td style={{ padding: '10px 16px' }} />
+                <td style={{ padding: '10px 16px' }} />
+                <td style={{ padding: '10px 16px' }} />
+                <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textSecondary }}>${fmt(portfolioValue)}</td>
+                <td style={{ padding: '10px 16px' }} />
+                <td style={{ padding: '10px 16px' }} />
+              </tr>
+              {cashRemainder > 0 && (
+                <tr><td colSpan={10} style={{ padding: '8px 16px', fontSize: 11, color: t.textTertiary }}>${fmt(cashRemainder)} uninvested (from rounding) — consider adding to SGOV</td></tr>
+              )}
+            </tfoot>
+          </table>
         </div>
-      </div>
-    </div>
-  )
-}
-
-function DonutChart({ data, t }: { data: { symbol: string; weight: number }[]; t: Theme }) {
-  const size = 180, strokeWidth = 28, radius = (size - strokeWidth) / 2, circumference = 2 * Math.PI * radius, center = size / 2
-  const total = data.reduce((s, d) => s + d.weight, 0)
-  let cum = 0
-  const segments = data.map(d => {
-    const pct = total > 0 ? d.weight / total : 0
-    const offset = circumference * (1 - cum), length = circumference * pct
-    cum += pct
-    return { symbol: d.symbol, offset, length, color: tickerColor(d.symbol) }
-  })
-
-  return (
-    <div style={{ position: 'relative' }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={center} cy={center} r={radius} fill="none" stroke={t.sliderTrack} strokeWidth={strokeWidth} />
-        {segments.slice().reverse().map((seg, i) => (
-          <circle key={i} cx={center} cy={center} r={radius} fill="none" stroke={seg.color} strokeWidth={strokeWidth}
-            strokeDasharray={`${seg.length} ${circumference - seg.length}`} strokeDashoffset={seg.offset}
-            strokeLinecap="butt" transform={`rotate(-90 ${center} ${center})`} style={{ opacity: 0.8 }} />
-        ))}
-      </svg>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 11, color: t.textTertiary }}>Tickers</span>
-        <span style={{ fontSize: 20, fontWeight: 500, color: t.textPrimary, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{data.length}</span>
       </div>
     </div>
   )
