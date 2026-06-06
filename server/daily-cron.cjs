@@ -1320,7 +1320,49 @@ async function calculatePnL(portfolio, prices, spyPrice) {
 // WRITE COMPLETE DAILY SNAPSHOT
 // ============================================================================
 
-async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals) {
+// --- Step 2: Technicals (10/50/200-day simple moving averages per holding) ---
+// SMAs from each holding's Twelve Data daily close series. Paced ~8s/call to stay
+// under TD's 8/min free limit (~17 calls ≈ 2.5 min; free on GitHub Actions). Any
+// ticker TD can't cover, or with too little history for a window, stores null for
+// that field — queue item (b)'s entry-gate treats a null DMA as "no gate".
+function smaOf(closes, n) {
+  if (closes.length < n) return null
+  const slice = closes.slice(-n)
+  return Math.round((slice.reduce((a, b) => a + b, 0) / n) * 100) / 100
+}
+
+function computeDMAs(series) {
+  const closes = series.map((p) => p.close)
+  return {
+    close: closes.length ? Math.round(closes[closes.length - 1] * 100) / 100 : null,
+    dma10: smaOf(closes, 10),
+    dma50: smaOf(closes, 50),
+    dma200: smaOf(closes, 200),
+  }
+}
+
+async function computeTechnicals(tickers) {
+  console.log('\n========================================')
+  console.log('STEP 2: TECHNICALS (10/50/200 DMAs)')
+  console.log('========================================')
+  const technicals = {}
+  for (let i = 0; i < tickers.length; i++) {
+    const t = tickers[i]
+    const series = await fetchTwelveDataSeries(t, 250)
+    if (series) {
+      technicals[t] = computeDMAs(series)
+      const d = technicals[t]
+      console.log(`  ${t}: close ${d.close}  10/50/200 = ${d.dma10 ?? '—'} / ${d.dma50 ?? '—'} / ${d.dma200 ?? '—'}`)
+    } else {
+      technicals[t] = null
+      console.log(`  ${t}: no Twelve Data series — null`)
+    }
+    if (i < tickers.length - 1) await new Promise((r) => setTimeout(r, 8000)) // pace live calls
+  }
+  return technicals
+}
+
+async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals, technicals) {
   console.log('\n========================================')
   console.log('WRITING DAILY SNAPSHOT')
   console.log('========================================')
@@ -1366,6 +1408,7 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
     cumulative_return_pct: pnl.cumulative_return_pct,
     spy_cumulative_return_pct: pnl.spy_cumulative_return_pct,
     macro_signals: macroSignals || null,
+    technicals: technicals || null,
   }
 
   // Upsert into daily_snapshots
@@ -1455,8 +1498,11 @@ async function main() {
     // Step 5: Calculate P&L
     const pnl = await calculatePnL(portfolio, prices, quantResult.spyPrice)
 
+    // Step 5b: Technicals — 10/50/200 DMAs per holding (feeds Step 3 action pill + (b) entry-gate)
+    const technicals = await computeTechnicals(tickers)
+
     // Step 6: Write complete daily snapshot
-    await writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals)
+    await writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals, technicals)
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
     console.log('\n╔══════════════════════════════════════════╗')
@@ -1488,4 +1534,6 @@ module.exports = {
   calculateRSI,
   getRSISignal,
   runQuantPipeline,
+  computeDMAs,
+  computeTechnicals,
 }

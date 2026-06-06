@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+pnl-backup-*
+server/reset-pnl.cjs
+server/.td-cache-step2.json
