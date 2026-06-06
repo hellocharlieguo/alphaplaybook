@@ -1320,15 +1320,47 @@ async function calculatePnL(portfolio, prices, spyPrice) {
 // WRITE COMPLETE DAILY SNAPSHOT
 // ============================================================================
 
-// --- Step 2: Technicals (10/50/200-day simple moving averages per holding) ---
+// --- Step 2: Technicals (10/20/50/200-day SMAs + a 20-DMA momentum flag per holding) ---
 // SMAs from each holding's Twelve Data daily close series. Paced ~8s/call to stay
 // under TD's 8/min free limit (~17 calls ≈ 2.5 min; free on GitHub Actions). Any
 // ticker TD can't cover, or with too little history for a window, stores null for
 // that field — queue item (b)'s entry-gate treats a null DMA as "no gate".
+//   dma50/dma200 → the trend pill (Add / Hold / Watch).
+//   dma20         → the momentum flag (Bollinger centerline; calmer than the 10).
+//   dma10         → kept for optionality (a faster signal / future use).
 function smaOf(closes, n) {
   if (closes.length < n) return null
   const slice = closes.slice(-n)
   return Math.round((slice.reduce((a, b) => a + b, 0) / n) * 100) / 100
+}
+
+// SMA of `n` closes ending at index `endIdx` (inclusive); null if not enough history.
+function smaAt(closes, n, endIdx) {
+  if (endIdx < n - 1 || endIdx >= closes.length) return null
+  let sum = 0
+  for (let i = endIdx - n + 1; i <= endIdx; i++) sum += closes[i]
+  return sum / n
+}
+
+// Momentum-down flag off the 20-DMA: price below the 20-DMA for >=3 consecutive
+// trading days AND the 20-DMA itself sloping down over the last 5 days. The two-part
+// filter de-noises single-day moves — an early "momentum cracking" read, SEPARATE
+// from the 50/200 trend pill (it never changes the pill; it's an extra tag). Seeds
+// the future velocity-Trim. Needs >=25 closes (20 for the SMA + 5 for the slope).
+function momentum20(closes) {
+  if (closes.length < 25) return { down: false, below20_days: 0, dma20_chg5_pct: null }
+  const last = closes.length - 1
+  const dma20Now = smaAt(closes, 20, last)
+  const dma20Prev = smaAt(closes, 20, last - 5) // 5 trading days ago
+  let belowDays = 0
+  for (let i = last; i >= 0; i--) {
+    const m = smaAt(closes, 20, i)
+    if (m === null || closes[i] >= m) break
+    belowDays++
+  }
+  const slopeDown = dma20Now !== null && dma20Prev !== null && dma20Now < dma20Prev
+  const chg5 = (dma20Now && dma20Prev) ? Math.round(((dma20Now - dma20Prev) / dma20Prev) * 10000) / 100 : null
+  return { down: belowDays >= 3 && slopeDown, below20_days: belowDays, dma20_chg5_pct: chg5 }
 }
 
 function computeDMAs(series) {
@@ -1336,14 +1368,16 @@ function computeDMAs(series) {
   return {
     close: closes.length ? Math.round(closes[closes.length - 1] * 100) / 100 : null,
     dma10: smaOf(closes, 10),
+    dma20: smaOf(closes, 20),
     dma50: smaOf(closes, 50),
     dma200: smaOf(closes, 200),
+    mom: momentum20(closes),
   }
 }
 
 async function computeTechnicals(tickers) {
   console.log('\n========================================')
-  console.log('STEP 2: TECHNICALS (10/50/200 DMAs)')
+  console.log('STEP 2: TECHNICALS (10/20/50/200 DMAs + momentum)')
   console.log('========================================')
   const technicals = {}
   for (let i = 0; i < tickers.length; i++) {
@@ -1352,7 +1386,8 @@ async function computeTechnicals(tickers) {
     if (series) {
       technicals[t] = computeDMAs(series)
       const d = technicals[t]
-      console.log(`  ${t}: close ${d.close}  10/50/200 = ${d.dma10 ?? '—'} / ${d.dma50 ?? '—'} / ${d.dma200 ?? '—'}`)
+      const mom = d.mom.down ? ` MOM↓ (${d.mom.below20_days}d, 20-DMA ${d.mom.dma20_chg5_pct}%)` : ''
+      console.log(`  ${t}: close ${d.close}  10/20/50/200 = ${d.dma10 ?? '—'} / ${d.dma20 ?? '—'} / ${d.dma50 ?? '—'} / ${d.dma200 ?? '—'}${mom}`)
     } else {
       technicals[t] = null
       console.log(`  ${t}: no Twelve Data series — null`)
