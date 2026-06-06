@@ -59,28 +59,29 @@ const tickerColor = (s: string) => TICKER_META[s]?.color ?? '#64748b'
 const themeColor = (name: string) => THEME_META[name]?.color ?? '#64748b'
 const themeVoices = (name: string) => THEME_META[name]?.voices ?? ['Visser']
 
-// --- Step 3: action pill + momentum tag ---
+// --- Step 3: trend pill + momentum tag ---
 // Pill = where the LIVE price sits vs the 50/200-DMA trend (from daily_snapshots.technicals):
-//   Add   — price above both 50 & 200-DMA: uptrend intact, fine to move toward target.
-//   Hold  — above 200, below 50: pullback within an uptrend; don't chase, don't cut.
-//   Watch — below the 200-DMA: under the entry gate — "paused, not sold" (NO auto-trim).
+//   Uptrend   — price above both 50 & 200-DMA: trend intact, fine to move toward target.
+//   Pullback  — above 200, below 50: pullback within an uptrend; don't chase, don't cut.
+//   Downtrend — below the 200-DMA: under the entry gate — "paused, not sold" (NO auto-trim).
 // There is intentionally NO "Trim". A static DMA position can't tell a structural
 // winner riding above its averages from a blow-off (the anti-momentum trap), so trim
 // is left to a future velocity/engine signal. SGOV (cash) and missing data get no pill.
-// The momentum tag (↓ mom) is a SEPARATE 20-DMA read (multi-day break + 20-DMA turning
-// down); it's informational and never changes the pill state.
+// The momentum tag (↓ 20D) is a SEPARATE 20-DMA read (multi-day break + 20-DMA turning
+// down); it's informational and never changes the pill state. The up case (mom.up) is
+// deliberately NOT shown here — it lives in the engine's entry-gate, not the dashboard.
 const PILL_STYLE: Record<string, { bg: string; text: string }> = {
-  add:   { bg: 'rgba(34,197,94,0.13)',  text: '#22c55e' },
-  hold:  { bg: 'rgba(148,163,184,0.14)', text: '#94a3b8' },
-  watch: { bg: 'rgba(245,158,11,0.14)',  text: '#f59e0b' },
+  uptrend:   { bg: 'rgba(34,197,94,0.13)',  text: '#22c55e' },
+  pullback:  { bg: 'rgba(148,163,184,0.14)', text: '#94a3b8' },
+  downtrend: { bg: 'rgba(245,158,11,0.14)',  text: '#f59e0b' },
 }
 
-function actionPill(symbol: string, price: number | null, tech: any): { label: string; state: keyof typeof PILL_STYLE } | null {
+function trendPill(symbol: string, price: number | null, tech: any): { label: string; state: keyof typeof PILL_STYLE } | null {
   if (symbol === 'SGOV') return null
   if (!tech || price === null || tech.dma200 == null || tech.dma50 == null) return null
-  if (price < tech.dma200) return { label: 'Watch', state: 'watch' }
-  if (price >= tech.dma50) return { label: 'Add', state: 'add' }
-  return { label: 'Hold', state: 'hold' }
+  if (price < tech.dma200) return { label: 'Downtrend', state: 'downtrend' }
+  if (price >= tech.dma50) return { label: 'Uptrend', state: 'uptrend' }
+  return { label: 'Pullback', state: 'pullback' }
 }
 
 const vs200Pct = (price: number | null, tech: any): number | null =>
@@ -345,7 +346,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>50-DMA</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>200-DMA</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>vs 200</th>
-                <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Action</th>
+                <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Trend</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>$ Alloc</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Shares</th>
                 <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Theme</th>
@@ -354,7 +355,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
             <tbody>
               {allocations.map((a, i) => {
                 const tech = technicals[a.symbol]
-                const pill = actionPill(a.symbol, a.price, tech)
+                const pill = trendPill(a.symbol, a.price, tech)
                 const v200 = vs200Pct(a.price, tech)
                 const momDown = !!tech?.mom?.down
                 return (
@@ -386,7 +387,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                       {pill ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start' }}>
                           <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: PILL_STYLE[pill.state].bg, color: PILL_STYLE[pill.state].text }}>{pill.label}</span>
-                          {momDown && <span style={{ fontSize: 9, color: t.negative, fontWeight: 500 }}>↓ mom</span>}
+                          {momDown && <span style={{ fontSize: 9, color: t.negative, fontWeight: 500 }}>↓ 20D</span>}
                         </div>
                       ) : <span style={{ color: t.textTertiary }}>—</span>}
                     </td>
