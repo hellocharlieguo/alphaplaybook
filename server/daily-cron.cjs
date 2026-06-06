@@ -1342,13 +1342,16 @@ function smaAt(closes, n, endIdx) {
   return sum / n
 }
 
-// Momentum-down flag off the 20-DMA: price below the 20-DMA for >=3 consecutive
-// trading days AND the 20-DMA itself sloping down over the last 5 days. The two-part
-// filter de-noises single-day moves — an early "momentum cracking" read, SEPARATE
-// from the 50/200 trend pill (it never changes the pill; it's an extra tag). Seeds
-// the future velocity-Trim. Needs >=25 closes (20 for the SMA + 5 for the slope).
+// 20-DMA momentum flags, mirror images of each other. Each is a two-part filter
+// (price on one side of the 20-DMA for >=3 consecutive days AND the 20-DMA itself
+// sloping that way over 5 days) so single-day noise doesn't trip it:
+//   down — price below 20-DMA >=3d AND 20-DMA falling. Early "cracking" read; rendered
+//          on the dashboard as the ↓ 20D tag, SEPARATE from the 50/200 trend pill.
+//   up   — price above 20-DMA >=3d AND 20-DMA rising. Engine fuel ONLY (the entry-gate's
+//          "un-pause / resume adds" trigger); deliberately NOT rendered on the dashboard.
+// down/up are mutually exclusive. Needs >=25 closes (20 for the SMA + 5 for the slope).
 function momentum20(closes) {
-  if (closes.length < 25) return { down: false, below20_days: 0, dma20_chg5_pct: null }
+  if (closes.length < 25) return { down: false, up: false, below20_days: 0, above20_days: 0, dma20_chg5_pct: null }
   const last = closes.length - 1
   const dma20Now = smaAt(closes, 20, last)
   const dma20Prev = smaAt(closes, 20, last - 5) // 5 trading days ago
@@ -1358,9 +1361,22 @@ function momentum20(closes) {
     if (m === null || closes[i] >= m) break
     belowDays++
   }
+  let aboveDays = 0
+  for (let i = last; i >= 0; i--) {
+    const m = smaAt(closes, 20, i)
+    if (m === null || closes[i] <= m) break
+    aboveDays++
+  }
   const slopeDown = dma20Now !== null && dma20Prev !== null && dma20Now < dma20Prev
+  const slopeUp   = dma20Now !== null && dma20Prev !== null && dma20Now > dma20Prev
   const chg5 = (dma20Now && dma20Prev) ? Math.round(((dma20Now - dma20Prev) / dma20Prev) * 10000) / 100 : null
-  return { down: belowDays >= 3 && slopeDown, below20_days: belowDays, dma20_chg5_pct: chg5 }
+  return {
+    down: belowDays >= 3 && slopeDown,
+    up:   aboveDays >= 3 && slopeUp,
+    below20_days: belowDays,
+    above20_days: aboveDays,
+    dma20_chg5_pct: chg5,
+  }
 }
 
 function computeDMAs(series) {
@@ -1386,7 +1402,9 @@ async function computeTechnicals(tickers) {
     if (series) {
       technicals[t] = computeDMAs(series)
       const d = technicals[t]
-      const mom = d.mom.down ? ` MOM↓ (${d.mom.below20_days}d, 20-DMA ${d.mom.dma20_chg5_pct}%)` : ''
+      const mom = d.mom.down ? ` MOM↓ (${d.mom.below20_days}d, 20-DMA ${d.mom.dma20_chg5_pct}%)`
+                : d.mom.up   ? ` MOM↑ (${d.mom.above20_days}d, 20-DMA ${d.mom.dma20_chg5_pct}%)`
+                : ''
       console.log(`  ${t}: close ${d.close}  10/20/50/200 = ${d.dma10 ?? '—'} / ${d.dma20 ?? '—'} / ${d.dma50 ?? '—'} / ${d.dma200 ?? '—'}${mom}`)
     } else {
       technicals[t] = null
