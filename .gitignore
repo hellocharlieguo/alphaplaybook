@@ -26,3 +26,4 @@ dist-ssr
 pnl-backup-*
 server/reset-pnl.cjs
 server/.td-cache-step2.json
+server/.td-cache-step2.json
