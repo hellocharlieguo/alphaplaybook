@@ -219,6 +219,28 @@ def apply_gates(results: list, prior_composites: dict):
     return results, exit_overrides, log
 
 
+def compute_pause_caps(results: list, sleeve: str = "aggressive",
+                       exit_overrides: Optional[dict] = None) -> dict:
+    """Entry gate (2b): a HELD name below its 200-DMA is capped at its current weight
+    (pause adds; downward moves still allowed). Aggressive un-pauses on mom.up;
+    conservative requires a full 200-reclaim (so it stays paused while below-200).
+    Names already EXITing are skipped. Returns {ticker: current_weight} for
+    normalize(paused_caps=...)."""
+    exit_overrides = exit_overrides or {}
+    g = CFG.get("gates", {})
+    mode = g.get("entry_pause", {}).get("unpause", {}).get(sleeve, "reclaim_200dma")
+    caps = {}
+    for r in results:
+        t = r["ticker"]; tech = r.get("technicals", {})
+        if not (tech.get("held") and tech.get("below_200")
+                and tech.get("current_weight") is not None and t not in exit_overrides):
+            continue
+        unpaused = (mode == "mom_up" and tech.get("mom_up"))   # reclaim_200dma can't hold while below-200
+        if not unpaused:
+            caps[t] = tech["current_weight"]
+    return caps
+
+
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     CAPEX = 77.0

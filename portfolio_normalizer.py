@@ -24,8 +24,16 @@ CASH_TICKERS = {"SGOV","BIL","USFR"}
 
 def normalize(results: list[dict], sleeve: str = "aggressive",
               cash_ticker: str = "SGOV",
-              manual_overrides: Optional[dict] = None) -> dict:
-    """results: list of score_ticker() dicts. Returns weights summing to 100%."""
+              manual_overrides: Optional[dict] = None,
+              paused_caps: Optional[dict] = None) -> dict:
+    """results: list of score_ticker() dicts. Returns weights summing to 100%.
+
+    paused_caps {ticker: max_pct}: Phase 2b entry gate. A held name below its 200-DMA
+    cannot be sized ABOVE its current weight (pause adds). Downward moves are still
+    allowed — a cap only BINDS if the convexity target would exceed it. Freed weight
+    redistributes to un-paused names via the same convexity solve (iterated to a fixed
+    point). Caps never force a name out; that's the exit gate's job (override 0).
+    """
     v = CFG["engine_variants"][sleeve]
     wcfg = CFG["weighting"]
     target_top = v["target_top_pct"]
@@ -33,6 +41,7 @@ def normalize(results: list[dict], sleeve: str = "aggressive",
     cash_floor = v["cash_floor_pct"]
     floor_score = wcfg["floor_score"]
     overrides = {k.upper(): val for k, val in (manual_overrides or {}).items()}
+    caps = {k.upper(): val for k, val in (paused_caps or {}).items()}
 
     hold_thr = CFG["entry_thresholds"]["hold_only"]
     forced_exit = {t for t,val in overrides.items() if val == 0}
@@ -48,32 +57,47 @@ def normalize(results: list[dict], sleeve: str = "aggressive",
     locked = {r["ticker"]: overrides[r["ticker"].upper()]
               for r in eligible if r["ticker"].upper() in overrides and overrides[r["ticker"].upper()] > 0}
     free = [r for r in eligible if r["ticker"] not in locked]
-    locked_sum = sum(locked.values())
-
-    n = len(eligible)
-    distributable = 100.0 - cash_floor - locked_sum - min_floor*len(free)
     # Rule B: the convexity curve runs on weighting_score (coverage-discounted for
-    # ETF-redundant single names), NOT raw composite. Eligibility/tiering still used
-    # composite above (hold_thr check). Fallback to composite if no weighting_score.
+    # ETF-redundant single names), NOT raw composite. Eligibility/tiering used composite
+    # above (hold_thr check). Fallback to composite if no weighting_score.
     comp = {r["ticker"]: r.get("weighting_score", r["composite"]) for r in free}
 
-    def weights_for_k(k):
-        raw = {t: max(0,(c-floor_score))**k for t,c in comp.items()}
-        s = sum(raw.values()) or 1.0
-        w = {t: min_floor + raw[t]/s*distributable for t in raw}
-        w.update(locked)
-        return w
-
-    # solve k so max free weight hits target_top (locked names excluded from the target)
-    lo, hi = 0.2, 9.0
-    for _ in range(80):
+    def solve():
+        """Bisection over k with the current locked/free split. Returns (weights, k)."""
+        locked_sum = sum(locked.values())
+        free_comp = {r["ticker"]: comp[r["ticker"]] for r in free}
+        distributable = 100.0 - cash_floor - locked_sum - min_floor*len(free)
+        def weights_for_k(k):
+            raw = {t: max(0,(c-floor_score))**k for t,c in free_comp.items()}
+            s = sum(raw.values()) or 1.0
+            w = {t: min_floor + raw[t]/s*distributable for t in raw}
+            w.update(locked)
+            return w
+        lo, hi = 0.2, 9.0
+        for _ in range(80):
+            k = (lo+hi)/2
+            w = weights_for_k(k)
+            free_max = max([w[t] for t in free_comp], default=0)
+            if free_max > target_top: hi = k
+            else: lo = k
         k = (lo+hi)/2
-        w = weights_for_k(k)
-        free_max = max([w[t] for t in comp], default=0)
-        if free_max > target_top: hi = k
-        else: lo = k
-    k = (lo+hi)/2
-    w = weights_for_k(k)
+        return weights_for_k(k), round(k,2)
+
+    # Entry-pause caps (2b): lock any paused name whose convexity weight would exceed its
+    # current weight at that cap, then re-solve so the freed weight flows to un-paused
+    # names. Iterate to a fixed point (locking only reduces, so it converges quickly).
+    paused_capped = []
+    w, k = solve()
+    for _ in range(12):
+        breaches = {r["ticker"]: caps[r["ticker"].upper()]
+                    for r in free
+                    if r["ticker"].upper() in caps and w[r["ticker"]] > caps[r["ticker"].upper()] + 0.01}
+        if not breaches:
+            break
+        locked.update(breaches)
+        paused_capped.extend(breaches.keys())
+        free = [r for r in free if r["ticker"] not in breaches]
+        w, k = solve()
 
     w[cash_ticker] = w.get(cash_ticker, 0.0) + cash_floor
     rounded = {t: round(x*2)/2 for t,x in w.items()}
@@ -81,12 +105,13 @@ def normalize(results: list[dict], sleeve: str = "aggressive",
     rounded[cash_ticker] = round(rounded.get(cash_ticker,0)+resid, 1)
 
     return {
-        "sleeve": sleeve, "target_top_pct": target_top, "convexity_k": round(k,2),
+        "sleeve": sleeve, "target_top_pct": target_top, "convexity_k": k,
         "cash_floor_pct": cash_floor, "min_floor_pct": min_floor,
         "weights_pct": dict(sorted(rounded.items(), key=lambda kv:-kv[1])),
         "total_pct": round(sum(rounded.values()),1),
         "dropped_avoid_exit": dropped,
-        "note": "No single-stock cap. Concentration managed by target_top + 2% floor + cash floor.",
+        "paused_capped": paused_capped,
+        "note": "No single-stock cap. Concentration via target_top + 2% floor + cash floor. paused_capped = held names frozen at current weight (below-200 entry pause).",
     }
 
 
