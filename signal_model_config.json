@@ -142,6 +142,20 @@
     "capex_red_trim_high_beta_pct": 25,
     "thesis_break": "Exit regardless of price if the bottleneck is resolved/bypassed."
   },
+  "gates": {
+    "_doc": "Phase 2 asymmetric-S5 gates. Exit side (2a): TRIM rides the composite (no extra cut), EXIT forces out, accelerant adds +1 entry-band cut for confirmed company breakdowns. Entry pause (2b) is applied in the normalizer.",
+    "exit_exempt": ["SLV", "GLDM", "IBIT"],
+    "s5_held_below_200_floor": 60,
+    "exit_accelerant": {
+      "enabled": true,
+      "applies_to": "company",
+      "escalation": "one_band"
+    },
+    "entry_pause": {
+      "below_200dma": true,
+      "unpause": { "aggressive": "mom_up", "conservative": "reclaim_200dma" }
+    }
+  },
   "review_cadence": {
     "weekly": [
       "S4_catalyst",

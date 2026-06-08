@@ -39,6 +39,13 @@ class SignalInput:
     price: Optional[float] = None
     pct_from_52w_high: Optional[float] = None
     trailing_1y_pct: Optional[float] = None     # informs S5 (anti-momentum)
+    # Phase 2 gate inputs (from cron technicals + current book, fed at rescore time)
+    held: bool = False                           # currently in the live book
+    current_weight: Optional[float] = None       # current weight % (for the 2b entry pause)
+    dma50: Optional[float] = None
+    dma200: Optional[float] = None
+    mom_up: bool = False                         # 20-DMA momentum up (un-pause fuel)
+    mom_down: bool = False                        # 20-DMA momentum down (exit accelerant)
     notes: str = ""
 
 
@@ -70,6 +77,20 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float) -> dict:
     s6 = 50 if sig.s6_valuation_risk is None else sig.s6_valuation_risk
     conv = _conv(sig.lenses_pointing)
 
+    # --- Phase 2: asymmetric S5 ------------------------------------------------
+    # A HELD name below its 200-DMA must not have its composite dragged by price
+    # weakness ("paused, not sold"): floor the effective S5 so price can't trim it.
+    # Thesis (the other signals) can still move the composite. Adds (not held) and
+    # above-200 names are untouched, so entry quality still scores normally.
+    g = CFG.get("gates", {})
+    below_200 = (sig.dma200 is not None and sig.price is not None and sig.price < sig.dma200)
+    s5_floored = False
+    if sig.held and below_200:
+        floor = g.get("s5_held_below_200_floor", 60)
+        if s5 < floor:
+            s5 = floor
+            s5_floored = True
+
     raw = (s1*w["S1_bottleneck"] + s2*w["S2_timing"] + s5*w["S5_entry_quality"]
            + s4*w["S4_catalyst"] + s6*w["S6_valuation_risk"] + conv*w["convergence_bonus"])
     regime, mult = capex_multiplier(capex_yoy_pct)
@@ -99,22 +120,103 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float) -> dict:
         "weighting_score": weighting_score,
         "coverage_discounted": discount_applied,
         "action": action, "confidence": _confidence(sig),
+        "s5_floored": s5_floored,
+        "technicals": {"below_200": below_200, "mom_up": sig.mom_up,
+                       "mom_down": sig.mom_down, "held": sig.held,
+                       "current_weight": sig.current_weight},
         "context": {"price":sig.price,"pct_from_52w_high":sig.pct_from_52w_high,
                     "trailing_1y_pct":sig.trailing_1y_pct},
         "notes": sig.notes,
     }
 
 
-def apply_exit_rules_vs_prior(current: dict, prior_composite: Optional[float]):
-    flags = []
-    if prior_composite is None: return flags
+def _next_lower_threshold(score: float) -> float:
+    """The next entry-band floor below `score` — the '+1 band' accelerant step."""
+    t = CFG["entry_thresholds"]
+    ladder = [t["strong_entry"], t["enter"], t["starter_watch"], t["hold_only"]]  # 78/65/55/45
+    for i, b in enumerate(ladder):
+        if score >= b:
+            return ladder[i+1] if i+1 < len(ladder) else max(b - 10, 0)
+    return score  # already below the ladder
+
+
+def apply_exit_rules_vs_prior(current: dict, prior_composite: Optional[float]) -> dict:
+    """Exit decision vs the prior rescore's composite.
+      TRIM (drop >= trim_thr): rides the composite (no extra cut) — flag only.
+      EXIT (drop >= exit_thr): force the name out.
+      Accelerant: a `company` (not exit_exempt) in the trim zone that is ALSO below its
+        200-DMA with mom-down escalates +1 entry-band (cut weighting_score to next band).
+    Returns {flags, action, new_weighting_score}; action in {None,'TRIM','EXIT','TRIM+ACCEL'}.
+    """
+    out = {"flags": [], "action": None, "new_weighting_score": None}
+    if prior_composite is None:
+        return out
     drop = prior_composite - current["composite"]
-    er = CFG["exit_rules"]
-    if drop >= er["exit_if_composite_drops"]:
-        flags.append(f"EXIT: composite fell {drop:.1f} pts (>= {er['exit_if_composite_drops']})")
-    elif drop >= er["trim_one_tier_if_composite_drops"]:
-        flags.append(f"TRIM one tier: composite fell {drop:.1f} pts (>= {er['trim_one_tier_if_composite_drops']})")
-    return flags
+    er = CFG["exit_rules"]; g = CFG.get("gates", {}); acc = g.get("exit_accelerant", {})
+    exit_thr = er["exit_if_composite_drops"]; trim_thr = er["trim_one_tier_if_composite_drops"]
+
+    if drop >= exit_thr:
+        out["action"] = "EXIT"
+        out["flags"].append(f"EXIT: composite fell {drop:.1f} pts (>= {exit_thr})")
+        return out
+    if drop >= trim_thr:
+        out["action"] = "TRIM"
+        out["flags"].append(f"TRIM: composite fell {drop:.1f} pts (>= {trim_thr}) — rides the composite")
+        tech = current.get("technicals", {})
+        exempt = current["ticker"].upper() in {t.upper() for t in g.get("exit_exempt", [])}
+        is_company = current.get("asset_type") == acc.get("applies_to", "company")
+        if (acc.get("enabled") and is_company and not exempt
+                and tech.get("below_200") and tech.get("mom_down")):
+            ws = current.get("weighting_score", current["composite"])
+            target = max(_next_lower_threshold(ws), CFG["weighting"]["floor_score"])
+            if target < ws:
+                out["action"] = "TRIM+ACCEL"
+                out["new_weighting_score"] = round(target, 1)
+                out["flags"].append(
+                    f"ACCELERANT: company below-200 + mom-down — +1 band, weighting_score {ws:.1f} -> {target:.1f}")
+    return out
+
+
+# --- composite history (feeds the delta exit) -------------------------------
+HIST_DIR = os.path.join(os.path.dirname(__file__), "composite_history")
+
+
+def save_composites(results: list, run_date: Optional[str] = None) -> str:
+    """Dump {ticker: composite} for this rescore — becomes the next run's prior."""
+    os.makedirs(HIST_DIR, exist_ok=True)
+    run_date = run_date or date.today().isoformat()
+    path = os.path.join(HIST_DIR, f"{run_date}.json")
+    with open(path, "w") as f:
+        json.dump({r["ticker"]: r["composite"] for r in results}, f, indent=2, sort_keys=True)
+    return path
+
+
+def load_prior_composites(before_date: Optional[str] = None) -> dict:
+    """Most recent saved composite map (optionally strictly before a date)."""
+    if not os.path.isdir(HIST_DIR):
+        return {}
+    files = sorted(f for f in os.listdir(HIST_DIR) if f.endswith(".json"))
+    if before_date:
+        files = [f for f in files if f[:-5] < before_date]
+    if not files:
+        return {}
+    with open(os.path.join(HIST_DIR, files[-1])) as f:
+        return json.load(f)
+
+
+def apply_gates(results: list, prior_composites: dict):
+    """Run the exit gate over scored results. Mutates weighting_score on accelerated
+    trims; returns (results, exit_overrides{ticker:0}, gate_log[str])."""
+    exit_overrides, log = {}, []
+    for r in results:
+        dec = apply_exit_rules_vs_prior(r, prior_composites.get(r["ticker"]))
+        if dec["action"] == "EXIT":
+            exit_overrides[r["ticker"]] = 0
+        elif dec["action"] == "TRIM+ACCEL" and dec["new_weighting_score"] is not None:
+            r["weighting_score"] = dec["new_weighting_score"]
+        for f in dec["flags"]:
+            log.append(f"{r['ticker']}: {f}")
+    return results, exit_overrides, log
 
 
 # ---------------------------------------------------------------------------
