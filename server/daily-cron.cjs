@@ -1381,12 +1381,22 @@ function momentum20(closes) {
 
 function computeDMAs(series) {
   const closes = series.map((p) => p.close)
+  // Phase 2.5 velocity inputs: per-ticker RSI(14) + trailing 1-yr return, from the same series.
+  let rsi14 = null
+  try { rsi14 = calculateRSI(series) } catch (e) { rsi14 = null }
+  let ret1y = null
+  if (closes.length >= 253) {
+    const past = closes[closes.length - 1 - 252]   // ~252 trading days = 1 year
+    if (past) ret1y = Math.round(((closes[closes.length - 1] / past) - 1) * 10000) / 100
+  }
   return {
     close: closes.length ? Math.round(closes[closes.length - 1] * 100) / 100 : null,
     dma10: smaOf(closes, 10),
     dma20: smaOf(closes, 20),
     dma50: smaOf(closes, 50),
     dma200: smaOf(closes, 200),
+    rsi14,            // Phase 2.5: velocity-penalty input
+    ret1y,            // Phase 2.5: 1-yr return %, parabola/blow-off input
     mom: momentum20(closes),
   }
 }
@@ -1398,14 +1408,14 @@ async function computeTechnicals(tickers) {
   const technicals = {}
   for (let i = 0; i < tickers.length; i++) {
     const t = tickers[i]
-    const series = await fetchTwelveDataSeries(t, 250)
+    const series = await fetchTwelveDataSeries(t, 265)
     if (series) {
       technicals[t] = computeDMAs(series)
       const d = technicals[t]
       const mom = d.mom.down ? ` MOM↓ (${d.mom.below20_days}d, 20-DMA ${d.mom.dma20_chg5_pct}%)`
                 : d.mom.up   ? ` MOM↑ (${d.mom.above20_days}d, 20-DMA ${d.mom.dma20_chg5_pct}%)`
                 : ''
-      console.log(`  ${t}: close ${d.close}  10/20/50/200 = ${d.dma10 ?? '—'} / ${d.dma20 ?? '—'} / ${d.dma50 ?? '—'} / ${d.dma200 ?? '—'}${mom}`)
+      console.log(`  ${t}: close ${d.close}  10/20/50/200 = ${d.dma10 ?? '—'} / ${d.dma20 ?? '—'} / ${d.dma50 ?? '—'} / ${d.dma200 ?? '—'}  RSI ${d.rsi14 ?? '—'}  1y ${d.ret1y ?? '—'}%${mom}`)
     } else {
       technicals[t] = null
       console.log(`  ${t}: no Twelve Data series — null`)
