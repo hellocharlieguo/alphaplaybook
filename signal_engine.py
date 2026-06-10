@@ -42,10 +42,13 @@ class SignalInput:
     # Phase 2 gate inputs (from cron technicals + current book, fed at rescore time)
     held: bool = False                           # currently in the live book
     current_weight: Optional[float] = None       # current weight % (for the 2b entry pause)
+    dma20: Optional[float] = None
     dma50: Optional[float] = None
     dma200: Optional[float] = None
+    rsi: Optional[float] = None                  # per-ticker RSI (Phase 2.5 velocity penalty input)
     mom_up: bool = False                         # 20-DMA momentum up (un-pause fuel)
     mom_down: bool = False                        # 20-DMA momentum down (exit accelerant)
+    voice_conviction: bool = False               # tracked voice reaffirmed recently -> voice floor
     notes: str = ""
 
 
@@ -76,6 +79,33 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float) -> dict:
     s4 = 50 if sig.s4_catalyst      is None else sig.s4_catalyst
     s6 = 50 if sig.s6_valuation_risk is None else sig.s6_valuation_risk
     conv = _conv(sig.lenses_pointing)
+
+    # --- Phase 2.5: S5 position from the DMA ladder (opt-in) --------------------
+    # Position BAND comes from the 20/50/200 ladder (structure, never distance).
+    # Penalty comes from RSI + 1yr velocity (the anti-momentum blow-off brake).
+    # Falls back to the hand-set s5 when DMAs/flag are absent (e.g. new names).
+    g = CFG.get("gates", {})
+    lad = g.get("s5_ladder", {})
+    s5_source = "input"
+    if (lad.get("enabled") and sig.price is not None
+            and sig.dma50 is not None and sig.dma200 is not None):
+        b = lad["position_bands"]; vp = lad["velocity_penalty"]; clamp = lad.get("clamp", [5, 95])
+        if sig.price < sig.dma200:
+            base = b["below_200"]
+        elif sig.price < sig.dma50:
+            base = b["pullback_below_50"]
+        else:
+            base = b["riding_above_50"]
+        pen = 0.0
+        if sig.rsi is not None:
+            if sig.rsi >= vp["rsi_overbought_thr"]:   pen += vp["rsi_overbought_pen"]
+            elif sig.rsi >= vp["rsi_warm_thr"]:        pen += vp["rsi_warm_pen"]
+            elif sig.rsi <= vp["rsi_oversold_thr"]:    pen -= vp["rsi_oversold_bonus"]
+        if sig.trailing_1y_pct is not None:
+            if sig.trailing_1y_pct >= vp["vel_parabolic_thr_1y"]: pen += vp["vel_parabolic_pen"]
+            elif sig.trailing_1y_pct >= vp["vel_extended_thr_1y"]: pen += vp["vel_extended_pen"]
+        s5 = max(clamp[0], min(clamp[1], base - pen))
+        s5_source = f"ladder(base={base},pen={pen:+.0f})"
 
     # --- Phase 2: asymmetric S5 ------------------------------------------------
     # A HELD name below its 200-DMA must not have its composite dragged by price
@@ -120,10 +150,11 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float) -> dict:
         "weighting_score": weighting_score,
         "coverage_discounted": discount_applied,
         "action": action, "confidence": _confidence(sig),
-        "s5_floored": s5_floored,
+        "s5_floored": s5_floored, "s5_source": s5_source,
         "technicals": {"below_200": below_200, "mom_up": sig.mom_up,
                        "mom_down": sig.mom_down, "held": sig.held,
-                       "current_weight": sig.current_weight},
+                       "current_weight": sig.current_weight,
+                       "voice_conviction": sig.voice_conviction},
         "context": {"price":sig.price,"pct_from_52w_high":sig.pct_from_52w_high,
                     "trailing_1y_pct":sig.trailing_1y_pct},
         "notes": sig.notes,
@@ -146,6 +177,11 @@ def apply_exit_rules_vs_prior(current: dict, prior_composite: Optional[float]) -
       EXIT (drop >= exit_thr): force the name out.
       Accelerant: a `company` (not exit_exempt) in the trim zone that is ALSO below its
         200-DMA with mom-down escalates +1 entry-band (cut weighting_score to next band).
+      RULE C (approved 6/9/26): if the accelerant fires AND the name's theme is held via a
+        thematic ETF (coverage_discount.redundant_by_sleeve, or etf_redundant=True on the
+        input), the name EXITS instead of parking at a floor weight — a broken single name
+        whose theme you already own diversified is clutter, not a position. Voice-floor
+        names are exempt (rule_c.voice_floor_exempt). Reference case: CEG (covered by AIPO).
     Returns {flags, action, new_weighting_score}; action in {None,'TRIM','EXIT','TRIM+ACCEL'}.
     """
     out = {"flags": [], "action": None, "new_weighting_score": None}
@@ -167,6 +203,20 @@ def apply_exit_rules_vs_prior(current: dict, prior_composite: Optional[float]) -
         is_company = current.get("asset_type") == acc.get("applies_to", "company")
         if (acc.get("enabled") and is_company and not exempt
                 and tech.get("below_200") and tech.get("mom_down")):
+            # --- Rule C: accelerant + ETF theme coverage = EXIT, not floor ------
+            rc = g.get("rule_c", {})
+            if rc.get("enabled"):
+                covered_list = (CFG.get("coverage_discount", {})
+                                   .get("redundant_by_sleeve", {})
+                                   .get(current.get("sleeve", "aggressive"), []))
+                covered = (current["ticker"].upper() in {c.upper() for c in covered_list}
+                           or bool(current.get("etf_redundant")))
+                voice = bool(tech.get("voice_conviction"))
+                if covered and not (rc.get("voice_floor_exempt", True) and voice):
+                    out["action"] = "EXIT"
+                    out["flags"].append(
+                        "RULE C: accelerant fired + theme ETF-covered -> EXIT (not floor)")
+                    return out
             ws = current.get("weighting_score", current["composite"])
             target = max(_next_lower_threshold(ws), CFG["weighting"]["floor_score"])
             if target < ws:
@@ -239,6 +289,20 @@ def compute_pause_caps(results: list, sleeve: str = "aggressive",
         if not unpaused:
             caps[t] = tech["current_weight"]
     return caps
+
+
+def compute_voice_floors(results: list, sleeve: str = "aggressive") -> dict:
+    """Voice floor: a name flagged voice_conviction=True (a tracked voice reaffirmed it
+    in recent transcripts) holds a minimum weight and is exempt from the exit force-out.
+    The voice's conviction still enters PRIMARILY via convergence; this is the backstop
+    so cooling/parabolic brakes can't zero a live-voice name. Returns {ticker: floor_pct}
+    for normalize(voice_floors=...)."""
+    g = CFG.get("gates", {}).get("voice_floor", {})
+    if not g.get("enabled"):
+        return {}
+    pct = g.get("floor_pct", 3.0)
+    return {r["ticker"]: pct for r in results
+            if r.get("technicals", {}).get("voice_conviction")}
 
 
 # ---------------------------------------------------------------------------

@@ -999,46 +999,50 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // MODEL PORTFOLIO COMPUTATION
 // ============================================================================
 
-// AlphaPlaybook model portfolio — 17 tickers across 6 themes + cash
+// AlphaPlaybook model portfolio — 16 holdings + cash across 6 themes
 // North star: "Long scarcity, short abundance"
-// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.2 (RESCORED 2026-05-28, REWEIGHTED 2026-06-01)
-// Source: AlphaPlaybook_Sleeves_5_28_26.md + "Portfolio Construction" session (Rule B).
-// v2.2 change (2026-06-01): SINGLE-NAME REDUNDANCY DISCOUNT ("Rule B").
-//   A single stock whose THEME is already held via a thematic ETF takes an
-//   idiosyncratic-risk haircut on its WEIGHTING SCORE only:
-//     weighting_score = 45 + (composite - 45) * lambda,  lambda = 0.814
-//   composite/tier labels are UNCHANGED (raw scores still drive trim/exit logic).
-//   Redundant names (inside AIPO): CEG (~3.5% of AIPO) + BE (~6% of AIPO).
-//   Exempt: ETFs, and optical single names GLW/MRVL (no thematic ETF covers optical;
-//   trivial XSD membership does NOT count as theme coverage).
-//   This REPLACES the old ad-hoc 12% single-stock cap on CEG — the scoring rule
-//   now does that job. Effect: CEG 12.0 -> 7.5, AIPO 10.0 -> 10.5 (theme now
-//   outweighs the single name), BE 4.0 -> 2.5; freed weight lifts GLW/MRVL/ETFs.
-// Params: 17 holdings, top weight 18%, cash floor ~5% (SGOV 5.5%), k=6.03. NO single-stock cap.
+// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.3 (FULL RESCORE 2026-06-09)
+// Source: AlphaPlaybook_Sleeves_6_9_26.md — evidence: 6/3 TFTC + 6/6 Pomp + 6/7 solo
+// Visser appearances + 6/8 Camillo (methodology only, no new tickers).
+// 6/9 session decisions (ALL APPROVED):
+//   RULE C (new, v2.3): accelerant fired + theme ETF-covered = EXIT, not floor.
+//     First firing: CEG (below-200 + mom-down in trim zone; theme held via AIPO).
+//     Formalized in signal_engine.py apply_exit_rules_vs_prior + config gates.rule_c.
+//   Conviction exits (rationale in sleeves doc): TXN (thinnest Visser linkage, power
+//     theme cooling), AMZN (evidence-gate fail — never entered).
+//   NEW: XLE 5.5% energy hedge (Visser bought XOM/CVX 6/7 — Hormuz + >4% CPI regime;
+//     basket form chosen over the two singles for simplicity). LLY 7% application
+//     satellite ("largest US company by 2030", peptides thesis, multiple appearances).
+//   KEPT: XSD 2.5% (index-beta optionality). FLNC protected from the cooling sweep
+//     (6/7 battery reaffirmation: "a necessity") but velocity-trimmed by the S5
+//     ladder (+397% 1y = parabolic penalty) — thesis up, entry quality down, 3.5%.
+//   Voice floor 3% LIVE (BE armed, not bound). PAUSED below-200, frozen at current
+//     weight (paused is NOT sold; hard-money exit-exempt): IBIT / GLDM / ETHA.
+// Theme shape vs 6/1: power/infra 32.0→21.5, crypto-beta 22.5→19.5, energy 0→5.5,
+//   application 0→7.0, monetary core 24.5 (unchanged), optical/compute 15.5→20.5.
+// Params: 16 holdings + cash, top weight 18%, cash floor 5%, k=2.81. NO single-stock cap.
 // These are FINAL engine output and ship as-is — the nightly boost is DISABLED below.
 // `action` = composite-tier label for the Portfolio tab Action column
 //   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
 // Comments after each line are the engine composite scores (UNDISCOUNTED).
 const BASE_PORTFOLIO = {
   SLV:  { base_weight: 18,  theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },   // 79.7  below-200, held (no add)
-  GLW:  { base_weight: 9,   theme: 'Compute',                          action: 'Enter' },          // 71.2
-  LLY:  { base_weight: 7,   theme: 'AI Application',                   action: 'Enter' },          // 68.0
-  IBIT: { base_weight: 6.5, theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 75.5  PAUSED below-200
-  HOOD: { base_weight: 6,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 66.0
-  GLDM: { base_weight: 6,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 74.6  PAUSED below-200
-  AIPO: { base_weight: 5.5, theme: 'Power & Infrastructure',           action: 'Enter' },          // 65.3
+  GLW:  { base_weight: 9.5, theme: 'Compute',                          action: 'Enter' },          // 71.2
+  LLY:  { base_weight: 7,   theme: 'AI Application',                   action: 'Enter' },          // 68.0  NEW 6/9
+  IBIT: { base_weight: 7,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 75.5  PAUSED below-200
+  GLDM: { base_weight: 6.5, theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 74.6  PAUSED below-200
+  HOOD: { base_weight: 6,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 66.0  mom.up un-pause
+  AIPO: { base_weight: 5.5, theme: 'Power & Infrastructure',           action: 'Enter' },          // 65.3  power theme, basket-only now
+  XLE:  { base_weight: 5.5, theme: 'Energy Hedge',                     action: 'Enter' },          // 65.2  NEW 6/9
   ENTG: { base_weight: 5,   theme: 'Compute',                          action: 'Starter / Watch' },// 64.0
-  BE:   { base_weight: 4.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 63.4  voice-floor (Camillo)
-  COPX: { base_weight: 4.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 62.6
-  SGOV: { base_weight: 4.5, theme: 'Cash', min_weight: 3,              action: 'Hold' },           // cash floor
-  WGMI: { base_weight: 3.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 60.1
-  TXN:  { base_weight: 3.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 59.7
-  MRVL: { base_weight: 3.5, theme: 'Compute',                          action: 'Starter / Watch' },// 59.9
+  SGOV: { base_weight: 5,   theme: 'Cash', min_weight: 3,              action: 'Hold' },           // cash floor
+  BE:   { base_weight: 4.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 63.4  voice floor armed (Camillo)
+  COPX: { base_weight: 4.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 62.6  structural cross-stage
+  WGMI: { base_weight: 3.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 60.1  reclaim optionality
+  FLNC: { base_weight: 3.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 59.7  velocity-trimmed, mom.up
+  MRVL: { base_weight: 3.5, theme: 'Compute',                          action: 'Starter / Watch' },// 59.9  velocity-trimmed
   ETHA: { base_weight: 3,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 67.7  PAUSED below-200
-  CEG:  { base_weight: 2.5, theme: 'Power & Infrastructure',           action: 'Enter' },          // 67.9  cooling + accel
-  FLNC: { base_weight: 2.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 56.9
-  XSD:  { base_weight: 2.5, theme: 'Compute',                          action: 'Starter / Watch' },// 56.4
-  AMZN: { base_weight: 2.5, theme: 'AI Application',                   action: 'Starter / Watch' },// 55.5
+  XSD:  { base_weight: 2.5, theme: 'Compute',                          action: 'Starter / Watch' },// 56.4  index-beta optionality (kept 6/9)
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {

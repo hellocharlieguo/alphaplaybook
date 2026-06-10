@@ -1,7 +1,7 @@
 {
   "model_name": "AlphaPlaybook Decision Engine",
-  "version": "2.2",
-  "doc_date": "2026-06-01",
+  "version": "2.3",
+  "doc_date": "2026-06-09",
   "philosophy": "Leopold/Visser-style conviction engine: concentrated, anti-momentum, rotates toward what hasn't moved yet, repositions decisively on score changes. Long-only adaptation of a hedge-fund book: structural guardrails (floor, cash, capped top) substitute for the put-hedge a real fund would use.",
   "two_spines": {
     "ai_bottleneck": "Physical AI inputs: power generation, grid/equipment, leading-edge compute, memory/interconnect, data-center real estate.",
@@ -114,7 +114,14 @@
       "min_position_pct": 2.0,
       "cash_floor_pct": 12,
       "online": false,
-      "note": "Offline mirror. Gentler convexity = more diversified. Same code, lower target_top."
+      "note": "Offline mirror (19-name form). Gentler convexity = more diversified. Same code, lower target_top."
+    },
+    "conservative_compact": {
+      "target_top_pct": 16,
+      "min_position_pct": 2.0,
+      "cash_floor_pct": 12,
+      "online": false,
+      "note": "Sub-10 redesign (6/9/26): metals / BTC-proxy / oil / pharma / AI / cash. target_top 16 because the 11% top was calibrated for 19 holdings and degenerates to flat weights (k~0.2, conviction-order inversion) at 9 names. OFFLINE BY DESIGN \u2014 standing decision, not an API-capacity constraint."
     }
   },
   "risk_caps": {
@@ -143,17 +150,61 @@
     "thesis_break": "Exit regardless of price if the bottleneck is resolved/bypassed."
   },
   "gates": {
-    "_doc": "Phase 2 asymmetric-S5 gates. Exit side (2a): TRIM rides the composite (no extra cut), EXIT forces out, accelerant adds +1 entry-band cut for confirmed company breakdowns. Entry pause (2b) is applied in the normalizer.",
-    "exit_exempt": ["SLV", "GLDM", "IBIT"],
+    "_doc": "Phase 2 asymmetric-S5 gates. Exit side (2a): TRIM rides the composite (no extra cut), EXIT forces out, accelerant adds +1 entry-band cut for confirmed company breakdowns; Rule C upgrades an accelerated trim to a full EXIT when the theme is ETF-covered. Entry pause (2b) is applied in the normalizer.",
+    "exit_exempt": [
+      "SLV",
+      "GLDM",
+      "IBIT"
+    ],
     "s5_held_below_200_floor": 60,
     "exit_accelerant": {
       "enabled": true,
       "applies_to": "company",
       "escalation": "one_band"
     },
+    "rule_c": {
+      "enabled": true,
+      "voice_floor_exempt": true,
+      "_added": "2026-06-09 (approved). Reference case: CEG (theme held via AIPO).",
+      "_doc": "Accelerant + ETF theme coverage = EXIT, not floor. When the exit accelerant fires (company, not exit_exempt, in the trim zone, below-200 + mom-down) AND the name's theme is already held via a thematic ETF, the name exits instead of parking at a floor weight \u2014 a broken single name whose theme you own diversified is clutter, not a position. Coverage is read from coverage_discount.redundant_by_sleeve (single source of truth shared with Rule B) OR the etf_redundant input flag. voice_floor_exempt: a voice_conviction=True name never Rule-C exits (the voice floor backstop wins). Narrow by construction: requires every accelerant condition PLUS coverage."
+    },
     "entry_pause": {
       "below_200dma": true,
-      "unpause": { "aggressive": "mom_up", "conservative": "reclaim_200dma" }
+      "unpause": {
+        "aggressive": "mom_up",
+        "conservative": "reclaim_200dma",
+        "conservative_compact": "reclaim_200dma"
+      }
+    },
+    "voice_floor": {
+      "enabled": true,
+      "floor_pct": 3.0,
+      "_doc": "A name with reaffirmed tracked-voice conviction (SignalInput.voice_conviction=True) holds a minimum weight (floor_pct) and is exempt from the exit gate's force-out. The voice's conviction still enters PRIMARILY via the convergence score; this floor is the backstop so cooling/parabolic brakes can't zero a live-voice name. Bounded + evidence-gated (flag set only on recent reaffirmation). APPROVED LIVE 6/9/26."
+    },
+    "s5_ladder": {
+      "enabled": true,
+      "_doc": "Phase 2.5: S5 position from 20/50/200 DMA ladder (auto), velocity/blowoff penalty from RSI+1yr (gathered). DMAs set the band; RSI+velocity set the penalty. NEVER penalize DMA distance (5/27 proximity-penalty trap).",
+      "position_bands": {
+        "below_200": 45,
+        "pullback_below_50": 72,
+        "riding_above_50": 58
+      },
+      "velocity_penalty": {
+        "rsi_overbought_thr": 70,
+        "rsi_overbought_pen": 15,
+        "rsi_warm_thr": 60,
+        "rsi_warm_pen": 7,
+        "rsi_oversold_thr": 35,
+        "rsi_oversold_bonus": 5,
+        "vel_parabolic_thr_1y": 150,
+        "vel_parabolic_pen": 20,
+        "vel_extended_thr_1y": 75,
+        "vel_extended_pen": 10
+      },
+      "clamp": [
+        5,
+        95
+      ]
     }
   },
   "review_cadence": {
@@ -195,6 +246,6 @@
         "VST"
       ]
     },
-    "notes": "Lands CEG ~7.5% (agg) / ~6.5% (con) \u2014 replaces the ad-hoc 12% single-stock cap. lambda is the judgment knob: 0.80\u2192~7%, 0.814\u2192~7.5%, 0.83\u2192~8%."
+    "notes": "Lands CEG ~7.5% (agg) / ~6.5% (con) \u2014 replaces the ad-hoc 12% single-stock cap. lambda is the judgment knob: 0.80\u2192~7%, 0.814\u2192~7.5%, 0.83\u2192~8%. 6/9/26: CEG exited via Rule C; this list now also feeds gates.rule_c coverage (shared source of truth). OPEN FLAG: BE's etf_redundant input flag was not set in the 6/9 rescore runs \u2014 fold back in at next rescore or rule that the voice floor supersedes it for live-voice names."
   }
 }
