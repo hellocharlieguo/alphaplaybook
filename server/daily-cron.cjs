@@ -1020,23 +1020,25 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 //   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
 // Comments after each line are the engine composite scores (UNDISCOUNTED).
 const BASE_PORTFOLIO = {
-  SLV:  { base_weight: 18,   theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },     // 82.8
-  WGMI: { base_weight: 10.5, theme: 'Power & Infrastructure',           action: 'Enter' },             // 79.0
-  AIPO: { base_weight: 10.5, theme: 'Power & Infrastructure',           action: 'Enter' },             // 79.0
-  CEG:  { base_weight: 7.5,  theme: 'Power & Infrastructure',           action: 'Strong Entry' },     // 83.9 (Rule B: redundant w/ AIPO -> 7.5)
-  IBIT: { base_weight: 7,    theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },             // 76.2
-  GLDM: { base_weight: 6.5,  theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },             // 75.8
-  GLW:  { base_weight: 6,    theme: 'Compute',                          action: 'Enter' },             // 74.8
-  SGOV: { base_weight: 5.5,  theme: 'Cash', min_weight: 3,              action: 'Hold' },              // cash floor
-  TXN:  { base_weight: 4.5,  theme: 'Power & Infrastructure',           action: 'Enter' },             // 73.1
-  FLNC: { base_weight: 4.5,  theme: 'Power & Infrastructure',           action: 'Starter / Watch' },   // 72.8
-  MRVL: { base_weight: 4.5,  theme: 'Compute',                          action: 'Starter / Watch' },   // 72.4
-  ETHA: { base_weight: 3,    theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },   // 69.5
-  ENTG: { base_weight: 3,    theme: 'Compute',                          action: 'Starter / Watch' },   // 69.2
-  BE:   { base_weight: 2.5,  theme: 'Power & Infrastructure',           action: 'Hold' },              // 72.4 (Rule B: redundant w/ AIPO -> 2.5)
-  COPX: { base_weight: 2.5,  theme: 'Power & Infrastructure',           action: 'Hold' },              // 67.2 (structural)
-  HOOD: { base_weight: 2,    theme: 'Monetary Scarcity & Tokenization', action: 'Starter / Watch' },   // 58.4
-  XSD:  { base_weight: 2,    theme: 'Compute',                          action: 'Starter / Watch' },   // 51.2
+  SLV:  { base_weight: 18,  theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },   // 79.7  below-200, held (no add)
+  GLW:  { base_weight: 9,   theme: 'Compute',                          action: 'Enter' },          // 71.2
+  LLY:  { base_weight: 7,   theme: 'AI Application',                   action: 'Enter' },          // 68.0
+  IBIT: { base_weight: 6.5, theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 75.5  PAUSED below-200
+  HOOD: { base_weight: 6,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 66.0
+  GLDM: { base_weight: 6,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 74.6  PAUSED below-200
+  AIPO: { base_weight: 5.5, theme: 'Power & Infrastructure',           action: 'Enter' },          // 65.3
+  ENTG: { base_weight: 5,   theme: 'Compute',                          action: 'Starter / Watch' },// 64.0
+  BE:   { base_weight: 4.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 63.4  voice-floor (Camillo)
+  COPX: { base_weight: 4.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 62.6
+  SGOV: { base_weight: 4.5, theme: 'Cash', min_weight: 3,              action: 'Hold' },           // cash floor
+  WGMI: { base_weight: 3.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 60.1
+  TXN:  { base_weight: 3.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 59.7
+  MRVL: { base_weight: 3.5, theme: 'Compute',                          action: 'Starter / Watch' },// 59.9
+  ETHA: { base_weight: 3,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 67.7  PAUSED below-200
+  CEG:  { base_weight: 2.5, theme: 'Power & Infrastructure',           action: 'Enter' },          // 67.9  cooling + accel
+  FLNC: { base_weight: 2.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 56.9
+  XSD:  { base_weight: 2.5, theme: 'Compute',                          action: 'Starter / Watch' },// 56.4
+  AMZN: { base_weight: 2.5, theme: 'AI Application',                   action: 'Starter / Watch' },// 55.5
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {
