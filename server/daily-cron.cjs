@@ -871,29 +871,63 @@ async function fetchFredCPI() {
   }
 }
 
-// Cleveland Fed daily CPI inflation nowcast (current-month YoY estimate).
-// NOTE: the live data endpoint is NOT on FRED (FRED only has long-horizon
-// expected-inflation series). It's published on clevelandfed.org. The exact
-// data URL must be confirmed on first run — it's isolated here as ONE constant.
-// Until confirmed, this returns null and the panel shows "—" for the nowcast;
-// CPI + regime still render off the FRED value above.
-const CLEVELAND_NOWCAST_URL = '' // TODO: pin exact CSV/JSON endpoint, then this is the only change.
+// Cleveland Fed daily CPI inflation nowcast (YoY). PINNED 2026-06-10.
+// FRED has no current-month nowcast series (only long-horizon expected-inflation),
+// so the value comes from the FusionCharts data feed behind the public nowcasting
+// chart — no API key, refreshed every business day (the chart's _comment field is
+// the as-of stamp). YoY file is nowcast_year.json (month/quarter siblings are MoM).
+// Payload: array of per-target-month chart objects, oldest→newest. We surface the
+// NEXT CPI print — the earliest month BLS hasn't released (the object right after the
+// last one carrying an "Actual CPI Inflation" value). Auto-advances when a BLS actual
+// lands (e.g. May→June the day May's print posts). Skip-safe: any failure → null →
+// panel renders "—" for the nowcast; CPI + regime still render off the FRED value.
+const CLEVELAND_NOWCAST_URL =
+  'https://www.clevelandfed.org/-/media/files/webcharts/inflationnowcasting/nowcast_year.json?sc_lang=en'
 
 async function fetchClevelandNowcast() {
   if (!CLEVELAND_NOWCAST_URL) {
-    console.warn('Cleveland nowcast URL not yet pinned — skipping (panel shows "—" for nowcast). Verify endpoint, set CLEVELAND_NOWCAST_URL.')
+    console.warn('Cleveland nowcast: URL not set — skipping (panel shows "—" for nowcast).')
     return null
   }
   try {
-    const res = await fetch(CLEVELAND_NOWCAST_URL)
-    if (!res.ok) { console.warn(`Cleveland nowcast: HTTP ${res.status} — skipping. Re-verify CLEVELAND_NOWCAST_URL.`); return null }
-    const raw = await res.text()
-    // Parsing depends on the confirmed payload shape (CSV vs JSON). Once the URL
-    // is pinned, parse here -> { yoy, data_month, as_of }. Log raw on first run.
-    console.warn('Cleveland nowcast: endpoint returned data but parser not yet wired. Raw head:', raw.slice(0, 200))
-    return null
+    // UA header: the Akamai edge can 403 a bare client.
+    const res = await fetch(CLEVELAND_NOWCAST_URL, { headers: { 'User-Agent': 'Mozilla/5.0 (AlphaPlaybook cron)' } })
+    if (!res.ok) { console.warn(`Cleveland nowcast: HTTP ${res.status} — skipping (panel shows "—").`); return null }
+    const charts = await res.json() // ~7.4MB; per-target-month chart objects, oldest→newest
+
+    const seriesData = (obj, name) => {
+      const s = (obj.dataset || []).find((x) => x.seriesname === name)
+      return s ? s.data : []
+    }
+    const lastNonEmpty = (arr) => {
+      for (let i = arr.length - 1; i >= 0; i--) {
+        const v = arr[i] && arr[i].value
+        if (v !== '' && v !== null && v !== undefined) return Number(v)
+      }
+      return null
+    }
+
+    // Headline = earliest CPI month BLS hasn't released: the object right after the
+    // last one carrying an "Actual CPI Inflation" value.
+    let lastReleasedIdx = -1
+    for (let i = 0; i < charts.length; i++) {
+      if (lastNonEmpty(seriesData(charts[i], 'Actual CPI Inflation')) !== null) lastReleasedIdx = i
+    }
+    const target = charts[lastReleasedIdx + 1] || charts[charts.length - 1]
+
+    const yoyRaw = lastNonEmpty(seriesData(target, 'CPI Inflation'))
+    if (yoyRaw === null) { console.warn('Cleveland nowcast: no CPI value in target chart — skipping (panel shows "—").'); return null }
+
+    const sub = String(target.chart.subcaption || '')       // e.g. "2026-6"
+    const [yr, mo] = sub.split('-')
+    const data_month = yr && mo ? `${yr}-${String(mo).padStart(2, '0')}` : null  // "2026-06"
+    const as_of = String(target.chart._comment || '').slice(0, 10) || null       // "2026-06-10"
+
+    const yoy = Math.round(yoyRaw * 100) / 100
+    console.log(`Cleveland nowcast: ${yoy}% YoY · ${data_month} est · as of ${as_of}`)
+    return { yoy, data_month, as_of, source: 'Cleveland Fed' }
   } catch (e) {
-    console.warn(`Cleveland nowcast: fetch error — ${e.message}`); return null
+    console.warn(`Cleveland nowcast: fetch error — ${e.message} — skipping (panel shows "—").`); return null
   }
 }
 
@@ -1605,4 +1639,5 @@ module.exports = {
   runQuantPipeline,
   computeDMAs,
   computeTechnicals,
+  fetchClevelandNowcast,
 }
