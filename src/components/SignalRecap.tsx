@@ -10,6 +10,7 @@ interface SignalRecapProps {
     narrative_signals: any[] | null
     bullish_assets: any[] | null
     macro_signals?: any | null
+    portfolio?: any[] | null   // live engine holdings (ticker, weight_pct, category) — single source for theme chips
   } | null
   theme: Theme
   activeVoices: Set<string>
@@ -24,8 +25,9 @@ interface VoiceSection {
   themes: {
     name: string
     editorial: string
-    tickers: string[]
-    bucket?: string      // which engine portfolio bucket these tickers map to
+    tickers: string[]      // curated list; ALSO the fallback when no live portfolio is in the snapshot
+    bucket?: string         // which engine portfolio bucket these tickers map to
+    wholeBucket?: boolean    // true: chips = ALL live holdings in `bucket` (auto add/drop). false/undefined: chips = `tickers` pruned to what's actually held.
   }[]
 }
 
@@ -34,14 +36,15 @@ const VOICES: VoiceSection[] = [
     name: 'Visser',
     headline: 'LONG SCARCITY, SHORT ABUNDANCE',
     subtitle: 'Jordi Visser — macro framework for the physical AI upgrade',
-    asOf: 'May 2026 (live)',
+    asOf: 'June 2026 (live)',
     active: true,
     themes: [
       {
         name: 'Power & the Physical AI Upgrade',
-        editorial: 'The defining rotation: "I don\'t want to be in semis as much as I want to be in power." Data-center electricity demand is a supply crisis the grid can\'t meet — nuclear, fuel cells, and grid buildout are the binding bottleneck (Stage 3). Power semis are "going through the roof," but the parabolic AI names are where he\'s taking profits, not adding.',
-        tickers: ['CEG', 'BE', 'AIPO', 'COPX', 'WGMI', 'GLW'],
+        editorial: 'The defining rotation: "I don\'t want to be in semis as much as I want to be in power." Data-center electricity demand is a supply crisis the grid can\'t meet — nuclear, fuel cells, batteries, and grid buildout are the binding bottleneck (Stage 3). Power semis are "going through the roof," but the parabolic AI names are where he\'s taking profits, not adding. Fluence reaffirmed even through the cooling sweep — battery storage is now "a necessity."',
+        tickers: ['AIPO', 'BE', 'COPX', 'WGMI', 'FLNC'],
         bucket: 'Power & Infrastructure',
+        wholeBucket: true,
       },
       {
         name: 'Hard Assets & Monetary Scarcity',
@@ -58,14 +61,29 @@ const VOICES: VoiceSection[] = [
       {
         name: 'Tokenization — Ownership Becomes Programmable',
         editorial: 'The next wave, building toward Stage 4. "I bought Ethereum because tokenization reality is going to set in this summer" — referencing the July launch. AI agents "need food and that food is tokens," driving demand for tokens, compute, and real-time coordination, while pressuring traditional SaaS. AI and crypto are "two parts of the same transition."',
-        tickers: ['HOOD'],
+        tickers: ['HOOD', 'ETHA'],
         bucket: 'Monetary Scarcity & Tokenization',
+      },
+      {
+        name: 'AI Application — Human Software',
+        editorial: 'His newest conviction, and the application layer of the whole thesis. Peptides are "the API key for the human body," and Eli Lilly — a 150-year-old firm now running a specialized model on its own data center and decades of trial data — "has a chance to be the largest company in the world" within 5 years. Drug discovery is becoming "human software": Lilly even stopped disclosing phase-one trials once AI made the IP easy to copy. The obesity TAM alone is $200-300B, barely tapped.',
+        tickers: ['LLY'],
+        bucket: 'AI Application',
+        wholeBucket: true,
       },
       {
         name: 'Optical & Semiconductors — Selective',
         editorial: 'Where memory exits and optical stays. He sold his entire Micron position — memory (Stage 1) is exhausted after its parabolic run. But optical/interconnect is still working (Stage 2): Marvell and Corning are the non-memory semis he still wants, the picks-and-shovels of the bandwidth bottleneck. Equal-weight semis capture breadth without the memory mega-cap concentration.',
-        tickers: ['MRVL', 'GLW', 'XSD'],
+        tickers: ['GLW', 'ENTG', 'MRVL', 'XSD'],
         bucket: 'Compute',
+        wholeBucket: true,
+      },
+      {
+        name: 'Energy — The Other Side of the Trade',
+        editorial: 'The hedge against his own AI book. "I bought Exxon. I bought Chevron" — "defensive safe names" for when the parabolic chip names turn volatile. With "Hormuz is still shut," oil able to migrate higher (his tail case: "$300 oil"), and a >4% CPI / rising-rate regime, energy is the other side of the trade: "if you don\'t have energy stocks in there, you are playing a big risk." Held as a basket rather than the two single names.',
+        tickers: ['XLE'],
+        bucket: 'Energy Hedge',
+        wholeBucket: true,
       },
     ],
   },
@@ -109,6 +127,33 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
   }
   const visibleVoices = VOICES.filter(v => activeVoices.has(v.name))
 
+  // ── Single source of truth for theme chips ──────────────────────────────────
+  // The live engine holdings from the latest snapshot (ticker, weight_pct, category).
+  // When present, ACTIVE voices derive their chips from the book so an exit/add can't
+  // leave the narrative stale (e.g. CEG drops, LLY/XLE surface automatically). Reference
+  // voices and the no-portfolio fallback use each theme's curated `tickers` list.
+  const liveHoldings: any[] = Array.isArray(snapshot.portfolio) ? snapshot.portfolio : []
+  const heldWeight = new Map<string, number>(liveHoldings.map((h: any) => [h.ticker, h.weight_pct ?? 0]))
+  const byBucket = new Map<string, string[]>()
+  for (const h of [...liveHoldings].sort((a: any, b: any) => (b.weight_pct ?? 0) - (a.weight_pct ?? 0))) {
+    if (!h?.category || !h?.ticker) continue
+    const arr = byBucket.get(h.category) || []
+    arr.push(h.ticker)
+    byBucket.set(h.category, arr)
+  }
+  const chipsFor = (voice: VoiceSection, theme: VoiceSection['themes'][number]): string[] => {
+    // Reference voices: always the curated/historical list (don't prune to the live book).
+    if (!voice.active) return theme.tickers
+    // No live portfolio in the snapshot → curated fallback (keeps the panel correct).
+    if (liveHoldings.length === 0) return theme.tickers
+    // Whole-bucket theme: every held name in that bucket, heaviest first.
+    if (theme.wholeBucket && theme.bucket) return byBucket.get(theme.bucket) || theme.tickers
+    // Sub-slice theme: curated list pruned to what's actually held, kept in weight order.
+    return theme.tickers
+      .filter((tk) => heldWeight.has(tk))
+      .sort((a, b) => (heldWeight.get(b) ?? 0) - (heldWeight.get(a) ?? 0))
+  }
+
   return (
     <div>
       {/* Voice Sections — newspaper columns */}
@@ -140,7 +185,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                       {theme.name}
                     </h3>
                     <div style={{ display: 'flex', gap: 4 }}>
-                      {theme.tickers.map((ticker, j) => (
+                      {chipsFor(voice, theme).map((ticker, j) => (
                         <span key={j} style={{ fontSize: 11, background: t.tickerBg, color: t.tickerText, padding: '2px 8px', borderRadius: 3, fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500 }}>
                           {ticker}
                         </span>

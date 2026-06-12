@@ -28,11 +28,12 @@ interface RadarData {
 }
 
 // ============================================================================
-// Generated from the latest ~5 Visser / Pomp podcasts (as of 2026-05-21).
+// Generated from the latest ~5 Visser / Pomp podcasts (as of 2026-06-09;
+// evidence: 6/3 TFTC, 6/6 Pomp, 6/7 solo).
 // Swap this whole const when new transcripts are uploaded.
 // ============================================================================
 const RADAR: RadarData = {
-  asOf: 'May 2026 · Visser',
+  asOf: 'June 2026 · Visser',
   stageCall: {
     stage: 3,
     name: 'Power + Silver',
@@ -44,11 +45,15 @@ const RADAR: RadarData = {
     { name: 'Tokenization / ETH', direction: 'up',   note: 'Bought ETH. "AI agents need food and that food is tokens." DTCC tokenization launch July 2026.' },
     { name: 'Silver',            direction: 'up',   note: '"No-brainer" — dual industrial + monetary, 6th-year supply deficit, gold/silver ratio compressing.' },
     { name: 'Copper',            direction: 'up',   note: 'Rotation target alongside silver — grid + EV/humanoid demand.' },
-    { name: 'Power / Nuclear',   direction: 'flat', note: 'Still the binding bottleneck (Stage 3). Structural hold, not adding aggressively.' },
-    { name: 'Semiconductors',    direction: 'down', note: 'Taking profits in parabolic semis. Exhaustion model flagging extended AI momentum names.' },
+    { name: 'AI Application / Eli Lilly', direction: 'up', note: 'New conviction. Peptides are "the API key for the human body." Thinks LLY can be "the largest company in the world" within 5 years — a specialized model on 150 years of trial data. Drug discovery as "human software."' },
+    { name: 'Energy / Oil',      direction: 'up',   note: 'Bought Exxon & Chevron — "defensive safe names" as the chip names turn volatile. Hormuz still shut; oil could migrate higher (tail: "$300 oil"). The hedge on the other side of the AI book.' },
+    { name: 'Power / Nuclear',   direction: 'flat', note: 'Still the binding bottleneck (Stage 3). Structural hold, not adding aggressively. Batteries (Fluence) reaffirmed as "a necessity."' },
+    { name: 'Semiconductors',    direction: 'down', note: 'Taking profits in parabolic semis. Exhaustion model flagging extended AI momentum names; chip names getting more volatile.' },
     { name: 'Memory (MU)',       direction: 'down', note: 'Fully out of Micron (5/17) after a 5-8x run. Explicitly profit-taking, NOT bearish — "I will be looking to accumulate" silver and Bitcoin instead. The rotation in one move.' },
   ],
   notableMoves: [
+    'Bought Exxon & Chevron (→ XLE) — energy as a defensive hedge vs AI-name volatility + Hormuz risk',
+    'Initiated Eli Lilly (LLY) — peptides / "human software" drug-discovery thesis, application layer',
     'Sold entire Micron (MU) position — trimming names that already had their parabolic move',
     'Bought Ether (ETH) — tokenization / AI-agent demand thesis',
     'Watching Bitcoin & ETH 50-day moving average as the next-parabola signal',
