@@ -71,6 +71,52 @@ def _confidence(sig):
     return round(sum(1 for x in core if x is not None)/len(core), 2)
 
 
+def _pause_carveout(sig: "SignalInput", below_200: bool) -> bool:
+    """Spec A — Conviction-Proximity Pause Carve-Out.
+    True if a HELD hard-money name below its 200-DMA should be EXEMPT from the
+    entry pause / S5 floor because it is at-trend (not in a downtrend) with a
+    tracked voice actively reaffirming. ALL must hold:
+      (1) asset_type == macro_hardmoney   (companies never carve out)
+      (2) within band of 200-DMA: |price/dma200 - 1| <= band   (default 3%)
+      (3) voice_conviction == True         (recent reaffirmation)
+    Re-arms naturally: if price falls outside the band, condition (2) fails and the
+    normal pause/floor returns. Removes the FREEZE only — does not boost weight.
+    """
+    co = CFG.get("gates", {}).get("entry_pause", {}).get("conviction_proximity_carveout", {})
+    if not co.get("enabled"):
+        return False
+    if not (sig.held and below_200):
+        return False
+    if sig.asset_type != "macro_hardmoney":
+        return False
+    if not sig.voice_conviction:
+        return False
+    if sig.dma200 is None or sig.price is None or sig.dma200 <= 0:
+        return False
+    band = co.get("band_pct", 0.03)
+    return abs(sig.price / sig.dma200 - 1.0) <= band
+
+
+def _stage_decay_mult(sig: "SignalInput", s2: float) -> float:
+    """Spec B — Stage-Decay Weighting.
+    Multiplier on the WEIGHTING SCORE (not composite) keyed to stage timing (S2),
+    so a single name's weight bleeds as its stage cools binding->working->cooling->
+    exhausted. EXEMPT: hard money (not a 5-stage AI name) and ETFs (already
+    diversified). Applied like Rule B's lambda: ws = floor + (composite-floor)*mult.
+    Stacks multiplicatively with Rule B (a covered, cooling name gets both).
+    """
+    sd = CFG.get("gates", {}).get("stage_decay", {})
+    if not sd.get("enabled"):
+        return 1.0
+    if sig.asset_type == "macro_hardmoney" or sig.is_etf:
+        return 1.0
+    bands = sd.get("bands", {})
+    if s2 >= sd.get("binding_thr", 90):   return bands.get("binding", 1.00)
+    if s2 >= sd.get("working_thr", 65):   return bands.get("working", 0.92)
+    if s2 >= sd.get("cooling_thr", 40):   return bands.get("cooling", 0.80)
+    return bands.get("exhausted", 0.60)
+
+
 def score_ticker(sig: SignalInput, capex_yoy_pct: float) -> dict:
     w = CFG["composite_weights"]
     s1 = 50 if sig.s1_bottleneck    is None else sig.s1_bottleneck
@@ -114,8 +160,14 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float) -> dict:
     # above-200 names are untouched, so entry quality still scores normally.
     g = CFG.get("gates", {})
     below_200 = (sig.dma200 is not None and sig.price is not None and sig.price < sig.dma200)
+    # Conviction-proximity carve-out (spec A): a hard-money name sitting AT trend
+    # (within band of its 200-DMA) with reaffirmed voice conviction is treated as
+    # at-trend, not in a downtrend — so it is NOT pause-frozen and the S5 floor does
+    # not apply. Re-arms automatically if it falls outside the band. Narrow by design:
+    # hard money only, tight band, voice-gated. Companies + deep downtrends unaffected.
+    carveout = _pause_carveout(sig, below_200)
     s5_floored = False
-    if sig.held and below_200:
+    if sig.held and below_200 and not carveout:
         floor = g.get("s5_held_below_200_floor", 60)
         if s5 < floor:
             s5 = floor
@@ -139,7 +191,10 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float) -> dict:
     lam = cd.get("lambda", 1.0)
     fs = CFG["weighting"]["floor_score"]
     discount_applied = bool(sig.etf_redundant) and not sig.is_etf and lam < 1.0
-    weighting_score = round(fs + (composite - fs) * lam, 1) if discount_applied else composite
+    # --- Spec B: stage-decay multiplier (stacks multiplicatively with Rule B) ---
+    stage_mult = _stage_decay_mult(sig, s2)
+    eff_mult = (lam if discount_applied else 1.0) * stage_mult
+    weighting_score = round(fs + (composite - fs) * eff_mult, 1) if eff_mult < 1.0 else composite
 
     return {
         "ticker": sig.ticker, "asset_type": sig.asset_type, "sleeve": sig.sleeve,
@@ -149,11 +204,14 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float) -> dict:
         "composite": composite,
         "weighting_score": weighting_score,
         "coverage_discounted": discount_applied,
+        "stage_decay_mult": stage_mult,
+        "pause_carveout": carveout,
         "action": action, "confidence": _confidence(sig),
         "s5_floored": s5_floored, "s5_source": s5_source,
         "technicals": {"below_200": below_200, "mom_up": sig.mom_up,
                        "mom_down": sig.mom_down, "held": sig.held,
                        "current_weight": sig.current_weight,
+                       "pause_carveout": carveout,
                        "voice_conviction": sig.voice_conviction},
         "context": {"price":sig.price,"pct_from_52w_high":sig.pct_from_52w_high,
                     "trailing_1y_pct":sig.trailing_1y_pct},
@@ -284,6 +342,8 @@ def compute_pause_caps(results: list, sleeve: str = "aggressive",
         t = r["ticker"]; tech = r.get("technicals", {})
         if not (tech.get("held") and tech.get("below_200")
                 and tech.get("current_weight") is not None and t not in exit_overrides):
+            continue
+        if tech.get("pause_carveout"):   # spec A: at-trend hard money + voice -> not frozen
             continue
         unpaused = (mode == "mom_up" and tech.get("mom_up"))   # reclaim_200dma can't hold while below-200
         if not unpaused:

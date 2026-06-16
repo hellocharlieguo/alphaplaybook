@@ -174,6 +174,27 @@
         "aggressive": "mom_up",
         "conservative": "reclaim_200dma",
         "conservative_compact": "reclaim_200dma"
+      },
+      "conviction_proximity_carveout": {
+        "enabled": true,
+        "band_pct": 0.03,
+        "hardmoney_only": true,
+        "_added": "2026-06-15 (Spec A). Motivated by SLV sitting on its 200-DMA (+0.1%) with Visser reaffirming/buying.",
+        "_doc": "A HELD macro_hardmoney name below its 200-DMA is EXEMPT from the entry pause + S5 floor if it is within band_pct of the 200-DMA AND voice_conviction=True. At-trend + voice-buying != downtrend. Re-arms automatically if price falls outside the band (the pause/floor returns). Removes the FREEZE only; the name flows to its normal engine weight, no boost (fix scores not weights). Narrow by design: hard money only, tight band, voice-gated. Does NOT touch companies, deep-downtrend hard money (IBIT -27%, ETHA -43% are outside the band), or non-voice names."
+      }
+    },
+    "stage_decay": {
+      "enabled": true,
+      "_added": "2026-06-15 (Spec B).",
+      "_doc": "Weight bleeds as a stage cools. Multiplier on WEIGHTING SCORE only (composite/tier/exit triggers unchanged), keyed to S2 stage timing. ws = floor_score + (composite-floor_score)*mult. Stacks MULTIPLICATIVELY with Rule B lambda (a covered, cooling single name gets both). EXEMPT: macro_hardmoney (not a 5-stage AI name) and ETFs (already diversified) -> mult 1.0. Effect on the 6/9 book is modest (GLW 9.5->8.5, BE/HOOD -0.5) because most names are hard money, ETFs, or in binding stages; value is FORWARD-acting (auto-trim as a stage rolls binding->working->cooling). NOTE: this is the bolt-on-multiplier implementation; the considered alternative was raising S2's composite weight (cleaner re: double-count) -- chose the multiplier for surgical control + hard-money/ETF exemption, which a composite-weight change can't target. Watch for interaction with cash floor: protect cash in the normalizer call.",
+      "binding_thr": 90,
+      "working_thr": 65,
+      "cooling_thr": 40,
+      "bands": {
+        "binding": 1.00,
+        "working": 0.92,
+        "cooling": 0.80,
+        "exhausted": 0.60
       }
     },
     "voice_floor": {
