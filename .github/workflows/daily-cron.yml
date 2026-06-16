@@ -7,7 +7,7 @@ on:
   schedule:
     # 23:00 UTC = 7pm ET (EDT) / 6pm ET (EST). 1-5 = Mon-Fri only, so it never fires
     # on weekends. The code also guards against weekend runs (e.g. manual triggers).
-    - cron: '0 23 * * 1-5'
+    - cron: '17 23 * * 1-5'
   workflow_dispatch: {}   # adds a "Run workflow" button for manual verification
 
 jobs:
