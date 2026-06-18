@@ -834,7 +834,7 @@ async function runQuantPipeline() {
 }
 
 // ============================================================================
-// MACRO: CPI (BLS via FRED) + Cleveland Fed nowcast + 4% regime
+// MACRO: CPI (BLS via FRED) + Cleveland Fed nowcast + Kalshi YoY + 4% regime
 // Display-first. All values stored as RAW NUMBERS (engine-ready for future T3).
 // Every fetch is skip-safe: missing key / endpoint / data => null => panel "—".
 // ============================================================================
@@ -931,9 +931,108 @@ async function fetchClevelandNowcast() {
   }
 }
 
+// Kalshi CPI YoY ladder — the 3rd convergence leg (forward, crowd-priced). Public read,
+// no auth. Returns the median POINT ESTIMATE (where the cumulative "Above X%" ladder
+// crosses 0.50) measured against the 4% regime line, plus P(>4%) as a secondary tail
+// metric. The 2-of-3 regime vote across FRED + nowcast + this leg lands with the gate;
+// for now this is data-only and fills macro_signals.kalshi. Skip-safe -> null on failure.
+const KALSHI_HOSTS = [
+  'https://api.elections.kalshi.com/trade-api/v2', // verified-working (api.kalshi.com returns 000)
+  'https://api.kalshi.com/trade-api/v2',           // forward-looking canonical, not yet live
+]
+const KALSHI_CPI_SERIES = 'KXCPIYOY' // YoY "Above X%" ladder; MoM would be KXCPI
+const KALSHI_MONTHS = { JAN: '01', FEB: '02', MAR: '03', APR: '04', MAY: '05', JUN: '06',
+                        JUL: '07', AUG: '08', SEP: '09', OCT: '10', NOV: '11', DEC: '12' }
+
+async function fetchKalshiCPI() {
+  // Try the working host first, fall back to the canonical one on network/HTTP failure.
+  async function getJSON(path) {
+    for (const host of KALSHI_HOSTS) {
+      try {
+        const res = await fetch(host + path, { headers: { 'User-Agent': 'Mozilla/5.0 (AlphaPlaybook cron)' } })
+        if (!res.ok) continue
+        return { json: await res.json(), host }
+      } catch (e) { /* try next host */ }
+    }
+    return null
+  }
+  try {
+    const got = await getJSON(`/events?series_ticker=${KALSHI_CPI_SERIES}&status=open&with_nested_markets=true`)
+    if (!got) { console.warn('Kalshi CPI: all hosts failed — skipping (panel shows "—").'); return null }
+    const events = (got.json && got.json.events) || []
+    if (!events.length) { console.warn('Kalshi CPI: no open events — skipping (panel shows "—").'); return null }
+
+    // Front month = the open event whose ladder closes earliest (the next BLS print).
+    const eventClose = (e) => {
+      const cts = (e.markets || []).map((m) => m.close_time).filter(Boolean).sort()
+      return cts[0] || '9999'
+    }
+    events.sort((a, b) => (eventClose(a) < eventClose(b) ? -1 : 1))
+    const ev = events[0]
+
+    // Per-strike probability: trust last on this deep ladder; fall back to bid/ask mid.
+    const px = (m) => {
+      const last = parseFloat(m.last_price_dollars)
+      if (!isNaN(last) && last > 0 && last < 1) return last
+      const b = parseFloat(m.yes_bid_dollars), a = parseFloat(m.yes_ask_dollars)
+      if (!isNaN(b) && !isNaN(a) && a > 0) return (b + a) / 2
+      return null
+    }
+    const strikeOf = (m) => {
+      if (typeof m.floor_strike === 'number') return m.floor_strike
+      const mt = String(m.yes_sub_title || '').match(/([\d.]+)/)
+      return mt ? parseFloat(mt[1]) : null
+    }
+
+    const ladder = []
+    let probAbove4 = null
+    for (const m of (ev.markets || [])) {
+      const s = strikeOf(m), p = px(m)
+      if (s === null || p === null) continue
+      ladder.push({ strike: s, prob: p })
+      if (Math.abs(s - REGIME_THRESHOLD) < 1e-9) probAbove4 = p
+    }
+    if (ladder.length < 2) { console.warn('Kalshi CPI: ladder too sparse — skipping (panel shows "—").'); return null }
+
+    // Median (point estimate) = where the cumulative P(>strike) crosses 0.50.
+    ladder.sort((x, y) => x.strike - y.strike)
+    let pointEstimate = null
+    for (let i = 0; i < ladder.length - 1; i++) {
+      const lo = ladder[i], hi = ladder[i + 1]
+      if (lo.prob >= 0.5 && hi.prob < 0.5) {
+        pointEstimate = lo.strike + ((lo.prob - 0.5) / (lo.prob - hi.prob)) * (hi.strike - lo.strike)
+        break
+      }
+    }
+    if (pointEstimate === null) {
+      // No crossing: the whole distribution sits above or below the ladder.
+      pointEstimate = ladder[0].prob < 0.5 ? ladder[0].strike : ladder[ladder.length - 1].strike
+    }
+
+    // data_month from the event ticker, e.g. KXCPIYOY-26JUN -> "2026-06".
+    let data_month = null
+    const em = String(ev.event_ticker || '').match(/-(\d{2})([A-Z]{3})/)
+    if (em) data_month = `20${em[1]}-${KALSHI_MONTHS[em[2]] || '01'}`
+
+    const out = {
+      point_estimate: Math.round(pointEstimate * 100) / 100,
+      prob_above_4: probAbove4 === null ? null : Math.round(probAbove4 * 100) / 100,
+      data_month,
+      event_ticker: ev.event_ticker || null,
+      close_time: eventClose(ev),
+      as_of: new Date().toISOString().slice(0, 10),
+      source: 'Kalshi',
+    }
+    console.log(`Kalshi CPI: ${out.point_estimate}% YoY pt-est · P(>4%)=${out.prob_above_4} · ${out.data_month} · ${out.event_ticker} · via ${got.host}`)
+    return out
+  } catch (e) {
+    console.warn(`Kalshi CPI: fetch error — ${e.message} — skipping (panel shows "—").`); return null
+  }
+}
+
 // Assemble the macro_signals blob (spec §4). Regime keys off the nowcast when
 // available (the live read), else falls back to official CPI.
-function buildMacroSignals(quantResult, cpi, nowcast) {
+function buildMacroSignals(quantResult, cpi, nowcast, kalshi) {
   const regimeBasis = (nowcast && typeof nowcast.yoy === 'number') ? nowcast.yoy
     : (cpi && typeof cpi.yoy === 'number') ? cpi.yoy : null
   const regime = regimeBasis === null ? null : {
@@ -953,7 +1052,7 @@ function buildMacroSignals(quantResult, cpi, nowcast) {
     cpi: cpi || null,
     nowcast: nowcast || null,
     regime,
-    kalshi: null, // reserved for Kalshi Tier 2/3 (inflation/Fed odds) — code-only add later
+    kalshi: kalshi || null, // Kalshi CPI YoY leg (point estimate + P>4%); 2-of-3 vote wired with gate
   }
 }
 
@@ -1582,11 +1681,12 @@ async function main() {
     const crowdSignals = await runCrowdPipeline()
     const quantResult = await runQuantPipeline()
 
-    // Step 1b: Macro signals — CPI (FRED) + Cleveland nowcast + 4% regime.
-    // Both skip-safe; macroSignals always returns a blob (fields null if missing).
+    // Step 1b: Macro signals — CPI (FRED) + Cleveland nowcast + Kalshi YoY + 4% regime.
+    // All skip-safe; macroSignals always returns a blob (fields null if missing).
     const cpi = await fetchFredCPI()
     const nowcast = await fetchClevelandNowcast()
-    const macroSignals = buildMacroSignals(quantResult, cpi, nowcast)
+    const kalshi = await fetchKalshiCPI()
+    const macroSignals = buildMacroSignals(quantResult, cpi, nowcast, kalshi)
 
     // Step 2: Aggregate bullish assets across all sources
     const bullishAssets = aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult)
@@ -1640,4 +1740,5 @@ module.exports = {
   computeDMAs,
   computeTechnicals,
   fetchClevelandNowcast,
+  fetchKalshiCPI,
 }
