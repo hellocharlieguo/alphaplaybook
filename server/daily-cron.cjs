@@ -849,18 +849,46 @@ async function fetchKalshiCPI() {
 
 // Assemble the macro_signals blob (spec §4). Regime keys off the nowcast when
 // available (the live read), else falls back to official CPI.
-function buildMacroSignals(quantResult, cpi, nowcast, kalshi) {
-  const regimeBasis = (nowcast && typeof nowcast.yoy === 'number') ? nowcast.yoy
-    : (cpi && typeof cpi.yoy === 'number') ? cpi.yoy : null
-  const regime = regimeBasis === null ? null : {
-    threshold: REGIME_THRESHOLD,
-    basis: (nowcast && typeof nowcast.yoy === 'number') ? 'nowcast' : 'cpi',
-    value: regimeBasis,
-    above: regimeBasis >= REGIME_THRESHOLD,
-    note: regimeBasis >= REGIME_THRESHOLD
-      ? 'Above 4% — S&P historically negative (1928–present)'
-      : 'Below 4% — S&P historically ~+12% annual',
+// 2-of-3 CPI regime vote with hysteresis. Legs: FRED actual (cpi.yoy), Cleveland
+// nowcast (nowcast.yoy), Kalshi forward (kalshi.point_estimate). Gate turns ON when
+// >=2 legs >= 4.0, OFF when >=2 legs < 3.8; the 3.8-4.0 band holds the prior state
+// (priorAbove, read from the previous snapshot at the call site). `value` is the
+// median of available legs; returns null when no leg is present.
+function computeRegime(cpi, nowcast, kalshi, priorAbove) {
+  const T = REGIME_THRESHOLD
+  const OFF_BAND = 3.8
+  const legs = {
+    fred:    (cpi     && typeof cpi.yoy === 'number')               ? cpi.yoy               : null,
+    nowcast: (nowcast && typeof nowcast.yoy === 'number')           ? nowcast.yoy           : null,
+    kalshi:  (kalshi  && typeof kalshi.point_estimate === 'number') ? kalshi.point_estimate : null,
   }
+  const values = Object.values(legs).filter((v) => v !== null)
+  if (values.length === 0) return null
+  const votesAbove = values.filter((v) => v >= T).length
+  const votesBelow = values.filter((v) => v < OFF_BAND).length
+  let above
+  if (votesAbove >= 2) above = true
+  else if (votesBelow >= 2) above = false
+  else above = !!priorAbove
+  const sorted = [...values].sort((a, b) => a - b)
+  const median = sorted.length % 2
+    ? sorted[(sorted.length - 1) / 2]
+    : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+  return {
+    threshold: T,
+    value: Math.round(median * 100) / 100,
+    above,
+    votes_above: votesAbove,
+    legs_total: values.length,
+    legs,
+    note: above
+      ? 'Above 4% \u2014 S&P historically negative (1928\u2014present)'
+      : 'Below 4% \u2014 S&P historically ~+12% annual',
+  }
+}
+
+function buildMacroSignals(quantResult, cpi, nowcast, kalshi, priorAbove) {
+  const regime = computeRegime(cpi, nowcast, kalshi, priorAbove)
   return {
     spy: quantResult.spyPrice === null ? null : {
       price: quantResult.spyPrice, ath: quantResult.spyAth, pct_off_ath: quantResult.spyPctOffAth,
@@ -1504,7 +1532,8 @@ async function main() {
     const cpi = await fetchFredCPI()
     const nowcast = await fetchClevelandNowcast()
     const kalshi = await fetchKalshiCPI()
-    const macroSignals = buildMacroSignals(quantResult, cpi, nowcast, kalshi)
+    const priorAbove = prevSnapshot?.macro_signals?.regime?.above ?? false
+    const macroSignals = buildMacroSignals(quantResult, cpi, nowcast, kalshi, priorAbove)
 
     // Step 2: Aggregate bullish assets across all sources
     const bullishAssets = aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult)
