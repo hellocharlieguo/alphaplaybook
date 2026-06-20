@@ -406,10 +406,11 @@ async function kalshiMarketProb(series, matcher) {
       const ms = ((await res.json()).markets) || []
       const hit = ms.find((m) => matcher.test(String(m.yes_sub_title || '')))
       if (!hit) return null
+      const close_time = hit.close_time || null
       const last = parseFloat(hit.last_price_dollars)
-      if (!isNaN(last) && last > 0 && last < 1) return last
+      if (!isNaN(last) && last > 0 && last < 1) return { prob: last, close_time }
       const b = parseFloat(hit.yes_bid_dollars), a = parseFloat(hit.yes_ask_dollars)
-      if (!isNaN(b) && !isNaN(a) && a > 0) return (b + a) / 2
+      if (!isNaN(b) && !isNaN(a) && a > 0) return { prob: (b + a) / 2, close_time }
       return null
     } catch (e) { /* next host */ }
   }
@@ -425,12 +426,20 @@ async function runCrowdPipeline() {
   const signals = []
 
   for (const w of KALSHI_WATCHLIST) {
-    let prob = w.cpi ? (kc?.prob_above_4 ?? null) : await kalshiMarketProb(w.series, w.match)
+    let prob, closeTime
+    if (w.cpi) {
+      prob = kc?.prob_above_4 ?? null
+      closeTime = kc?.close_time ?? null
+    } else {
+      const r = await kalshiMarketProb(w.series, w.match)
+      prob = r?.prob ?? null
+      closeTime = r?.close_time ?? null
+    }
     if (prob === null) { console.warn(`  ${w.label}: no Kalshi reading — skipping`); continue }
     prob = Math.round(prob * 100) / 100
     const read = w.read(prob)
     signals.push({
-      market: w.label, probability: prob, read,
+      market: w.label, probability: prob, read, close_time: closeTime, as_of: TODAY,
       direction: w.direction, mapped_assets: w.mapped_assets, conviction: 'medium',
     })
     console.log(`  ${w.label}: ${Math.round(prob * 100)}% — ${read}`)
@@ -1430,6 +1439,8 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
     market: s.market,
     probability: s.probability,
     read: s.read,
+    close_time: s.close_time,
+    as_of: s.as_of,
     direction: s.direction,
     mapped_assets: s.mapped_assets,
     conviction: s.conviction,
