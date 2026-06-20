@@ -1532,7 +1532,12 @@ async function main() {
     const cpi = await fetchFredCPI()
     const nowcast = await fetchClevelandNowcast()
     const kalshi = await fetchKalshiCPI()
-    const priorAbove = prevSnapshot?.macro_signals?.regime?.above ?? false
+    const { data: priorRows } = await supabase
+      .from('daily_snapshots')
+      .select('macro_signals')
+      .order('snapshot_date', { ascending: false })
+      .limit(1)
+    const priorAbove = priorRows?.[0]?.macro_signals?.regime?.above ?? false
     const macroSignals = buildMacroSignals(quantResult, cpi, nowcast, kalshi, priorAbove)
 
     // Step 2: Aggregate bullish assets across all sources
