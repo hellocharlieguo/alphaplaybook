@@ -8,11 +8,12 @@ interface PortfolioProps {
 }
 
 // The holdings list, weights, and themes are SNAPSHOT-DRIVEN: they come from the
-// nightly cron via daily_snapshots.portfolio ({ ticker, weight_pct, category }), and
-// live (close) prices from portfolio_holdings. As of the drift change, weight_pct is
-// the LIVE DRIFTED weight at the last close (winners gain weight between rebalances) —
-// NOT a static target. Manual weight sliders are gone: weights are engine output, full
-// stop ("fix scores, not weights"). The only static metadata here is per-ticker display
+// nightly cron via daily_snapshots.portfolio ({ ticker, weight_pct, target_weight_pct,
+// category }), and live (close) prices from portfolio_holdings. weight_pct is the LIVE
+// DRIFTED weight at the last close (winners gain weight between rebalances);
+// target_weight_pct is the engine base weight it drifts from. The tab shows current +
+// a delta vs target. Manual weight sliders are gone — weights are engine output
+// ("fix scores, not weights"). The only static metadata here is per-ticker display
 // name + color and per-theme color/voice. A new ticker still renders with a sensible
 // fallback (its symbol + neutral dot); add it to TICKER_META for a nicer label.
 
@@ -77,10 +78,6 @@ const themeColor = (name: string) => THEME_META[name]?.color ?? '#64748b'
 const themeVoices = (name: string) => THEME_META[name]?.voices ?? ['Visser']
 
 // --- trend pill + momentum tag (unchanged) ---
-// Pill = where the LIVE price sits vs the 50/200-DMA trend (from daily_snapshots.technicals):
-//   Uptrend   — price above both 50 & 200-DMA.
-//   Pullback  — above 200, below 50.
-//   Downtrend — below the 200-DMA ("paused, not sold"; no auto-trim).
 const PILL_STYLE: Record<string, { bg: string; text: string }> = {
   uptrend:   { bg: 'rgba(34,197,94,0.13)',  text: '#22c55e' },
   pullback:  { bg: 'rgba(148,163,184,0.14)', text: '#94a3b8' },
@@ -118,7 +115,7 @@ function roundShares(raw: number): number {
 
 const fmt = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 0 })
 
-interface ModelHolding { symbol: string; theme: string; modelWeight: number }
+interface ModelHolding { symbol: string; theme: string; modelWeight: number; targetWeight: number }
 
 export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const [saved] = useState(loadState)
@@ -129,12 +126,14 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const [technicals, setTechnicals] = useState<Record<string, any>>({})
 
   // Build model holdings straight from the cron's snapshot. weight_pct is the live
-  // DRIFTED weight at the last close (winners gain weight between rebalances).
+  // DRIFTED weight; target_weight_pct is the engine target it drifts from (fallback to
+  // weight_pct on older snapshots that predate the target field).
   const modelHoldings: ModelHolding[] = (snapshot?.portfolio ?? [])
     .map((h: any) => ({
       symbol: String(h.ticker),
       theme: String(h.category ?? 'Other'),
       modelWeight: Number(h.weight_pct) || 0,
+      targetWeight: Number(h.target_weight_pct ?? h.weight_pct) || 0,
     }))
     .filter((h: ModelHolding) => h.symbol && h.symbol !== 'undefined')
 
@@ -152,14 +151,12 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   useEffect(() => {
     async function fetchData() {
       if (!snapshot?.snapshot_date) return
-      // Live (close) prices from portfolio_holdings.
       const { data } = await supabase.from('portfolio_holdings').select('ticker, price').eq('snapshot_date', snapshot.snapshot_date)
       if (data) {
         const prices: Record<string, number> = {}
         for (const row of data) { if (row.price) prices[row.ticker] = row.price }
         setLivePrices(prices)
       }
-      // Technicals (10/20/50/200 DMAs + momentum) from the snapshot's jsonb blob.
       const { data: snapRows } = await supabase.from('daily_snapshots').select('technicals').eq('snapshot_date', snapshot.snapshot_date).limit(1)
       if (snapRows && snapRows[0]?.technicals) setTechnicals(snapRows[0].technicals)
     }
@@ -169,7 +166,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   useEffect(() => { saveState({ uncheckedThemes: Array.from(uncheckedThemes), portfolioValue }) }, [uncheckedThemes, portfolioValue])
 
   const activeTickers = useCallback(() => {
-    const out: { symbol: string; name: string; price: number | null; theme: string; voices: string[]; weight: number }[] = []
+    const out: { symbol: string; name: string; price: number | null; theme: string; voices: string[]; weight: number; target: number }[] = []
     for (const h of modelHoldings) {
       if (uncheckedThemes.has(h.theme)) continue
       if (out.find(o => o.symbol === h.symbol)) continue
@@ -181,6 +178,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
         theme: h.theme,
         voices: themeVoices(h.theme),
         weight: h.modelWeight,           // drifted engine weight (no override)
+        target: h.targetWeight,          // engine base weight it drifts from
       })
     }
     return out
@@ -199,7 +197,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
     return { ...tk, weight, dollarAlloc, shares, actualCost }
   })
 
-  // Add cash remainder to SGOV (only if SGOV is present and has a live price)
   const nonSgovCost = allocations.filter(a => a.symbol !== 'SGOV').reduce((s, a) => s + a.actualCost, 0)
   const sgovAlloc = allocations.find(a => a.symbol === 'SGOV')
   if (sgovAlloc && sgovAlloc.price !== null) {
@@ -230,7 +227,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
     }
   }
 
-  // Empty state — snapshot not loaded yet or has no portfolio
   if (modelHoldings.length === 0) {
     return (
       <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 40, textAlign: 'center', color: t.textTertiary, fontSize: 13 }}>
@@ -289,7 +285,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
       <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, overflow: 'hidden' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: `1px solid ${t.border}` }}>
           <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Holdings ({allocations.length})</span>
-          <span style={{ fontSize: 11, color: t.textTertiary }}>Weights drift with price · reset on rescore</span>
+          <span style={{ fontSize: 11, color: t.textTertiary }}>Weights drift with price · reset on rescore · delta = vs engine target</span>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -297,7 +293,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
             <thead>
               <tr style={{ borderBottom: `1px solid ${t.border}` }}>
                 <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Ticker</th>
-                <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 400, fontSize: 11, color: t.textTertiary, width: 200 }}>Weight</th>
+                <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 400, fontSize: 11, color: t.textTertiary, width: 220 }}>Weight</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Price</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>50-DMA</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>200-DMA</th>
@@ -315,6 +311,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                 const v200 = vs200Pct(a.price, tech)
                 const momDown = !!tech?.mom?.down
                 const barPct = Math.max(2, (a.weight / maxWeight) * 100)
+                const drift = a.weight - a.target
                 return (
                   <tr key={a.symbol} style={{ borderBottom: i < allocations.length - 1 ? `1px solid ${t.border}` : 'none' }}>
                     <td style={{ padding: '8px 16px' }}>
@@ -328,10 +325,17 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                     </td>
                     <td style={{ padding: '8px 12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ flex: 1, height: 6, borderRadius: 3, background: t.border, overflow: 'hidden', minWidth: 100 }}>
+                        <div style={{ flex: 1, height: 6, borderRadius: 3, background: t.border, overflow: 'hidden', minWidth: 80 }}>
                           <div style={{ width: `${barPct}%`, height: '100%', borderRadius: 3, background: tickerColor(a.symbol), opacity: 0.85 }} />
                         </div>
-                        <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, color: t.textSecondary, minWidth: 44, textAlign: 'right' }}>{a.weight.toFixed(1)}%</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 70 }}>
+                          <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, color: t.textSecondary }}>{a.weight.toFixed(1)}%</span>
+                          {a.symbol === 'SGOV'
+                            ? <span style={{ fontSize: 9, color: t.textTertiary }}>cash</span>
+                            : Math.abs(drift) >= 0.05
+                              ? <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 9, color: drift >= 0 ? t.positive : t.negative }}>{drift >= 0 ? '+' : ''}{drift.toFixed(1)} vs {a.target.toFixed(1)}</span>
+                              : <span style={{ fontSize: 9, color: t.textTertiary }}>at target</span>}
+                        </div>
                       </div>
                     </td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{a.price !== null ? `$${a.price.toFixed(2)}` : '—'}</td>

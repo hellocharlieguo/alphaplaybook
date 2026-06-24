@@ -32,3 +32,4 @@ server/pnl-backup-*
 server/reset-pnl.cjs
 *.bak.drift
 *.bak.banner
+*.bak.target

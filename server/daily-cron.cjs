@@ -1302,6 +1302,7 @@ async function calculatePnL(portfolio, prices, spyPrice) {
       holdings.push({
         ticker,
         weight_pct: pos.weight_pct, // target on a rebalance
+        target_weight_pct: pos.weight_pct,
         price: priceData?.price ?? null,
         market_value: Math.round(((pos.weight_pct / 100) * portfolioValue) * 100) / 100,
         daily_change_pct: isNewTicker ? 0 : (priceData?.change_pct ?? 0),
@@ -1329,6 +1330,7 @@ async function calculatePnL(portfolio, prices, spyPrice) {
       holdings.push({
         ticker: d.ticker,
         weight_pct: weightPct, // DRIFTED weight
+        target_weight_pct: d.pos.weight_pct,
         price: d.price,
         market_value: Math.round(((weightPct / 100) * portfolioValue) * 100) / 100,
         daily_change_pct: d.dailyChangePct,
@@ -1496,6 +1498,7 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
   const portfolioData = pnl.holdings.map((h) => ({
     ticker: h.ticker,
     weight_pct: h.weight_pct,   // drifted on drift days, target on rebalance days
+    target_weight_pct: h.target_weight_pct,
     category: h.category,
     adjustments: h.signal_sources,
   }))
