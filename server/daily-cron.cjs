@@ -656,7 +656,10 @@ async function runQuantPipeline() {
     console.log('\n✓ Quant: SPY price set from Finnhub; RSI row skipped (no series).')
   }
 
-  return { rsi, signal, spyPrice, spyChangePct, spyAth: ath, spyPctOffAth: pctOffAth }
+  // spyDate = last SPY session date from the TD series (null if series failed).
+  // Lets main() detect a closed market (stale data) and skip the snapshot.
+  const spyDate = series ? series[series.length - 1].date : null
+  return { rsi, signal, spyPrice, spyChangePct, spyAth: ath, spyPctOffAth: pctOffAth, spyDate }
 }
 
 // ============================================================================
@@ -1553,18 +1556,27 @@ async function main() {
     // Step 3: Compute model portfolio with signal-driven weight adjustments
     const portfolio = computeModelPortfolio(bullishAssets, quantResult)
 
-    // Step 4: Fetch current prices for portfolio tickers
-    const tickers = Object.keys(portfolio)
-    const prices = await fetchCurrentPrices(tickers)
+    // Market-open guard: if SPY's last session date isn't TODAY (NY calendar), the
+    // market was closed (weekend already excluded by the schedule; this catches weekday
+    // holidays like Juneteenth). Skip the P&L + snapshot so we never write a phantom day
+    // off stale prices. Fails OPEN: if spyDate is null (series hiccup), we still write.
+    if (quantResult.spyDate && quantResult.spyDate !== TODAY) {
+      console.log(`\n⏭  Market closed — last SPY session ${quantResult.spyDate} ≠ ${TODAY}.`)
+      console.log('   Skipping P&L + daily snapshot. Narrative/crowd signals already written stand.')
+    } else {
+      // Step 4: Fetch current prices for portfolio tickers
+      const tickers = Object.keys(portfolio)
+      const prices = await fetchCurrentPrices(tickers)
 
-    // Step 5: Calculate P&L
-    const pnl = await calculatePnL(portfolio, prices, quantResult.spyPrice)
+      // Step 5: Calculate P&L
+      const pnl = await calculatePnL(portfolio, prices, quantResult.spyPrice)
 
-    // Step 5b: Technicals — 10/50/200 DMAs per holding (feeds Step 3 action pill + (b) entry-gate)
-    const technicals = await computeTechnicals(tickers)
+      // Step 5b: Technicals — 10/50/200 DMAs per holding (feeds Step 3 action pill + (b) entry-gate)
+      const technicals = await computeTechnicals(tickers)
 
-    // Step 6: Write complete daily snapshot
-    await writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals, technicals)
+      // Step 6: Write complete daily snapshot
+      await writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals, technicals)
+    }
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
     console.log('\n╔══════════════════════════════════════════╗')
