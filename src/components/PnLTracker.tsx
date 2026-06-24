@@ -43,7 +43,9 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
   const cumulativeReturn = latest.cumulative_return_pct ?? 0
   const spyCumulativeReturn = latest.spy_cumulative_return_pct ?? 0
   const alpha = cumulativeReturn - spyCumulativeReturn
-  const currentValue = PORTFOLIO_BASE * (1 + cumulativeReturn / 100)
+  // Prefer the stored portfolio_value (exact, compounded off unrounded daily returns);
+  // fall back to the computed value only if the field is null (older rows).
+  const currentValue = latest.portfolio_value ?? PORTFOLIO_BASE * (1 + cumulativeReturn / 100)
   const daysSinceInception = snapshots.length
 
   // Calculate max drawdown
