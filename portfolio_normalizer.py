@@ -25,7 +25,8 @@ CASH_TICKERS = {"SGOV","BIL","USFR"}
 def normalize(results: list[dict], sleeve: str = "aggressive",
               cash_ticker: str = "SGOV",
               manual_overrides: Optional[dict] = None,
-              paused_caps: Optional[dict] = None) -> dict:
+              paused_caps: Optional[dict] = None,
+              voice_floors: Optional[dict] = None) -> dict:
     """results: list of score_ticker() dicts. Returns weights summing to 100%.
 
     paused_caps {ticker: max_pct}: Phase 2b entry gate. A held name below its 200-DMA
@@ -42,17 +43,20 @@ def normalize(results: list[dict], sleeve: str = "aggressive",
     floor_score = wcfg["floor_score"]
     overrides = {k.upper(): val for k, val in (manual_overrides or {}).items()}
     caps = {k.upper(): val for k, val in (paused_caps or {}).items()}
+    vfloors = {k.upper(): val for k, val in (voice_floors or {}).items()}
 
     hold_thr = CFG["entry_thresholds"]["hold_only"]
-    forced_exit = {t for t,val in overrides.items() if val == 0}
+    # voice-floored names are never forced out and never dropped for a low composite
+    forced_exit = {t for t,val in overrides.items() if val == 0} - set(vfloors)
     # eligibility/tiering keys off the UNDISCOUNTED composite (Rule B leaves it intact)
     eligible = [r for r in results
-                if r["composite"] >= hold_thr
+                if (r["composite"] >= hold_thr or r["ticker"].upper() in vfloors)
                 and r["ticker"].upper() not in CASH_TICKERS
                 and r["ticker"].upper() not in forced_exit]
     dropped = [r["ticker"] for r in results
                if (r["composite"] < hold_thr or r["ticker"].upper() in forced_exit)
-               and r["ticker"].upper() not in CASH_TICKERS]
+               and r["ticker"].upper() not in CASH_TICKERS
+               and r["ticker"].upper() not in vfloors]
 
     locked = {r["ticker"]: overrides[r["ticker"].upper()]
               for r in eligible if r["ticker"].upper() in overrides and overrides[r["ticker"].upper()] > 0}
@@ -83,10 +87,10 @@ def normalize(results: list[dict], sleeve: str = "aggressive",
         k = (lo+hi)/2
         return weights_for_k(k), round(k,2)
 
-    # Entry-pause caps (2b): lock any paused name whose convexity weight would exceed its
-    # current weight at that cap, then re-solve so the freed weight flows to un-paused
-    # names. Iterate to a fixed point (locking only reduces, so it converges quickly).
-    paused_capped = []
+    # Entry-pause caps (2b) first, to a fixed point (caps only reduce). THEN voice floors
+    # (backstop, only raise), checked against the cap-settled weights — so a floor binds
+    # only when the name's true converged weight is below it. A floor never lowers a name.
+    paused_capped, voice_bound = [], []
     w, k = solve()
     for _ in range(12):
         breaches = {r["ticker"]: caps[r["ticker"].upper()]
@@ -97,6 +101,16 @@ def normalize(results: list[dict], sleeve: str = "aggressive",
         locked.update(breaches)
         paused_capped.extend(breaches.keys())
         free = [r for r in free if r["ticker"] not in breaches]
+        w, k = solve()
+    for _ in range(12):
+        vbreaches = {r["ticker"]: vfloors[r["ticker"].upper()]
+                     for r in free
+                     if r["ticker"].upper() in vfloors and w[r["ticker"]] < vfloors[r["ticker"].upper()] - 0.01}
+        if not vbreaches:
+            break
+        locked.update(vbreaches)
+        voice_bound.extend(vbreaches.keys())
+        free = [r for r in free if r["ticker"] not in vbreaches]
         w, k = solve()
 
     w[cash_ticker] = w.get(cash_ticker, 0.0) + cash_floor
@@ -111,7 +125,9 @@ def normalize(results: list[dict], sleeve: str = "aggressive",
         "total_pct": round(sum(rounded.values()),1),
         "dropped_avoid_exit": dropped,
         "paused_capped": paused_capped,
-        "note": "No single-stock cap. Concentration via target_top + 2% floor + cash floor. paused_capped = held names frozen at current weight (below-200 entry pause).",
+        "voice_floored": [r["ticker"] for r in eligible if r["ticker"].upper() in vfloors],
+        "voice_floor_bound": voice_bound,
+        "note": "No single-stock cap. Concentration via target_top + 2% floor + cash floor. paused_capped = held names frozen at current weight (below-200 entry pause). voice_floor_bound = names the voice floor actually held up (score alone would have sunk them below the floor).",
     }
 
 

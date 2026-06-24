@@ -10,7 +10,6 @@ import portfolio_normalizer as pn
 from signal_engine import SignalInput, score_ticker, apply_gates, compute_pause_caps, compute_voice_floors
 import shutil; shutil.rmtree('composite_history', ignore_errors=True)
 CAPEX=77.0
-REGIME_ABOVE = True  # CPI macro regime (Part 2). Set from the dashboard: Above 4% -> True; below -> False.
 def S(t,ty,s1,s2,s4,s6,lens, price=None,d50=None,d200=None,rsi=None,ret1y=None,
       mu=False,md=False, held=False,cw=None, etf=False, vc=False, s5legacy=50):
     return SignalInput(t,ty,is_etf=etf,s1_bottleneck=s1,s2_timing=s2,s5_entry_quality=s5legacy,
@@ -36,7 +35,7 @@ BOOK=[
 ]
 PRIOR={"SLV":82.8,"WGMI":79.0,"AIPO":79.0,"IBIT":76.2,"GLDM":75.8,"GLW":74.8,
        "FLNC":72.8,"BE":72.4,"MRVL":72.4,"ETHA":69.5,"ENTG":69.2,"COPX":67.2,"HOOD":58.4,"XSD":51.2}
-results=[score_ticker(s, CAPEX, regime_above=REGIME_ABOVE) for s in BOOK]
+results=[score_ticker(s,CAPEX) for s in BOOK]
 results,exits,log=apply_gates(results,PRIOR)
 caps=compute_pause_caps(results,sleeve="aggressive",exit_overrides=exits)
 vf=compute_voice_floors(results,sleeve="aggressive")

@@ -373,267 +373,93 @@ async function runNarrativePipeline() {
 // PLAY 2: CROWD PIPELINE
 // ============================================================================
 
-const SEARCH_TERMS = [
-  'Federal Reserve', 'Fed funds rate', 'interest rate cut', 'interest rate hike',
-  'recession', 'inflation', 'CPI', 'GDP', 'unemployment',
-  'tariff', 'trade war', 'trade deal',
-  'Bitcoin price', 'BTC price', 'oil price', 'crude oil', 'gold price', 'S&P 500',
-  'war', 'military', 'conflict', 'invasion', 'ceasefire', 'NATO', 'nuclear',
-  'sanctions', 'Iran', 'China Taiwan', 'Russia Ukraine', 'Israel', 'North Korea',
+// Curated Kalshi macro watchlist — replaces the old Polymarket title-search, which only
+// surfaced geopolitical/political noise (NATO exit, elections, Starmer, etc.). Each entry
+// is a single high-liquidity, on-thesis market. Public read, no auth (KALSHI_HOSTS lives
+// in the macro block below; referenced at call time so declaration order is fine). The CPI
+// row reuses fetchKalshiCPI() so the inflation leg has one source of truth. `read` is a
+// function of the live probability, so the plain-language label can't contradict the
+// number when a market reprices.
+const KALSHI_WATCHLIST = [
+  { label: 'Fed: zero cuts in 2026', series: 'KXRATECUTCOUNT', match: /exactly 0 cuts/i,
+    read: (p) => (p >= 0.5 ? 'higher for longer' : 'cuts still expected'),
+    direction: 'bearish', mapped_assets: ['TLT'] },
+  { label: 'US recession in 2026', series: 'KXRECSSNBER', match: /^starts$/i,
+    read: (p) => (p < 0.20 ? 'low near-term risk' : p < 0.40 ? 'rising risk' : 'elevated risk'),
+    direction: 'bullish', mapped_assets: ['SPY'] },
+  { label: 'CPI YoY above 4%', cpi: true,
+    read: (p) => (p < 0.35 ? 'sub-4%, cooling' : p < 0.60 ? 'near the 4% line' : 'hot, above 4%'),
+    direction: 'neutral', mapped_assets: ['GLDM', 'SLV', 'XLE'] },
+  { label: 'Bitcoin tops $100k in 2026', series: 'KXBTCMAXY', match: /above \$?(99,?999|100,?000)/i,
+    read: (p) => (p < 0.35 ? 'reclaim doubted' : p < 0.60 ? 'coin-flip on $100k' : 'reclaim favored'),
+    direction: 'bearish', mapped_assets: ['IBIT', 'ETHA'] },
 ]
 
-function mapMarketToAssets(question, probability) {
-  const q = question.toLowerCase()
-
-  // Monetary policy
-  if ((q.includes('fed') || q.includes('federal reserve')) && (q.includes('cut') || q.includes('lower') || q.includes('decrease'))) {
-    if (probability > 0.70) return { direction: 'bullish', mapped_assets: ['GLDM', 'TLT', 'XSD'], conviction: 'high' }
-    if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['GLDM', 'TLT'], conviction: 'medium' }
-    return { direction: 'neutral', mapped_assets: ['SGOV'], conviction: 'low' }
+// One Kalshi market's probability by series + subtitle matcher. Working host first.
+// Returns 0..1 or null; trusts last trade on a deep market, falls back to bid/ask mid.
+async function kalshiMarketProb(series, matcher) {
+  for (const host of KALSHI_HOSTS) {
+    try {
+      const res = await fetch(`${host}/markets?series_ticker=${series}&status=open&limit=80`,
+        { headers: { 'User-Agent': 'Mozilla/5.0 (AlphaPlaybook cron)' } })
+      if (!res.ok) continue
+      const ms = ((await res.json()).markets) || []
+      const hit = ms.find((m) => matcher.test(String(m.yes_sub_title || '')))
+      if (!hit) return null
+      const close_time = hit.close_time || null
+      const last = parseFloat(hit.last_price_dollars)
+      if (!isNaN(last) && last > 0 && last < 1) return { prob: last, close_time }
+      const b = parseFloat(hit.yes_bid_dollars), a = parseFloat(hit.yes_ask_dollars)
+      if (!isNaN(b) && !isNaN(a) && a > 0) return { prob: (b + a) / 2, close_time }
+      return null
+    } catch (e) { /* next host */ }
   }
-  if ((q.includes('fed') || q.includes('federal reserve')) && (q.includes('hike') || q.includes('raise') || q.includes('increase'))) {
-    if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['TLT', 'XSD', 'GLDM'], conviction: 'medium' }
-    return { direction: 'neutral', mapped_assets: ['SGOV'], conviction: 'low' }
-  }
-  if (q.includes('fed funds') || q.includes('federal reserve') || q.includes('fomc')) {
-    return { direction: 'neutral', mapped_assets: ['SGOV', 'TLT'], conviction: 'low' }
-  }
-
-  // Recession
-  if (q.includes('recession')) {
-    if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['SPY', 'XSD', 'COPX'], conviction: 'high' }
-    if (probability > 0.35) return { direction: 'neutral', mapped_assets: ['SGOV', 'GLDM'], conviction: 'medium' }
-    return { direction: 'bullish', mapped_assets: ['SPY', 'XSD', 'COPX'], conviction: 'medium' }
-  }
-
-  // Inflation / CPI
-  if (q.includes('inflation') || q.includes('cpi')) {
-    if ((q.includes('above') || q.includes('over') || q.includes('high') || q.includes('rise')) && probability > 0.60) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'COPX', 'XLE', 'IBIT'], conviction: 'medium' }
-    }
-    if ((q.includes('below') || q.includes('under') || q.includes('fall') || q.includes('drop')) && probability > 0.60) {
-      return { direction: 'bullish', mapped_assets: ['TLT', 'XSD', 'SPY'], conviction: 'medium' }
-    }
-    return { direction: 'neutral', mapped_assets: ['SGOV'], conviction: 'low' }
-  }
-
-  // GDP
-  if (q.includes('gdp')) {
-    if ((q.includes('negative') || q.includes('contraction') || q.includes('decline')) && probability > 0.40) {
-      return { direction: 'bearish', mapped_assets: ['SPY', 'COPX', 'XSD'], conviction: 'medium' }
-    }
-    if ((q.includes('growth') || q.includes('positive') || q.includes('expand')) && probability > 0.60) {
-      return { direction: 'bullish', mapped_assets: ['SPY', 'XSD', 'COPX'], conviction: 'medium' }
-    }
-    return { direction: 'neutral', mapped_assets: ['SPY'], conviction: 'low' }
-  }
-
-  // Unemployment
-  if (q.includes('unemployment') || q.includes('jobless') || q.includes('nonfarm') || q.includes('jobs report')) {
-    if ((q.includes('above') || q.includes('rise') || q.includes('increase') || q.includes('higher')) && probability > 0.50) {
-      return { direction: 'bearish', mapped_assets: ['SPY', 'XSD'], conviction: 'medium' }
-    }
-    if ((q.includes('below') || q.includes('fall') || q.includes('decrease') || q.includes('lower')) && probability > 0.50) {
-      return { direction: 'bullish', mapped_assets: ['SPY', 'XSD'], conviction: 'medium' }
-    }
-    return { direction: 'neutral', mapped_assets: ['SPY'], conviction: 'low' }
-  }
-
-  // Trade / tariffs
-  if (q.includes('tariff') || q.includes('trade war') || q.includes('trade deal') || q.includes('trade agreement')) {
-    if ((q.includes('increase') || q.includes('impose') || q.includes('raise') || q.includes('new tariff') || q.includes('trade war')) && probability > 0.50) {
-      return { direction: 'bearish', mapped_assets: ['VEA', 'SPY', 'COPX'], conviction: 'medium' }
-    }
-    if ((q.includes('deal') || q.includes('agreement') || q.includes('remove') || q.includes('reduce')) && probability > 0.50) {
-      return { direction: 'bullish', mapped_assets: ['VEA', 'SPY', 'COPX'], conviction: 'medium' }
-    }
-    return { direction: 'neutral', mapped_assets: ['SPY', 'VEA'], conviction: 'low' }
-  }
-
-  // Bitcoin / BTC
-  if (q.includes('bitcoin') || q.includes('btc')) {
-    if (q.includes('above') || q.includes('over') || q.includes('all-time high') || q.includes('ath')) {
-      if (probability > 0.60) return { direction: 'bullish', mapped_assets: ['IBIT'], conviction: 'high' }
-      if (probability > 0.40) return { direction: 'bullish', mapped_assets: ['IBIT'], conviction: 'medium' }
-    }
-    if ((q.includes('below') || q.includes('under') || q.includes('crash') || q.includes('drop')) && probability > 0.50) {
-      return { direction: 'bearish', mapped_assets: ['IBIT'], conviction: 'medium' }
-    }
-    return { direction: 'neutral', mapped_assets: ['IBIT'], conviction: 'low' }
-  }
-
-  // Oil / crude
-  if (q.includes('oil') || q.includes('crude') || q.includes('wti') || q.includes('brent')) {
-    if ((q.includes('above') || q.includes('over') || q.includes('rise') || q.includes('spike')) && probability > 0.50) {
-      return { direction: 'bullish', mapped_assets: ['XLE'], conviction: 'medium' }
-    }
-    if ((q.includes('below') || q.includes('under') || q.includes('drop') || q.includes('fall')) && probability > 0.50) {
-      return { direction: 'bearish', mapped_assets: ['XLE'], conviction: 'medium' }
-    }
-    return { direction: 'neutral', mapped_assets: ['XLE'], conviction: 'low' }
-  }
-
-  // Gold
-  if (q.includes('gold') || q.includes('xau')) {
-    if ((q.includes('above') || q.includes('over') || q.includes('all-time high') || q.includes('rise')) && probability > 0.50) {
-      return { direction: 'bullish', mapped_assets: ['GLDM'], conviction: 'medium' }
-    }
-    if ((q.includes('below') || q.includes('under') || q.includes('drop') || q.includes('fall')) && probability > 0.50) {
-      return { direction: 'bearish', mapped_assets: ['GLDM'], conviction: 'medium' }
-    }
-    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
-  }
-
-  // S&P 500
-  if (q.includes('s&p') || q.includes('s&p 500') || q.includes('spy')) {
-    if ((q.includes('above') || q.includes('over') || q.includes('all-time high')) && probability > 0.60) {
-      return { direction: 'bullish', mapped_assets: ['SPY', 'QQQ', 'XSD'], conviction: 'medium' }
-    }
-    if ((q.includes('below') || q.includes('crash') || q.includes('drop') || q.includes('bear market')) && probability > 0.40) {
-      return { direction: 'bearish', mapped_assets: ['SPY', 'QQQ'], conviction: 'medium' }
-    }
-    return { direction: 'neutral', mapped_assets: ['SPY'], conviction: 'low' }
-  }
-
-  // Russia-Ukraine
-  if (q.includes('russia') || q.includes('ukraine') || q.includes('putin') || q.includes('zelensky')) {
-    if (q.includes('ceasefire') || q.includes('peace') || q.includes('deal') || q.includes('end')) {
-      if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['VEA', 'SPY'], conviction: 'medium' }
-      return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
-    }
-    if ((q.includes('escalat') || q.includes('nuclear') || q.includes('nato') || q.includes('expand')) && probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'XLE', 'SGOV'], conviction: 'high' }
-    }
-    return { direction: 'neutral', mapped_assets: ['GLDM', 'XLE'], conviction: 'low' }
-  }
-
-  // China-Taiwan
-  if (q.includes('china') && (q.includes('taiwan') || q.includes('invasion') || q.includes('military'))) {
-    if (probability > 0.20) return { direction: 'bearish', mapped_assets: ['XSD', 'VEA', 'SPY'], conviction: 'high' }
-    return { direction: 'neutral', mapped_assets: ['XSD', 'GLDM'], conviction: 'low' }
-  }
-
-  // Iran
-  if (q.includes('iran') && (q.includes('war') || q.includes('strike') || q.includes('attack') || q.includes('nuclear') || q.includes('military'))) {
-    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['XLE', 'GLDM'], conviction: 'high' }
-    return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
-  }
-
-  // Israel / Middle East
-  if (q.includes('israel') || q.includes('gaza') || q.includes('hamas') || q.includes('hezbollah') || q.includes('middle east')) {
-    if (q.includes('ceasefire') || q.includes('peace') || q.includes('deal')) {
-      if (probability > 0.50) return { direction: 'bearish', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
-    }
-    if ((q.includes('escalat') || q.includes('war') || q.includes('invasion') || q.includes('expand')) && probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['XLE', 'GLDM', 'SGOV'], conviction: 'high' }
-    }
-    return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM'], conviction: 'low' }
-  }
-
-  // North Korea
-  if (q.includes('north korea') || q.includes('kim jong') || q.includes('pyongyang')) {
-    if ((q.includes('nuclear') || q.includes('missile') || q.includes('test') || q.includes('launch')) && probability > 0.30) {
-      return { direction: 'bullish', mapped_assets: ['GLDM', 'SGOV'], conviction: 'medium' }
-    }
-    return { direction: 'neutral', mapped_assets: ['GLDM'], conviction: 'low' }
-  }
-
-  // General war / conflict
-  if (q.includes('war') || q.includes('military') || q.includes('conflict') || q.includes('invasion') || q.includes('attack')) {
-    if (q.includes('ceasefire') || q.includes('peace') || q.includes('end') || q.includes('withdraw')) {
-      if (probability > 0.50) return { direction: 'bullish', mapped_assets: ['VEA', 'SPY'], conviction: 'medium' }
-    }
-    if (probability > 0.30) return { direction: 'bullish', mapped_assets: ['GLDM', 'XLE', 'SGOV'], conviction: 'medium' }
-    return { direction: 'neutral', mapped_assets: ['GLDM', 'XLE'], conviction: 'low' }
-  }
-
-  // Sanctions
-  if (q.includes('sanction')) {
-    if (probability > 0.50) return { direction: 'neutral', mapped_assets: ['XLE', 'GLDM', 'COPX'], conviction: 'medium' }
-    return { direction: 'neutral', mapped_assets: ['SPY'], conviction: 'low' }
-  }
-
-  // NATO
-  if (q.includes('nato')) return { direction: 'neutral', mapped_assets: ['VEA', 'GLDM'], conviction: 'low' }
-
   return null
 }
 
 async function runCrowdPipeline() {
   console.log('\n========================================')
-  console.log('PLAY 2: CROWD PIPELINE')
+  console.log('PLAY 2: CROWD PIPELINE (Kalshi watchlist)')
   console.log('========================================')
 
-  const allMarkets = []
-
-  for (const term of SEARCH_TERMS) {
-    try {
-      const url = `https://gamma-api.polymarket.com/events?closed=false&limit=10&title=${encodeURIComponent(term)}`
-      const response = await fetch(url)
-      if (!response.ok) continue
-      const events = await response.json()
-
-      for (const event of events) {
-        if (!event.markets || event.markets.length === 0) continue
-        for (const market of event.markets) {
-          const volume = parseFloat(market.volume || '0')
-          const outcomePrices = JSON.parse(market.outcomePrices || '[]')
-          const probability = parseFloat(outcomePrices[0] || '0')
-          if (probability > 0 && probability < 1) {
-            allMarkets.push({
-              question: market.question || event.title,
-              probability: Math.round(probability * 100) / 100,
-              volume,
-              event_slug: event.slug,
-            })
-          }
-        }
-      }
-    } catch (error) {
-      // skip failed searches
-    }
-  }
-
-  // Deduplicate and sort
-  const seen = new Set()
-  const unique = allMarkets.filter((m) => {
-    if (seen.has(m.question)) return false
-    seen.add(m.question)
-    return true
-  })
-  unique.sort((a, b) => b.volume - a.volume)
-  console.log(`Found ${unique.length} unique markets`)
-
+  const kc = await fetchKalshiCPI() // CPI > 4% row reuses the inflation leg
   const signals = []
-  for (const market of unique) {
-    const mapping = mapMarketToAssets(market.question, market.probability)
-    if (!mapping) continue
+
+  for (const w of KALSHI_WATCHLIST) {
+    let prob, closeTime
+    if (w.cpi) {
+      prob = kc?.prob_above_4 ?? null
+      closeTime = kc?.close_time ?? null
+    } else {
+      const r = await kalshiMarketProb(w.series, w.match)
+      prob = r?.prob ?? null
+      closeTime = r?.close_time ?? null
+    }
+    if (prob === null) { console.warn(`  ${w.label}: no Kalshi reading — skipping`); continue }
+    prob = Math.round(prob * 100) / 100
+    const read = w.read(prob)
     signals.push({
-      market: market.question,
-      probability: market.probability,
-      volume: market.volume,
-      direction: mapping.direction,
-      mapped_assets: mapping.mapped_assets,
-      conviction: mapping.conviction,
+      market: w.label, probability: prob, read, close_time: closeTime, as_of: TODAY,
+      direction: w.direction, mapped_assets: w.mapped_assets, conviction: 'medium',
     })
-    console.log(`  ${market.question}: ${(market.probability * 100).toFixed(0)}% → ${mapping.direction} ${mapping.mapped_assets.join(', ')}`)
+    console.log(`  ${w.label}: ${Math.round(prob * 100)}% — ${read}`)
   }
 
-  // Write crowd signals to signals table
-  for (const signal of signals) {
+  // Write to the signals table (source 'crowd') — keeps aggregateBullishAssets fed.
+  for (const s of signals) {
     await supabase.from('signals').insert({
       snapshot_date: TODAY,
       source: 'crowd',
-      market_question: signal.market,
-      probability: signal.probability,
-      direction: signal.direction,
-      mapped_tickers: signal.mapped_assets,
-      conviction: signal.conviction,
-      raw_data: signal,
+      market_question: s.market,
+      probability: s.probability,
+      direction: s.direction,
+      mapped_tickers: s.mapped_assets,
+      conviction: s.conviction,
+      raw_data: s,
     })
   }
 
-  console.log(`\n✓ Crowd: ${signals.length} signals written`)
+  console.log(`\n✓ Crowd: ${signals.length} Kalshi markets written`)
   return signals
 }
 
@@ -834,7 +660,7 @@ async function runQuantPipeline() {
 }
 
 // ============================================================================
-// MACRO: CPI (BLS via FRED) + Cleveland Fed nowcast + 4% regime
+// MACRO: CPI (BLS via FRED) + Cleveland Fed nowcast + Kalshi YoY + 4% regime
 // Display-first. All values stored as RAW NUMBERS (engine-ready for future T3).
 // Every fetch is skip-safe: missing key / endpoint / data => null => panel "—".
 // ============================================================================
@@ -931,20 +757,147 @@ async function fetchClevelandNowcast() {
   }
 }
 
+// Kalshi CPI YoY ladder — the 3rd convergence leg (forward, crowd-priced). Public read,
+// no auth. Returns the median POINT ESTIMATE (where the cumulative "Above X%" ladder
+// crosses 0.50) measured against the 4% regime line, plus P(>4%) as a secondary tail
+// metric. The 2-of-3 regime vote across FRED + nowcast + this leg lands with the gate;
+// for now this is data-only and fills macro_signals.kalshi. Skip-safe -> null on failure.
+const KALSHI_HOSTS = [
+  'https://api.elections.kalshi.com/trade-api/v2', // verified-working (api.kalshi.com returns 000)
+  'https://api.kalshi.com/trade-api/v2',           // forward-looking canonical, not yet live
+]
+const KALSHI_CPI_SERIES = 'KXCPIYOY' // YoY "Above X%" ladder; MoM would be KXCPI
+const KALSHI_MONTHS = { JAN: '01', FEB: '02', MAR: '03', APR: '04', MAY: '05', JUN: '06',
+                        JUL: '07', AUG: '08', SEP: '09', OCT: '10', NOV: '11', DEC: '12' }
+
+async function fetchKalshiCPI() {
+  // Try the working host first, fall back to the canonical one on network/HTTP failure.
+  async function getJSON(path) {
+    for (const host of KALSHI_HOSTS) {
+      try {
+        const res = await fetch(host + path, { headers: { 'User-Agent': 'Mozilla/5.0 (AlphaPlaybook cron)' } })
+        if (!res.ok) continue
+        return { json: await res.json(), host }
+      } catch (e) { /* try next host */ }
+    }
+    return null
+  }
+  try {
+    const got = await getJSON(`/events?series_ticker=${KALSHI_CPI_SERIES}&status=open&with_nested_markets=true`)
+    if (!got) { console.warn('Kalshi CPI: all hosts failed — skipping (panel shows "—").'); return null }
+    const events = (got.json && got.json.events) || []
+    if (!events.length) { console.warn('Kalshi CPI: no open events — skipping (panel shows "—").'); return null }
+
+    // Front month = the open event whose ladder closes earliest (the next BLS print).
+    const eventClose = (e) => {
+      const cts = (e.markets || []).map((m) => m.close_time).filter(Boolean).sort()
+      return cts[0] || '9999'
+    }
+    events.sort((a, b) => (eventClose(a) < eventClose(b) ? -1 : 1))
+    const ev = events[0]
+
+    // Per-strike probability: trust last on this deep ladder; fall back to bid/ask mid.
+    const px = (m) => {
+      const last = parseFloat(m.last_price_dollars)
+      if (!isNaN(last) && last > 0 && last < 1) return last
+      const b = parseFloat(m.yes_bid_dollars), a = parseFloat(m.yes_ask_dollars)
+      if (!isNaN(b) && !isNaN(a) && a > 0) return (b + a) / 2
+      return null
+    }
+    const strikeOf = (m) => {
+      if (typeof m.floor_strike === 'number') return m.floor_strike
+      const mt = String(m.yes_sub_title || '').match(/([\d.]+)/)
+      return mt ? parseFloat(mt[1]) : null
+    }
+
+    const ladder = []
+    let probAbove4 = null
+    for (const m of (ev.markets || [])) {
+      const s = strikeOf(m), p = px(m)
+      if (s === null || p === null) continue
+      ladder.push({ strike: s, prob: p })
+      if (Math.abs(s - REGIME_THRESHOLD) < 1e-9) probAbove4 = p
+    }
+    if (ladder.length < 2) { console.warn('Kalshi CPI: ladder too sparse — skipping (panel shows "—").'); return null }
+
+    // Median (point estimate) = where the cumulative P(>strike) crosses 0.50.
+    ladder.sort((x, y) => x.strike - y.strike)
+    let pointEstimate = null
+    for (let i = 0; i < ladder.length - 1; i++) {
+      const lo = ladder[i], hi = ladder[i + 1]
+      if (lo.prob >= 0.5 && hi.prob < 0.5) {
+        pointEstimate = lo.strike + ((lo.prob - 0.5) / (lo.prob - hi.prob)) * (hi.strike - lo.strike)
+        break
+      }
+    }
+    if (pointEstimate === null) {
+      // No crossing: the whole distribution sits above or below the ladder.
+      pointEstimate = ladder[0].prob < 0.5 ? ladder[0].strike : ladder[ladder.length - 1].strike
+    }
+
+    // data_month from the event ticker, e.g. KXCPIYOY-26JUN -> "2026-06".
+    let data_month = null
+    const em = String(ev.event_ticker || '').match(/-(\d{2})([A-Z]{3})/)
+    if (em) data_month = `20${em[1]}-${KALSHI_MONTHS[em[2]] || '01'}`
+
+    const out = {
+      point_estimate: Math.round(pointEstimate * 100) / 100,
+      prob_above_4: probAbove4 === null ? null : Math.round(probAbove4 * 100) / 100,
+      data_month,
+      event_ticker: ev.event_ticker || null,
+      close_time: eventClose(ev),
+      as_of: new Date().toISOString().slice(0, 10),
+      source: 'Kalshi',
+    }
+    console.log(`Kalshi CPI: ${out.point_estimate}% YoY pt-est · P(>4%)=${out.prob_above_4} · ${out.data_month} · ${out.event_ticker} · via ${got.host}`)
+    return out
+  } catch (e) {
+    console.warn(`Kalshi CPI: fetch error — ${e.message} — skipping (panel shows "—").`); return null
+  }
+}
+
 // Assemble the macro_signals blob (spec §4). Regime keys off the nowcast when
 // available (the live read), else falls back to official CPI.
-function buildMacroSignals(quantResult, cpi, nowcast) {
-  const regimeBasis = (nowcast && typeof nowcast.yoy === 'number') ? nowcast.yoy
-    : (cpi && typeof cpi.yoy === 'number') ? cpi.yoy : null
-  const regime = regimeBasis === null ? null : {
-    threshold: REGIME_THRESHOLD,
-    basis: (nowcast && typeof nowcast.yoy === 'number') ? 'nowcast' : 'cpi',
-    value: regimeBasis,
-    above: regimeBasis >= REGIME_THRESHOLD,
-    note: regimeBasis >= REGIME_THRESHOLD
-      ? 'Above 4% — S&P historically negative (1928–present)'
-      : 'Below 4% — S&P historically ~+12% annual',
+// 2-of-3 CPI regime vote with hysteresis. Legs: FRED actual (cpi.yoy), Cleveland
+// nowcast (nowcast.yoy), Kalshi forward (kalshi.point_estimate). Gate turns ON when
+// >=2 legs >= 4.0, OFF when >=2 legs < 3.8; the 3.8-4.0 band holds the prior state
+// (priorAbove, read from the previous snapshot at the call site). `value` is the
+// median of available legs; returns null when no leg is present.
+function computeRegime(cpi, nowcast, kalshi, priorAbove) {
+  const T = REGIME_THRESHOLD
+  const OFF_BAND = 3.8
+  const legs = {
+    fred:    (cpi     && typeof cpi.yoy === 'number')               ? cpi.yoy               : null,
+    nowcast: (nowcast && typeof nowcast.yoy === 'number')           ? nowcast.yoy           : null,
+    kalshi:  (kalshi  && typeof kalshi.point_estimate === 'number') ? kalshi.point_estimate : null,
   }
+  const values = Object.values(legs).filter((v) => v !== null)
+  if (values.length === 0) return null
+  const votesAbove = values.filter((v) => v >= T).length
+  const votesBelow = values.filter((v) => v < OFF_BAND).length
+  let above
+  if (votesAbove >= 2) above = true
+  else if (votesBelow >= 2) above = false
+  else above = !!priorAbove
+  const sorted = [...values].sort((a, b) => a - b)
+  const median = sorted.length % 2
+    ? sorted[(sorted.length - 1) / 2]
+    : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+  return {
+    threshold: T,
+    value: Math.round(median * 100) / 100,
+    above,
+    votes_above: votesAbove,
+    legs_total: values.length,
+    legs,
+    note: above
+      ? 'Above 4% \u2014 S&P historically negative (1928\u2014present)'
+      : 'Below 4% \u2014 S&P historically ~+12% annual',
+  }
+}
+
+function buildMacroSignals(quantResult, cpi, nowcast, kalshi, priorAbove) {
+  const regime = computeRegime(cpi, nowcast, kalshi, priorAbove)
   return {
     spy: quantResult.spyPrice === null ? null : {
       price: quantResult.spyPrice, ath: quantResult.spyAth, pct_off_ath: quantResult.spyPctOffAth,
@@ -953,7 +906,7 @@ function buildMacroSignals(quantResult, cpi, nowcast) {
     cpi: cpi || null,
     nowcast: nowcast || null,
     regime,
-    kalshi: null, // reserved for Kalshi Tier 2/3 (inflation/Fed odds) — code-only add later
+    kalshi: kalshi || null, // Kalshi CPI YoY leg (point estimate + P>4%); 2-of-3 vote wired with gate
   }
 }
 
@@ -1060,23 +1013,19 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 //   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
 // Comments after each line are the engine composite scores (UNDISCOUNTED).
 const BASE_PORTFOLIO = {
-  SLV:  { base_weight: 18,  theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },   // 79.7  below-200, held (no add)
-  GLW:  { base_weight: 9.5, theme: 'Compute',                          action: 'Enter' },          // 71.2
-  LLY:  { base_weight: 7,   theme: 'AI Application',                   action: 'Enter' },          // 68.0  NEW 6/9
-  IBIT: { base_weight: 7,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 75.5  PAUSED below-200
-  GLDM: { base_weight: 6.5, theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 74.6  PAUSED below-200
-  HOOD: { base_weight: 6,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 66.0  mom.up un-pause
-  AIPO: { base_weight: 5.5, theme: 'Power & Infrastructure',           action: 'Enter' },          // 65.3  power theme, basket-only now
-  XLE:  { base_weight: 5.5, theme: 'Energy Hedge',                     action: 'Enter' },          // 65.2  NEW 6/9
-  ENTG: { base_weight: 5,   theme: 'Compute',                          action: 'Starter / Watch' },// 64.0
-  SGOV: { base_weight: 5,   theme: 'Cash', min_weight: 3,              action: 'Hold' },           // cash floor
-  BE:   { base_weight: 4.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 63.4  voice floor armed (Camillo)
-  COPX: { base_weight: 4.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 62.6  structural cross-stage
-  WGMI: { base_weight: 3.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 60.1  reclaim optionality
-  FLNC: { base_weight: 3.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 59.7  velocity-trimmed, mom.up
-  MRVL: { base_weight: 3.5, theme: 'Compute',                          action: 'Starter / Watch' },// 59.9  velocity-trimmed
-  ETHA: { base_weight: 3,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 67.7  PAUSED below-200
-  XSD:  { base_weight: 2.5, theme: 'Compute',                          action: 'Starter / Watch' },// 56.4  index-beta optionality (kept 6/9)
+  AIPO: { base_weight: 19.2, theme: 'Power & Infrastructure',  action: 'Enter' },  // Power - ETF takes full theme weight, uncapped
+  HOOD: { base_weight: 12,   theme: 'Tokenization',            action: 'Enter' },  // single-stock cap; reclaimed 200-DMA
+  COPX: { base_weight: 9.5,  theme: 'Physical Scarcity',       action: 'Enter' },  // copper - clean pullback (s5 72)
+  LLY:  { base_weight: 8.9,  theme: 'AI Application',          action: 'Enter' },  // sole AI-App seat
+  SLV:  { base_weight: 7.9,  theme: 'Physical Scarcity',       action: 'Hold'  },  // silver - PAUSED below-200 (no add)
+  GLW:  { base_weight: 6.7,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // optical
+  COHR: { base_weight: 6.7,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // optical (NEW)
+  ENTG: { base_weight: 6.4,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // chemicals
+  MU:   { base_weight: 6.2,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // memory bellwether (NEW)
+  SGOV: { base_weight: 5.1,  theme: 'Cash', min_weight: 3,     action: 'Hold'  },  // cash floor
+  IBIT: { base_weight: 4.2,  theme: 'Monetary Scarcity',       action: 'Hold'  },  // PAUSED below-200
+  GLDM: { base_weight: 4.2,  theme: 'Monetary Scarcity',       action: 'Hold'  },  // PAUSED below-200
+  ETHA: { base_weight: 3,    theme: 'Tokenization',            action: 'Hold'  },  // PAUSED below-200
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {
@@ -1485,6 +1434,9 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
   const polymarketData = crowdSignals.map((s) => ({
     market: s.market,
     probability: s.probability,
+    read: s.read,
+    close_time: s.close_time,
+    as_of: s.as_of,
     direction: s.direction,
     mapped_assets: s.mapped_assets,
     conviction: s.conviction,
@@ -1582,11 +1534,18 @@ async function main() {
     const crowdSignals = await runCrowdPipeline()
     const quantResult = await runQuantPipeline()
 
-    // Step 1b: Macro signals — CPI (FRED) + Cleveland nowcast + 4% regime.
-    // Both skip-safe; macroSignals always returns a blob (fields null if missing).
+    // Step 1b: Macro signals — CPI (FRED) + Cleveland nowcast + Kalshi YoY + 4% regime.
+    // All skip-safe; macroSignals always returns a blob (fields null if missing).
     const cpi = await fetchFredCPI()
     const nowcast = await fetchClevelandNowcast()
-    const macroSignals = buildMacroSignals(quantResult, cpi, nowcast)
+    const kalshi = await fetchKalshiCPI()
+    const { data: priorRows } = await supabase
+      .from('daily_snapshots')
+      .select('macro_signals')
+      .order('snapshot_date', { ascending: false })
+      .limit(1)
+    const priorAbove = priorRows?.[0]?.macro_signals?.regime?.above ?? false
+    const macroSignals = buildMacroSignals(quantResult, cpi, nowcast, kalshi, priorAbove)
 
     // Step 2: Aggregate bullish assets across all sources
     const bullishAssets = aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult)
@@ -1640,4 +1599,5 @@ module.exports = {
   computeDMAs,
   computeTechnicals,
   fetchClevelandNowcast,
+  fetchKalshiCPI,
 }

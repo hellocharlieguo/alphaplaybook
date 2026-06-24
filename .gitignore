@@ -30,3 +30,5 @@ server/.td-cache-step2.json
 composite_history/
 server/pnl-backup-*
 server/reset-pnl.cjs
+*.bak.drift
+*.bak.banner

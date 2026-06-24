@@ -1031,6 +1031,12 @@ const BASE_PORTFOLIO = {
   ETHA: { base_weight: 3,    theme: 'Tokenization',            action: 'Hold'  },  // PAUSED below-200
 }
 
+// Bump this on ANY engine rescore or weight change. The P&L compares it to the version
+// stored in yesterday's snapshot; a change forces a one-night rebalance-to-target.
+// Between bumps (same tickers, same version) holdings DRIFT with price — winners gain
+// weight, losers shed it. A ticker add/drop also forces a rebalance regardless.
+const PORTFOLIO_VERSION = '2026-06-09-v2.3-funnel'
+
 function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('\n========================================')
   console.log('COMPUTING MODEL PORTFOLIO')
@@ -1131,7 +1137,7 @@ async function calculatePnL(portfolio, prices, spyPrice) {
   // Yesterday's snapshot (for daily return baseline)
   const { data: prevSnapshot } = await supabase
     .from('daily_snapshots')
-    .select('snapshot_date, portfolio_value, spy_value, cumulative_return_pct, spy_cumulative_return_pct')
+    .select('snapshot_date, portfolio_value, spy_value, cumulative_return_pct, spy_cumulative_return_pct, portfolio_version')
     .lt('snapshot_date', TODAY)
     .order('snapshot_date', { ascending: false })
     .limit(1)
@@ -1263,32 +1269,74 @@ async function calculatePnL(portfolio, prices, spyPrice) {
     ? Math.round(((spyValue - spyInceptionValue) / spyInceptionValue) * 10000) / 100
     : 0
 
-  // Build today's holdings rows using TODAY's target weights.
-  // Market value reflects the rebalanced amount applied to today's portfolioValue.
+  // ============================================================
+  // DRIFT vs REBALANCE
+  //   Rebalance day -> reset every position to its target weight (target x value).
+  //     Triggers: first run, PORTFOLIO_VERSION changed (engine rescore), or any
+  //     ticker add/drop. Matches the old behavior.
+  //   Drift day -> each held position carries its OWN market value forward by its
+  //     own move; weights float. Normalized so sum(weight)=100 and sum(mv)=value
+  //     even if prior stored values had rounding gaps. Lets structural winners
+  //     compound their weight instead of being trimmed back to target nightly.
+  // ============================================================
+  const prevTickerSet = new Set(Object.keys(prevHoldingsByTicker))
+  const todayTickerSet = new Set(Object.keys(portfolio))
+  const tickersChanged =
+    prevTickerSet.size !== todayTickerSet.size ||
+    [...todayTickerSet].some((tk) => !prevTickerSet.has(tk))
+  const isRebalanceDay =
+    isFirstRun ||
+    (prevSnapshot?.portfolio_version ?? null) !== PORTFOLIO_VERSION ||
+    tickersChanged
+
+  console.log(`  ${isRebalanceDay ? 'REBALANCE' : 'DRIFT'} day` +
+    (isRebalanceDay
+      ? ` (${isFirstRun ? 'first run' : tickersChanged ? 'ticker set changed' : 'engine rescore'}) -> reset to target weights`
+      : ' -> carrying drifted weights forward'))
+
   const holdings = []
-  for (const [ticker, pos] of Object.entries(portfolio)) {
-    const priceData = prices[ticker]
-    const currentPrice = priceData?.price ?? null
-    const dailyChangePct = priceData?.change_pct ?? 0
-    const isNewTicker = newTickers.includes(ticker)
-
-    // Today's allocation for this position based on today's target weight
-    const marketValue = Math.round(((pos.weight_pct / 100) * portfolioValue) * 100) / 100
-
-    // Per-ticker daily change shown in the table is the asset's actual move.
-    // For new tickers, mark as 0 since we didn't hold them yesterday.
-    const reportedDailyChange = isNewTicker ? 0 : dailyChangePct
-
-    holdings.push({
-      ticker,
-      weight_pct: pos.weight_pct,
-      price: currentPrice,
-      market_value: marketValue,
-      daily_change_pct: reportedDailyChange,
-      signal_sources: pos.adjustments,
-      category: pos.theme,
-      is_new_ticker: isNewTicker,
-    })
+  if (isRebalanceDay) {
+    for (const [ticker, pos] of Object.entries(portfolio)) {
+      const priceData = prices[ticker]
+      const isNewTicker = newTickers.includes(ticker)
+      holdings.push({
+        ticker,
+        weight_pct: pos.weight_pct, // target on a rebalance
+        price: priceData?.price ?? null,
+        market_value: Math.round(((pos.weight_pct / 100) * portfolioValue) * 100) / 100,
+        daily_change_pct: isNewTicker ? 0 : (priceData?.change_pct ?? 0),
+        signal_sources: pos.adjustments,
+        category: pos.theme,
+        is_new_ticker: isNewTicker,
+      })
+    }
+  } else {
+    // Drift: mv_today = prevMv * (1 + move); weight floats off the drifted sum.
+    const drifted = []
+    let driftedSum = 0
+    for (const [ticker, pos] of Object.entries(portfolio)) {
+      const prevHolding = prevHoldingsByTicker[ticker]
+      const priceData = prices[ticker]
+      const dailyChangePct = priceData?.change_pct ?? 0
+      const prevMv = prevHolding?.market_value ??
+        (((prevHolding?.weight_pct ?? pos.weight_pct) / 100) * prevPortfolioValue)
+      const mv = prevMv * (1 + dailyChangePct / 100)
+      drifted.push({ ticker, pos, price: priceData?.price ?? null, dailyChangePct, mv })
+      driftedSum += mv
+    }
+    for (const d of drifted) {
+      const weightPct = driftedSum > 0 ? Math.round((d.mv / driftedSum) * 10000) / 100 : d.pos.weight_pct
+      holdings.push({
+        ticker: d.ticker,
+        weight_pct: weightPct, // DRIFTED weight
+        price: d.price,
+        market_value: Math.round(((weightPct / 100) * portfolioValue) * 100) / 100,
+        daily_change_pct: d.dailyChangePct,
+        signal_sources: d.pos.adjustments,
+        category: d.pos.theme,
+        is_new_ticker: false,
+      })
+    }
   }
 
   console.log(`  Portfolio Value: $${portfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`)
@@ -1445,11 +1493,11 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
     conviction: s.conviction,
   }))
 
-  const portfolioData = Object.entries(portfolio).map(([ticker, pos]) => ({
-    ticker,
-    weight_pct: pos.weight_pct,
-    category: pos.theme,
-    adjustments: pos.adjustments,
+  const portfolioData = pnl.holdings.map((h) => ({
+    ticker: h.ticker,
+    weight_pct: h.weight_pct,   // drifted on drift days, target on rebalance days
+    category: h.category,
+    adjustments: h.signal_sources,
   }))
 
   const snapshotRow = {
@@ -1467,6 +1515,7 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
     spy_cumulative_return_pct: pnl.spy_cumulative_return_pct,
     macro_signals: macroSignals || null,
     technicals: technicals || null,
+    portfolio_version: PORTFOLIO_VERSION,
   }
 
   // Upsert into daily_snapshots
@@ -1560,6 +1609,7 @@ async function main() {
     // market was closed (weekend already excluded by the schedule; this catches weekday
     // holidays like Juneteenth). Skip the P&L + snapshot so we never write a phantom day
     // off stale prices. Fails OPEN: if spyDate is null (series hiccup), we still write.
+    let pnl = null // hoisted so the completion banner can read it after the guard
     if (quantResult.spyDate && quantResult.spyDate !== TODAY) {
       console.log(`\n⏭  Market closed — last SPY session ${quantResult.spyDate} ≠ ${TODAY}.`)
       console.log('   Skipping P&L + daily snapshot. Narrative/crowd signals already written stand.')
@@ -1569,7 +1619,7 @@ async function main() {
       const prices = await fetchCurrentPrices(tickers)
 
       // Step 5: Calculate P&L
-      const pnl = await calculatePnL(portfolio, prices, quantResult.spyPrice)
+      pnl = await calculatePnL(portfolio, prices, quantResult.spyPrice)
 
       // Step 5b: Technicals — 10/50/200 DMAs per holding (feeds Step 3 action pill + (b) entry-gate)
       const technicals = await computeTechnicals(tickers)
@@ -1583,7 +1633,7 @@ async function main() {
     console.log('║   ✓ Daily cron complete!                 ║')
     console.log(`║   Signals: ${(narrativeSignals.length + crowdSignals.length + (quantResult.rsi ? 1 : 0)).toString().padEnd(29)}║`)
     console.log(`║   Bullish tickers: ${bullishAssets.length.toString().padEnd(21)}║`)
-    console.log(`║   Portfolio value: $${pnl.portfolio_value.toLocaleString().padEnd(19)}║`)
+    console.log(`║   Portfolio value: $${(pnl ? pnl.portfolio_value.toLocaleString() : 'skipped').padEnd(19)}║`)
     console.log(`║   Elapsed: ${elapsed}s${' '.repeat(Math.max(0, 28 - elapsed.length - 1))}║`)
     console.log('╚══════════════════════════════════════════╝')
 

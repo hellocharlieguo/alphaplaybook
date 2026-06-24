@@ -147,19 +147,9 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float, regime_above: bool = Fa
             if sig.rsi >= vp["rsi_overbought_thr"]:   pen += vp["rsi_overbought_pen"]
             elif sig.rsi >= vp["rsi_warm_thr"]:        pen += vp["rsi_warm_pen"]
             elif sig.rsi <= vp["rsi_oversold_thr"]:    pen -= vp["rsi_oversold_bonus"]
-        # Velocity = stretch ABOVE the 50-DMA (not trailing-1yr level). A name that has
-        # merely been winning a long time sits far above its 200-DMA but near its 50-DMA,
-        # so this only fires on a *recent* run away from trend. Discounted x0.5 in
-        # working/binding themes (high s2), full in peaked (low s2). RSI guardrail above.
-        if sig.price is not None and sig.dma50 not in (None, 0):
-            stretch = (sig.price - sig.dma50) / sig.dma50 * 100.0
-            if   stretch >= vp["stretch_hot_thr"]:  raw_pen = vp["stretch_hot_pen"]
-            elif stretch >= vp["stretch_warm_thr"]: raw_pen = vp["stretch_warm_pen"]
-            elif stretch >= vp["stretch_mild_thr"]: raw_pen = vp["stretch_mild_pen"]
-            else:                                   raw_pen = 0.0
-            theme_mult = (vp["working_theme_mult"] if s2 >= vp["working_theme_s2_thr"]
-                          else vp["peaked_theme_mult"])
-            pen += raw_pen * theme_mult
+        if sig.trailing_1y_pct is not None:
+            if sig.trailing_1y_pct >= vp["vel_parabolic_thr_1y"]: pen += vp["vel_parabolic_pen"]
+            elif sig.trailing_1y_pct >= vp["vel_extended_thr_1y"]: pen += vp["vel_extended_pen"]
         s5 = max(clamp[0], min(clamp[1], base - pen))
         s5_source = f"ladder(base={base},pen={pen:+.0f})"
 

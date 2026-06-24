@@ -117,7 +117,7 @@ def _stage_decay_mult(sig: "SignalInput", s2: float) -> float:
     return bands.get("exhausted", 0.60)
 
 
-def score_ticker(sig: SignalInput, capex_yoy_pct: float, regime_above: bool = False) -> dict:
+def score_ticker(sig: SignalInput, capex_yoy_pct: float) -> dict:
     w = CFG["composite_weights"]
     s1 = 50 if sig.s1_bottleneck    is None else sig.s1_bottleneck
     s2 = 50 if sig.s2_timing        is None else sig.s2_timing
@@ -147,19 +147,9 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float, regime_above: bool = Fa
             if sig.rsi >= vp["rsi_overbought_thr"]:   pen += vp["rsi_overbought_pen"]
             elif sig.rsi >= vp["rsi_warm_thr"]:        pen += vp["rsi_warm_pen"]
             elif sig.rsi <= vp["rsi_oversold_thr"]:    pen -= vp["rsi_oversold_bonus"]
-        # Velocity = stretch ABOVE the 50-DMA (not trailing-1yr level). A name that has
-        # merely been winning a long time sits far above its 200-DMA but near its 50-DMA,
-        # so this only fires on a *recent* run away from trend. Discounted x0.5 in
-        # working/binding themes (high s2), full in peaked (low s2). RSI guardrail above.
-        if sig.price is not None and sig.dma50 not in (None, 0):
-            stretch = (sig.price - sig.dma50) / sig.dma50 * 100.0
-            if   stretch >= vp["stretch_hot_thr"]:  raw_pen = vp["stretch_hot_pen"]
-            elif stretch >= vp["stretch_warm_thr"]: raw_pen = vp["stretch_warm_pen"]
-            elif stretch >= vp["stretch_mild_thr"]: raw_pen = vp["stretch_mild_pen"]
-            else:                                   raw_pen = 0.0
-            theme_mult = (vp["working_theme_mult"] if s2 >= vp["working_theme_s2_thr"]
-                          else vp["peaked_theme_mult"])
-            pen += raw_pen * theme_mult
+        if sig.trailing_1y_pct is not None:
+            if sig.trailing_1y_pct >= vp["vel_parabolic_thr_1y"]: pen += vp["vel_parabolic_pen"]
+            elif sig.trailing_1y_pct >= vp["vel_extended_thr_1y"]: pen += vp["vel_extended_pen"]
         s5 = max(clamp[0], min(clamp[1], base - pen))
         s5_source = f"ladder(base={base},pen={pen:+.0f})"
 
@@ -203,16 +193,8 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float, regime_above: bool = Fa
     discount_applied = bool(sig.etf_redundant) and not sig.is_etf and lam < 1.0
     # --- Spec B: stage-decay multiplier (stacks multiplicatively with Rule B) ---
     stage_mult = _stage_decay_mult(sig, s2)
-    # --- Part 2: macro-regime tilt (Option B); only tilts when CPI regime is above 4% ---
-    mrt = CFG.get("macro_regime_tilt", {})
-    regime_mult = 1.0
-    if regime_above and mrt.get("enabled"):
-        if sig.ticker in mrt.get("boost", []):
-            regime_mult = mrt.get("boost_mult", 1.1)
-        elif sig.ticker in mrt.get("penalize", []):
-            regime_mult = mrt.get("penalize_mult", 0.9)
-    eff_mult = (lam if discount_applied else 1.0) * stage_mult * regime_mult
-    weighting_score = round(fs + (composite - fs) * eff_mult, 1)
+    eff_mult = (lam if discount_applied else 1.0) * stage_mult
+    weighting_score = round(fs + (composite - fs) * eff_mult, 1) if eff_mult < 1.0 else composite
 
     return {
         "ticker": sig.ticker, "asset_type": sig.asset_type, "sleeve": sig.sleeve,

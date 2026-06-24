@@ -5,7 +5,7 @@
   "philosophy": "Leopold/Visser-style conviction engine: concentrated, anti-momentum, rotates toward what hasn't moved yet, repositions decisively on score changes. Long-only adaptation of a hedge-fund book: structural guardrails (floor, cash, capped top) substitute for the put-hedge a real fund would use.",
   "two_spines": {
     "ai_bottleneck": "Physical AI inputs: power generation, grid/equipment, leading-edge compute, memory/interconnect, data-center real estate.",
-    "monetary_scarcity": "Hard money in a debasement regime: gold, silver, Bitcoin. Co-equal with the AI spine in S1 scoring. NOTE: scope is tightly limited to these two categories — a random growth stock does NOT get to claim 'scarcity'."
+    "monetary_scarcity": "Hard money in a debasement regime: gold, silver, Bitcoin. Co-equal with the AI spine in S1 scoring. NOTE: scope is tightly limited to these two categories \u2014 a random growth stock does NOT get to claim 'scarcity'."
   },
   "current_visser_stage": 3,
   "visser_stages": {
@@ -62,7 +62,7 @@
     "macro_note": "COPX is classified as COMPANY/power-industrial (grid+EV+humanoid copper), NOT monetary-scarcity. It does NOT get the inflation catalyst."
   },
   "anti_momentum_rule": {
-    "principle": "A name being up large is a REASON TO OWN LESS, not more — the asymmetry has decayed. This is the core Visser/Leopold rotation discipline: move toward what hasn't moved yet.",
+    "principle": "A name being up large is a REASON TO OWN LESS, not more \u2014 the asymmetry has decayed. This is the core Visser/Leopold rotation discipline: move toward what hasn't moved yet.",
     "S5_guidance": "Penalize VELOCITY + STAGE EXHAUSTION, not proximity-to-high. A structural winner is near its highs the entire way up (MU/BE were near highs through a 5-14x run) - proximity alone is NOT a penalty. Bands: (1) Down/pullback-in-uptrend, thesis intact = 85-100. (2) Off-highs, hasn't run recently = 70-84. (3) Near highs in a STEADY structural uptrend, theme still early/binding (high S2) = 65-80 - this is the catch-the-trend-early zone, do NOT penalize. (4) Near highs but theme STAGE PEAKED (low S2) OR retail ETF flooding in = 45-60. (5) Vertical BLOWOFF (up multiples in <1yr, RSI>75, parabolic last weeks) = 25-45 regardless of stage. KEY: S2 (stage) carries the 'is this run sustainable' judgment; S5 should only hammer blowoff velocity + late-stage highs, never the steady early-stage new-high grind.",
     "no_fundamental_cushion": "Signals stay INDEPENDENT. A strong thesis (high S1) does NOT soften the entry penalty. S1 already gets 25% direct weight; letting it also cushion S5 would double-count. A best-in-class name that has run hard lands at a poor entry score honestly.",
     "_refined": "5/27/26 - separated 'near highs in early-stage uptrend' (no penalty) from 'blowoff velocity / late-stage highs' (penalty). Prevents double-penalizing structural winners that S2 already vets."
@@ -121,7 +121,7 @@
       "min_position_pct": 2.0,
       "cash_floor_pct": 12,
       "online": false,
-      "note": "Sub-10 redesign (6/9/26): metals / BTC-proxy / oil / pharma / AI / cash. target_top 16 because the 11% top was calibrated for 19 holdings and degenerates to flat weights (k~0.2, conviction-order inversion) at 9 names. OFFLINE BY DESIGN — standing decision, not an API-capacity constraint."
+      "note": "Sub-10 redesign (6/9/26): metals / BTC-proxy / oil / pharma / AI / cash. target_top 16 because the 11% top was calibrated for 19 holdings and degenerates to flat weights (k~0.2, conviction-order inversion) at 9 names. OFFLINE BY DESIGN \u2014 standing decision, not an API-capacity constraint."
     }
   },
   "risk_caps": {
@@ -166,7 +166,7 @@
       "enabled": true,
       "voice_floor_exempt": true,
       "_added": "2026-06-09 (approved). Reference case: CEG (theme held via AIPO).",
-      "_doc": "Accelerant + ETF theme coverage = EXIT, not floor. When the exit accelerant fires (company, not exit_exempt, in the trim zone, below-200 + mom-down) AND the name's theme is already held via a thematic ETF, the name exits instead of parking at a floor weight — a broken single name whose theme you own diversified is clutter, not a position. Coverage is read from coverage_discount.redundant_by_sleeve (single source of truth shared with Rule B) OR the etf_redundant input flag. voice_floor_exempt: a voice_conviction=True name never Rule-C exits (the voice floor backstop wins). Narrow by construction: requires every accelerant condition PLUS coverage."
+      "_doc": "Accelerant + ETF theme coverage = EXIT, not floor. When the exit accelerant fires (company, not exit_exempt, in the trim zone, below-200 + mom-down) AND the name's theme is already held via a thematic ETF, the name exits instead of parking at a floor weight \u2014 a broken single name whose theme you own diversified is clutter, not a position. Coverage is read from coverage_discount.redundant_by_sleeve (single source of truth shared with Rule B) OR the etf_redundant input flag. voice_floor_exempt: a voice_conviction=True name never Rule-C exits (the voice floor backstop wins). Narrow by construction: requires every accelerant condition PLUS coverage."
     },
     "entry_pause": {
       "below_200dma": true,
@@ -191,10 +191,10 @@
       "working_thr": 65,
       "cooling_thr": 40,
       "bands": {
-        "binding": 1.0,
+        "binding": 1.00,
         "working": 0.92,
-        "cooling": 0.8,
-        "exhausted": 0.6
+        "cooling": 0.80,
+        "exhausted": 0.60
       }
     },
     "voice_floor": {
@@ -217,16 +217,10 @@
         "rsi_warm_pen": 7,
         "rsi_oversold_thr": 35,
         "rsi_oversold_bonus": 5,
-        "stretch_hot_thr": 50,
-        "stretch_hot_pen": 12,
-        "stretch_warm_thr": 25,
-        "stretch_warm_pen": 8,
-        "stretch_mild_thr": 10,
-        "stretch_mild_pen": 4,
-        "working_theme_s2_thr": 60,
-        "working_theme_mult": 0.5,
-        "peaked_theme_mult": 1.0,
-        "_doc": "Velocity = stretch ABOVE 50-DMA (price vs dma50), NOT trailing-1yr level. Penalty x0.5 in working/binding themes (s2>=working_theme_s2_thr), x1.0 in peaked. RSI>=70 guardrail is separate. Replaces vel_parabolic/extended_1y (6/22/26)."
+        "vel_parabolic_thr_1y": 150,
+        "vel_parabolic_pen": 20,
+        "vel_extended_thr_1y": 75,
+        "vel_extended_pen": 10
       },
       "clamp": [
         5,
@@ -258,31 +252,11 @@
     ]
   },
   "turnover_note": "Engine repositions decisively on score changes (Leopold-like). In TAXABLE accounts, rebalance only when target moves >3-4% to limit short-term gains. The engine outputs targets; the human decides when to actually trade.",
-  "macro_regime_tilt": {
-    "_added": "2026-06-20 (Macro Regime Gate Part 2). Option B +/-10% tilt.",
-    "_doc": "Tilt on the WEIGHTING SCORE only (eff_mult), applied ONLY when the CPI macro regime is above 4% (regime.above from the snapshot 2-of-3 vote, passed into score_ticker). Boosts real-asset/hard-money names, penalizes rate-sensitive duration, neutral elsewhere. Composite/tier/exit unchanged (like Rule B + stage-decay). SGOV/cash untouched. Below 4% = neutral everywhere; no inverse tilt. Stacks multiplicatively with Rule B lambda and stage-decay. UNLIKE stage-decay/Rule B this DOES apply to ETFs (IBIT/GLDM/SLV boost, XSD penalize) -- taxonomy is by macro-regime behavior, not asset type.",
-    "enabled": true,
-    "boost_mult": 1.1,
-    "penalize_mult": 0.9,
-    "boost": [
-      "SLV",
-      "GLDM",
-      "XLE",
-      "COPX",
-      "IBIT"
-    ],
-    "penalize": [
-      "MRVL",
-      "XSD",
-      "BE",
-      "FLNC"
-    ]
-  },
   "coverage_discount": {
-    "_added": "2026-06-01 (Portfolio Construction session) — 'single-name redundancy discount' / Rule B.",
+    "_added": "2026-06-01 (Portfolio Construction session) \u2014 'single-name redundancy discount' / Rule B.",
     "rule": "A single-stock holding that is THEME-COVERED by a held thematic ETF (its theme is ownable diversified inside a fund you already hold) gets an idiosyncratic-risk haircut applied to its WEIGHTING SCORE only: weighting_score = floor_score + (composite - floor_score) * lambda. composite itself is UNCHANGED, so entry-tier labels and exit/trim triggers are unaffected.",
     "lambda": 0.814,
-    "exempt": "ETFs (lambda=1.0) and single names whose THEME has no held ETF (e.g. optical: GLW/MRVL — appearing at trivial weight inside a broad basket like XSD does NOT count as theme coverage).",
+    "exempt": "ETFs (lambda=1.0) and single names whose THEME has no held ETF (e.g. optical: GLW/MRVL \u2014 appearing at trivial weight inside a broad basket like XSD does NOT count as theme coverage).",
     "redundant_by_sleeve": {
       "aggressive": [
         "CEG",
@@ -293,6 +267,6 @@
         "VST"
       ]
     },
-    "notes": "Lands CEG ~7.5% (agg) / ~6.5% (con) — replaces the ad-hoc 12% single-stock cap. lambda is the judgment knob: 0.80→~7%, 0.814→~7.5%, 0.83→~8%. 6/9/26: CEG exited via Rule C; this list now also feeds gates.rule_c coverage (shared source of truth). OPEN FLAG: BE's etf_redundant input flag was not set in the 6/9 rescore runs — fold back in at next rescore or rule that the voice floor supersedes it for live-voice names."
+    "notes": "Lands CEG ~7.5% (agg) / ~6.5% (con) \u2014 replaces the ad-hoc 12% single-stock cap. lambda is the judgment knob: 0.80\u2192~7%, 0.814\u2192~7.5%, 0.83\u2192~8%. 6/9/26: CEG exited via Rule C; this list now also feeds gates.rule_c coverage (shared source of truth). OPEN FLAG: BE's etf_redundant input flag was not set in the 6/9 rescore runs \u2014 fold back in at next rescore or rule that the voice floor supersedes it for live-voice names."
   }
 }
