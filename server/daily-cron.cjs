@@ -1013,23 +1013,19 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 //   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
 // Comments after each line are the engine composite scores (UNDISCOUNTED).
 const BASE_PORTFOLIO = {
-  SLV:  { base_weight: 18,  theme: 'Monetary Scarcity & Tokenization', action: 'Strong Entry' },   // 79.7  below-200, held (no add)
-  GLW:  { base_weight: 9.5, theme: 'Compute',                          action: 'Enter' },          // 71.2
-  LLY:  { base_weight: 7,   theme: 'AI Application',                   action: 'Enter' },          // 68.0  NEW 6/9
-  IBIT: { base_weight: 7,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 75.5  PAUSED below-200
-  GLDM: { base_weight: 6.5, theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 74.6  PAUSED below-200
-  HOOD: { base_weight: 6,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 66.0  mom.up un-pause
-  AIPO: { base_weight: 5.5, theme: 'Power & Infrastructure',           action: 'Enter' },          // 65.3  power theme, basket-only now
-  XLE:  { base_weight: 5.5, theme: 'Energy Hedge',                     action: 'Enter' },          // 65.2  NEW 6/9
-  ENTG: { base_weight: 5,   theme: 'Compute',                          action: 'Starter / Watch' },// 64.0
-  SGOV: { base_weight: 5,   theme: 'Cash', min_weight: 3,              action: 'Hold' },           // cash floor
-  BE:   { base_weight: 4.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 63.4  voice floor armed (Camillo)
-  COPX: { base_weight: 4.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 62.6  structural cross-stage
-  WGMI: { base_weight: 3.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 60.1  reclaim optionality
-  FLNC: { base_weight: 3.5, theme: 'Power & Infrastructure',           action: 'Starter / Watch' },// 59.7  velocity-trimmed, mom.up
-  MRVL: { base_weight: 3.5, theme: 'Compute',                          action: 'Starter / Watch' },// 59.9  velocity-trimmed
-  ETHA: { base_weight: 3,   theme: 'Monetary Scarcity & Tokenization', action: 'Enter' },          // 67.7  PAUSED below-200
-  XSD:  { base_weight: 2.5, theme: 'Compute',                          action: 'Starter / Watch' },// 56.4  index-beta optionality (kept 6/9)
+  AIPO: { base_weight: 19.2, theme: 'Power & Infrastructure',  action: 'Enter' },  // Power - ETF takes full theme weight, uncapped
+  HOOD: { base_weight: 12,   theme: 'Tokenization',            action: 'Enter' },  // single-stock cap; reclaimed 200-DMA
+  COPX: { base_weight: 9.5,  theme: 'Physical Scarcity',       action: 'Enter' },  // copper - clean pullback (s5 72)
+  LLY:  { base_weight: 8.9,  theme: 'AI Application',          action: 'Enter' },  // sole AI-App seat
+  SLV:  { base_weight: 7.9,  theme: 'Physical Scarcity',       action: 'Hold'  },  // silver - PAUSED below-200 (no add)
+  GLW:  { base_weight: 6.7,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // optical
+  COHR: { base_weight: 6.7,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // optical (NEW)
+  ENTG: { base_weight: 6.4,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // chemicals
+  MU:   { base_weight: 6.2,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // memory bellwether (NEW)
+  SGOV: { base_weight: 5.1,  theme: 'Cash', min_weight: 3,     action: 'Hold'  },  // cash floor
+  IBIT: { base_weight: 4.2,  theme: 'Monetary Scarcity',       action: 'Hold'  },  // PAUSED below-200
+  GLDM: { base_weight: 4.2,  theme: 'Monetary Scarcity',       action: 'Hold'  },  // PAUSED below-200
+  ETHA: { base_weight: 3,    theme: 'Tokenization',            action: 'Hold'  },  // PAUSED below-200
 }
 
 function computeModelPortfolio(bullishAssets, quantResult) {
