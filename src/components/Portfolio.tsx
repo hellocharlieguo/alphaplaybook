@@ -92,8 +92,6 @@ function trendPill(symbol: string, price: number | null, tech: any): { label: st
   return { label: 'Pullback', state: 'pullback' }
 }
 
-const vs200Pct = (price: number | null, tech: any): number | null =>
-  (price !== null && tech?.dma200) ? ((price - tech.dma200) / tech.dma200) * 100 : null
 
 // v5: sliders + weightOverrides removed (weights are engine output now). State kept:
 // theme filter + the mock portfolio value used for $-alloc / share sizing.
@@ -209,7 +207,17 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const totalActualCost = allocations.reduce((s, a) => s + a.actualCost, 0)
   const cashRemainder = Math.max(0, portfolioValue - totalActualCost)
   const totalWeight = allocations.reduce((s, a) => s + a.weight, 0)
-  const maxWeight = allocations.reduce((m, a) => Math.max(m, a.weight), 0) || 1
+
+  // Momentum sleeve = the above-200-DMA subset of Thematic (Uptrend + Pullback both
+  // count; Downtrend / below-200 excluded). Cash (SGOV) always rides along. We
+  // renormalize the live DRIFTED Thematic weights across that included set to 100%.
+  const inMomentum = (a: typeof allocations[number]): boolean =>
+    a.symbol === 'SGOV' ||
+    (a.price !== null && technicals[a.symbol]?.dma200 != null && a.price >= technicals[a.symbol].dma200)
+  const momentumDenom = allocations.reduce((s, a) => s + (inMomentum(a) ? a.weight : 0), 0) || 1
+  const momentumWeight = (a: typeof allocations[number]): number | null =>
+    inMomentum(a) ? (a.weight / momentumDenom) * 100 : null
+  const momentumTotal = allocations.reduce((s, a) => s + (momentumWeight(a) ?? 0), 0)
 
   const toggleTheme = (name: string) => {
     const next = new Set(uncheckedThemes)
@@ -293,12 +301,13 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
             <thead>
               <tr style={{ borderBottom: `1px solid ${t.border}` }}>
                 <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Ticker</th>
-                <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 400, fontSize: 11, color: t.textTertiary, width: 220 }}>Weight</th>
+                <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Trend</th>
+                <th style={{ textAlign: 'right', padding: '8px 12px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Thematic</th>
+                <th style={{ textAlign: 'right', padding: '8px 12px', fontWeight: 400, fontSize: 11, color: '#2dd4bf' }}>Momentum</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Price</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>50-DMA</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>200-DMA</th>
-                <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>vs 200</th>
-                <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Trend</th>
+                <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>RSI</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>$ Alloc</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Shares</th>
                 <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Theme</th>
@@ -308,10 +317,11 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
               {allocations.map((a, i) => {
                 const tech = technicals[a.symbol]
                 const pill = trendPill(a.symbol, a.price, tech)
-                const v200 = vs200Pct(a.price, tech)
+                const rsi = tech?.rsi14
+                const rsiColor = rsi == null ? t.textTertiary : rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textSecondary
                 const momDown = !!tech?.mom?.down
-                const barPct = Math.max(2, (a.weight / maxWeight) * 100)
                 const drift = a.weight - a.target
+                const momWt = momentumWeight(a)
                 return (
                   <tr key={a.symbol} style={{ borderBottom: i < allocations.length - 1 ? `1px solid ${t.border}` : 'none' }}>
                     <td style={{ padding: '8px 16px' }}>
@@ -323,27 +333,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '8px 12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ flex: 1, height: 6, borderRadius: 3, background: t.border, overflow: 'hidden', minWidth: 80 }}>
-                          <div style={{ width: `${barPct}%`, height: '100%', borderRadius: 3, background: tickerColor(a.symbol), opacity: 0.85 }} />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 70 }}>
-                          <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, color: t.textSecondary }}>{a.weight.toFixed(1)}%</span>
-                          {a.symbol === 'SGOV'
-                            ? <span style={{ fontSize: 9, color: t.textTertiary }}>cash</span>
-                            : Math.abs(drift) >= 0.05
-                              ? <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 9, color: drift >= 0 ? t.positive : t.negative }}>{drift >= 0 ? '+' : ''}{drift.toFixed(1)} vs {a.target.toFixed(1)}</span>
-                              : <span style={{ fontSize: 9, color: t.textTertiary }}>at target</span>}
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{a.price !== null ? `$${a.price.toFixed(2)}` : '—'}</td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textTertiary }}>{tech?.dma50 != null ? `$${tech.dma50.toFixed(2)}` : '—'}</td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textTertiary }}>{tech?.dma200 != null ? `$${tech.dma200.toFixed(2)}` : '—'}</td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: v200 === null ? t.textTertiary : (v200 >= 0 ? t.positive : t.negative) }}>
-                      {v200 === null ? '—' : `${v200 >= 0 ? '+' : ''}${v200.toFixed(1)}%`}
-                    </td>
                     <td style={{ padding: '8px 16px' }}>
                       {pill ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start' }}>
@@ -351,6 +340,27 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                           {momDown && <span style={{ fontSize: 9, color: t.negative, fontWeight: 500 }}>↓ 20D</span>}
                         </div>
                       ) : <span style={{ color: t.textTertiary }}>—</span>}
+                    </td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                        <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, color: t.textSecondary }}>{a.weight.toFixed(1)}%</span>
+                        {a.symbol === 'SGOV'
+                          ? <span style={{ fontSize: 9, color: t.textTertiary }}>cash</span>
+                          : Math.abs(drift) >= 0.05
+                            ? <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 9, color: drift >= 0 ? t.positive : t.negative }}>{drift >= 0 ? '+' : ''}{drift.toFixed(1)} vs {a.target.toFixed(1)}</span>
+                            : <span style={{ fontSize: 9, color: t.textTertiary }}>at target</span>}
+                      </div>
+                    </td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>
+                      {momWt == null
+                        ? <span style={{ color: t.textTertiary, fontSize: 11 }}>— <span style={{ fontSize: 9 }}>excl.</span></span>
+                        : <span style={{ color: '#2dd4bf', fontWeight: 500 }}>{momWt.toFixed(1)}%</span>}
+                    </td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{a.price !== null ? `$${a.price.toFixed(2)}` : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textTertiary }}>{tech?.dma50 != null ? `$${tech.dma50.toFixed(2)}` : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textTertiary }}>{tech?.dma200 != null ? `$${tech.dma200.toFixed(2)}` : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsiColor }}>
+                      {rsi == null ? '—' : rsi.toFixed(1)}
                     </td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${fmt(a.dollarAlloc)}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textPrimary }}>{a.price !== null ? a.shares : '—'}</td>
@@ -364,10 +374,13 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
             <tfoot>
               <tr style={{ borderTop: `2px solid ${t.border}` }}>
                 <td style={{ padding: '10px 16px', fontWeight: 500, color: t.textSecondary }}>Total</td>
-                <td style={{ padding: '10px 12px' }}>
+                <td style={{ padding: '10px 16px' }} />
+                <td style={{ padding: '10px 12px', textAlign: 'right' }}>
                   <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, fontWeight: 500, color: totalWeight > 100.5 ? t.negative : t.textSecondary }}>{totalWeight.toFixed(1)}%</span>
                 </td>
-                <td style={{ padding: '10px 16px' }} />
+                <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                  <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, fontWeight: 500, color: '#2dd4bf' }}>{momentumTotal.toFixed(1)}%</span>
+                </td>
                 <td style={{ padding: '10px 16px' }} />
                 <td style={{ padding: '10px 16px' }} />
                 <td style={{ padding: '10px 16px' }} />
@@ -377,7 +390,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                 <td style={{ padding: '10px 16px' }} />
               </tr>
               {cashRemainder > 0 && (
-                <tr><td colSpan={10} style={{ padding: '8px 16px', fontSize: 11, color: t.textTertiary }}>${fmt(cashRemainder)} uninvested (from rounding) — consider adding to SGOV</td></tr>
+                <tr><td colSpan={11} style={{ padding: '8px 16px', fontSize: 11, color: t.textTertiary }}>${fmt(cashRemainder)} uninvested (from rounding) — consider adding to SGOV</td></tr>
               )}
             </tfoot>
           </table>
