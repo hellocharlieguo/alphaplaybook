@@ -33,3 +33,7 @@ server/reset-pnl.cjs
 *.bak.drift
 *.bak.banner
 *.bak.target
+src/components/*.bak.*
+src/components/*.bak.*
+*_live.tsx
+*_live.cjs
