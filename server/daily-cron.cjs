@@ -1467,7 +1467,87 @@ async function computeTechnicals(tickers) {
   return technicals
 }
 
-async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals, technicals) {
+// ============================================================
+// MOMENTUM SLEEVE P&L — the above-200-DMA subset of the Thematic book,
+// renormalized to 100%, tracked as its own $100k-based equity curve.
+// Mirrors calculatePnL's union/drift model, restricted to today's members:
+//   members = portfolio tickers with price >= dma200, plus SGOV (cash always in).
+//   - HELD member (both days):      prev mv x (1 + today's % move)
+//   - DROPPED below 200 (gone today): carried FLAT (sold at prior close);
+//       value redistributes to survivors via next-day renorm.
+//   - RECLAIMED 200 (new today):     no day-1 return.
+// Value compounds off the stored prior momentum_value. members are stored so the
+// next night can tell a membership change from a plain drift day.
+// ============================================================
+async function calculateMomentumPnL(portfolio, prices, technicals, today) {
+  const START = 100000
+  const r2 = (x) => Math.round(x * 100) / 100
+
+  const isMember = (tk) => {
+    if (tk === 'SGOV') return true
+    const p = prices[tk]?.price
+    const d200 = technicals?.[tk]?.dma200
+    return p != null && d200 != null && p >= d200
+  }
+  const todayMembers = Object.keys(portfolio).filter(isMember)
+
+  const { data: prev } = await supabase
+    .from('daily_snapshots')
+    .select('snapshot_date, momentum_value, momentum_members')
+    .lt('snapshot_date', today)
+    .not('portfolio_value', 'is', null)
+    .order('snapshot_date', { ascending: false })
+    .limit(1)
+    .single()
+
+  // Inception (or first run after the column was added): anchor at START, flat.
+  if (!prev || prev.momentum_value == null) {
+    console.log(`  Momentum: inception -> $${START} (${todayMembers.length} members)`)
+    return { momentum_value: START, momentum_cumulative_return_pct: 0, momentum_daily_return_pct: 0, momentum_members: todayMembers }
+  }
+
+  const prevValue = prev.momentum_value
+  const prevMembers = Array.isArray(prev.momentum_members) ? prev.momentum_members : todayMembers
+
+  // Yesterday's Thematic weights -> reconstruct yesterday's momentum book basis.
+  const { data: prevHoldings } = await supabase
+    .from('portfolio_holdings')
+    .select('ticker, weight_pct')
+    .eq('snapshot_date', prev.snapshot_date)
+  const prevW = {}
+  for (const h of (prevHoldings || [])) prevW[h.ticker] = h.weight_pct
+
+  let yWeightSum = 0
+  for (const tk of prevMembers) yWeightSum += (prevW[tk] ?? 0)
+
+  // Fallback: can't rebuild yesterday's book -> carry momentum flat.
+  if (yWeightSum <= 0) {
+    console.warn('  Momentum: no prior member weights; carrying flat')
+    return { momentum_value: r2(prevValue), momentum_cumulative_return_pct: r2(((prevValue - START) / START) * 100), momentum_daily_return_pct: 0, momentum_members: todayMembers }
+  }
+
+  let yInvested = 0
+  let held = 0
+  for (const tk of prevMembers) {
+    const mvPrev = prevValue * ((prevW[tk] ?? 0) / yWeightSum)
+    yInvested += mvPrev
+    if (todayMembers.includes(tk)) {
+      const move = prices[tk]?.change_pct ?? 0
+      held += mvPrev * (1 + move / 100)   // held member: today's move
+    } else {
+      held += mvPrev                       // dropped below 200: carried flat
+    }
+  }
+  // Reclaimed members (today only) add no day-1 return -> excluded from the basis.
+
+  const dailyRet = yInvested > 0 ? r2(((held - yInvested) / yInvested) * 100) : 0
+  const value = r2(prevValue * (1 + dailyRet / 100))
+  const cum = r2(((value - START) / START) * 100)
+  console.log(`  Momentum: ${dailyRet >= 0 ? '+' : ''}${dailyRet}% -> $${value} (cum ${cum >= 0 ? '+' : ''}${cum}%, ${todayMembers.length} members)`)
+  return { momentum_value: value, momentum_cumulative_return_pct: cum, momentum_daily_return_pct: dailyRet, momentum_members: todayMembers }
+}
+
+async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals, technicals, momentum) {
   console.log('\n========================================')
   console.log('WRITING DAILY SNAPSHOT')
   console.log('========================================')
@@ -1519,6 +1599,10 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
     macro_signals: macroSignals || null,
     technicals: technicals || null,
     portfolio_version: PORTFOLIO_VERSION,
+    momentum_value: momentum?.momentum_value ?? null,
+    momentum_cumulative_return_pct: momentum?.momentum_cumulative_return_pct ?? null,
+    momentum_daily_return_pct: momentum?.momentum_daily_return_pct ?? null,
+    momentum_members: momentum?.momentum_members ?? null,
   }
 
   // Upsert into daily_snapshots
@@ -1627,8 +1711,11 @@ async function main() {
       // Step 5b: Technicals — 10/50/200 DMAs per holding (feeds Step 3 action pill + (b) entry-gate)
       const technicals = await computeTechnicals(tickers)
 
+      // Step 5c: Momentum sleeve P&L (above-200-DMA subset of Thematic)
+      const momentum = await calculateMomentumPnL(portfolio, prices, technicals, TODAY)
+
       // Step 6: Write complete daily snapshot
-      await writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals, technicals)
+      await writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals, technicals, momentum)
     }
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
