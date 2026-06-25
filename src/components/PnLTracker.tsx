@@ -14,6 +14,9 @@ interface Snapshot {
   daily_return_pct: number | null
   cumulative_return_pct: number | null
   spy_cumulative_return_pct: number | null
+  momentum_value: number | null
+  momentum_cumulative_return_pct: number | null
+  momentum_daily_return_pct: number | null
 }
 
 const PORTFOLIO_BASE = 100000
@@ -26,7 +29,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
     async function fetchSnapshots() {
       const { data, error } = await supabase
         .from('daily_snapshots')
-        .select('snapshot_date, portfolio_value, spy_value, spy_rsi, daily_return_pct, cumulative_return_pct, spy_cumulative_return_pct')
+        .select('snapshot_date, portfolio_value, spy_value, spy_rsi, daily_return_pct, cumulative_return_pct, spy_cumulative_return_pct, momentum_value, momentum_cumulative_return_pct, momentum_daily_return_pct')
         .not('portfolio_value', 'is', null)
         .order('snapshot_date', { ascending: true })
       if (error) console.error('Error fetching snapshots:', error)
@@ -43,6 +46,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
   const cumulativeReturn = latest.cumulative_return_pct ?? 0
   const spyCumulativeReturn = latest.spy_cumulative_return_pct ?? 0
   const alpha = cumulativeReturn - spyCumulativeReturn
+  const momentumCumulative = latest.momentum_cumulative_return_pct
   // Prefer the stored portfolio_value (exact, compounded off unrounded daily returns);
   // fall back to the computed value only if the field is null (older rows).
   const currentValue = latest.portfolio_value ?? PORTFOLIO_BASE * (1 + cumulativeReturn / 100)
@@ -67,8 +71,9 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Stat Cards */}
       <div className="ap-pnl-stats">
-        <PnLStatCard label="Portfolio Value" value={`$${currentValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} color={t.textPrimary} t={t} />
-        <PnLStatCard label="Cumulative Return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
+        <PnLStatCard label="Thematic Value" value={`$${currentValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} color={t.textPrimary} t={t} />
+        <PnLStatCard label="Thematic Return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
+        <PnLStatCard label="Momentum Return" value={momentumCumulative == null ? '—' : `${momentumCumulative >= 0 ? '+' : ''}${momentumCumulative.toFixed(2)}%`} color={momentumCumulative == null ? t.textTertiary : momentumCumulative >= 0 ? t.positive : t.negative} t={t} />
         <PnLStatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
         <PnLStatCard label="Max Drawdown" value={`-${maxDrawdown.toFixed(2)}%`} color={t.negative} t={t} />
         <PnLStatCard label="Days Tracked" value={String(daysSinceInception)} color={t.textPrimary} t={t} />
@@ -77,11 +82,15 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
       {/* Equity Curve Chart */}
       <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Equity curve — Portfolio vs SPY</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Equity curve — Thematic vs Momentum vs SPY</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 12, height: 3, borderRadius: 2, background: t.accent }} />
-              <span style={{ fontSize: 11, color: t.textTertiary }}>Portfolio</span>
+              <span style={{ fontSize: 11, color: t.textTertiary }}>Thematic</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 12, height: 3, borderRadius: 2, background: '#2dd4bf' }} />
+              <span style={{ fontSize: 11, color: t.textTertiary }}>Momentum</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 12, height: 3, borderRadius: 2, background: t.textTertiary, opacity: 0.5 }} />
@@ -104,7 +113,8 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
               <tr style={{ borderBottom: `1px solid ${t.border}`, position: 'sticky', top: 0, background: t.cardPrimary }}>
                 <th style={{ textAlign: 'left', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Date</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Daily</th>
-                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Cumulative</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Thematic</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: '#2dd4bf' }}>Momentum</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>SPY Cumul.</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Alpha</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>RSI</th>
@@ -115,6 +125,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
                 const daily = s.daily_return_pct ?? 0
                 const cum = s.cumulative_return_pct ?? 0
                 const spyCum = s.spy_cumulative_return_pct ?? 0
+                const momoCum = s.momentum_cumulative_return_pct
                 const a = cum - spyCum
                 const rsi = s.spy_rsi
                 return (
@@ -127,6 +138,9 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
                     </td>
                     <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: cum >= 0 ? t.positive : t.negative }}>
                       {cum >= 0 ? '+' : ''}{cum.toFixed(2)}%
+                    </td>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: momoCum == null ? t.textTertiary : momoCum >= 0 ? t.positive : t.negative }}>
+                      {momoCum == null ? '—' : `${momoCum >= 0 ? '+' : ''}${momoCum.toFixed(2)}%`}
                     </td>
                     <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: spyCum >= 0 ? t.positive : t.negative }}>
                       {spyCum >= 0 ? '+' : ''}{spyCum.toFixed(2)}%
@@ -186,8 +200,11 @@ function EquityCurve({ snapshots, t }: { snapshots: Snapshot[]; t: Theme }) {
 
   const portfolioReturns = snapshots.map(s => s.cumulative_return_pct ?? 0)
   const spyReturns = snapshots.map(s => s.spy_cumulative_return_pct ?? 0)
+  const momoPoints = snapshots
+    .map((s, i) => ({ i, v: s.momentum_cumulative_return_pct }))
+    .filter((p): p is { i: number; v: number } => p.v != null)
 
-  const allVals = [...portfolioReturns, ...spyReturns]
+  const allVals = [...portfolioReturns, ...spyReturns, ...momoPoints.map(p => p.v)]
   const minVal = Math.min(...allVals, 0)
   const maxVal = Math.max(...allVals, 0)
   const range = maxVal - minVal || 1
@@ -197,6 +214,7 @@ function EquityCurve({ snapshots, t }: { snapshots: Snapshot[]; t: Theme }) {
 
   const portfolioPath = snapshots.map((_, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(portfolioReturns[i]).toFixed(1)}`).join(' ')
   const spyPath = snapshots.map((_, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(spyReturns[i]).toFixed(1)}`).join(' ')
+  const momentumPath = momoPoints.map((p, k) => `${k === 0 ? 'M' : 'L'}${toX(p.i).toFixed(1)},${toY(p.v).toFixed(1)}`).join(' ')
 
   // Zero line
   const zeroY = toY(0)
@@ -237,8 +255,14 @@ function EquityCurve({ snapshots, t }: { snapshots: Snapshot[]; t: Theme }) {
       {/* SPY line */}
       <path d={spyPath} fill="none" stroke={t.textTertiary} strokeWidth={1.5} strokeOpacity={0.4} />
 
+      {/* Momentum line */}
+      {momoPoints.length > 0 && <path d={momentumPath} fill="none" stroke="#2dd4bf" strokeWidth={2} />}
+
       {/* Portfolio line */}
       <path d={portfolioPath} fill="none" stroke={t.accent} strokeWidth={2.5} />
+
+      {/* Momentum endpoint dot */}
+      {momoPoints.length > 0 && <circle cx={toX(momoPoints[momoPoints.length - 1].i)} cy={toY(momoPoints[momoPoints.length - 1].v)} r={3} fill="#2dd4bf" />}
 
       {/* Portfolio endpoint dot */}
       <circle cx={toX(snapshots.length - 1)} cy={toY(portfolioReturns[portfolioReturns.length - 1])} r={4} fill={t.accent} />
