@@ -81,13 +81,19 @@ const themeVoices = (name: string) => THEME_META[name]?.voices ?? ['Visser']
 const PILL_STYLE: Record<string, { bg: string; text: string }> = {
   uptrend:   { bg: 'rgba(34,197,94,0.13)',  text: '#22c55e' },
   pullback:  { bg: 'rgba(148,163,184,0.14)', text: '#94a3b8' },
+  recovery:  { bg: 'rgba(96,165,250,0.14)',  text: '#60a5fa' },
   downtrend: { bg: 'rgba(245,158,11,0.14)',  text: '#f59e0b' },
 }
 
 function trendPill(symbol: string, price: number | null, tech: any): { label: string; state: keyof typeof PILL_STYLE } | null {
   if (symbol === 'SGOV') return null
   if (!tech || price === null || tech.dma200 == null || tech.dma50 == null) return null
-  if (price < tech.dma200) return { label: 'Downtrend', state: 'downtrend' }
+  if (price < tech.dma200) {
+    // below the 200 but back above the 50 = reclaiming, not yet confirmed
+    return price >= tech.dma50
+      ? { label: 'Recovery', state: 'recovery' }
+      : { label: 'Downtrend', state: 'downtrend' }
+  }
   if (price >= tech.dma50) return { label: 'Uptrend', state: 'uptrend' }
   return { label: 'Pullback', state: 'pullback' }
 }
