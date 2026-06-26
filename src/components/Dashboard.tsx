@@ -3,10 +3,8 @@ import { supabase } from '../supabase'
 import SignalRecap from './SignalRecap'
 import Portfolio from './Portfolio'
 import PnLTracker from './PnLTracker'
-import Methodology from './Methodology'
 
-type Tab = 'signals' | 'portfolio' | 'pnl' | 'methodology'
-type ThemeMode = 'dark' | 'light'
+type Tab = 'signals' | 'portfolio' | 'pnl'
 
 interface DailySnapshot {
   snapshot_date: string
@@ -26,7 +24,7 @@ interface DailySnapshot {
 }
 
 export interface Theme {
-  mode: ThemeMode
+  mode: 'dark'
   bg: string
   cardPrimary: string
   textPrimary: string
@@ -49,70 +47,40 @@ export interface Theme {
   ruleLine: string
 }
 
-const themes: Record<ThemeMode, Theme> = {
-  dark: {
-    mode: 'dark',
-    bg: '#1a1714',
-    cardPrimary: '#242018',
-    textPrimary: '#e8e0d4',
-    textSecondary: '#8a7e6e',
-    textTertiary: '#6b6050',
-    border: 'rgba(255,255,255,0.06)',
-    surfaceSubtle: 'rgba(255,255,255,0.025)',
-    positive: '#7dba6a',
-    negative: '#c9705a',
-    tickerBg: 'rgba(176,140,214,0.12)',
-    tickerText: '#b08cd6',
-    badgeBg: 'rgba(255,255,255,0.04)',
-    badgeText: '#6b6050',
-    inputBg: '#1e1a14',
-    inputBorder: 'rgba(255,255,255,0.1)',
-    accent: '#c9a96e',
-    accentMuted: 'rgba(201,169,110,0.15)',
-    sliderTrack: 'rgba(255,255,255,0.06)',
-    sliderThumb: '#c9a96e',
-    ruleLine: 'rgba(201,169,110,0.25)',
-  },
-  light: {
-    mode: 'light',
-    bg: '#f5f0eb',
-    cardPrimary: '#ffffff',
-    textPrimary: '#1a1a1a',
-    textSecondary: '#5c5a57',
-    textTertiary: '#8a8784',
-    border: '#e5e0da',
-    surfaceSubtle: '#f0ebe5',
-    positive: '#2d8a5e',
-    negative: '#c44e4e',
-    tickerBg: '#ede9fe',
-    tickerText: '#6d28d9',
-    badgeBg: '#f0ebe5',
-    badgeText: '#8a8784',
-    inputBg: '#ffffff',
-    inputBorder: '#e5e0da',
-    accent: '#8b6914',
-    accentMuted: 'rgba(139,105,20,0.1)',
-    sliderTrack: '#e5e0da',
-    sliderThumb: '#8b6914',
-    ruleLine: '#c4b99a',
-  },
+// Dark-only, copper accent. Light mode retired 6/26/26.
+const t: Theme = {
+  mode: 'dark',
+  bg: '#1a1714',
+  cardPrimary: '#242018',
+  textPrimary: '#e8e0d4',
+  textSecondary: '#8a7e6e',
+  textTertiary: '#6b6050',
+  border: 'rgba(255,255,255,0.06)',
+  surfaceSubtle: 'rgba(255,255,255,0.025)',
+  positive: '#7dba6a',
+  negative: '#c9705a',
+  tickerBg: 'rgba(176,140,214,0.12)',
+  tickerText: '#b08cd6',
+  badgeBg: 'rgba(255,255,255,0.04)',
+  badgeText: '#6b6050',
+  inputBg: '#1e1a14',
+  inputBorder: 'rgba(255,255,255,0.1)',
+  accent: '#e0915c',
+  accentMuted: 'rgba(224,145,92,0.18)',
+  sliderTrack: 'rgba(255,255,255,0.06)',
+  sliderThumb: '#e0915c',
+  ruleLine: 'rgba(224,145,92,0.30)',
 }
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('signals')
   const [latestSnapshot, setLatestSnapshot] = useState<DailySnapshot | null>(null)
   const [loading, setLoading] = useState(true)
-  const [mode, setMode] = useState<ThemeMode>(() => {
-    try { const s = localStorage.getItem('ap-theme'); if (s === 'light' || s === 'dark') return s } catch {} return 'dark'
-  })
   const [activeVoices, setActiveVoices] = useState<Set<string>>(() => {
     try { const s = localStorage.getItem('ap-voices'); if (s) return new Set(JSON.parse(s)) } catch {}
     return new Set(['Visser', 'Camillo'])
   })
 
-  const t = themes[mode]
-
-  useEffect(() => { try { localStorage.setItem('ap-theme', mode) } catch {} }, [mode])
   useEffect(() => { try { localStorage.setItem('ap-voices', JSON.stringify(Array.from(activeVoices))) } catch {} }, [activeVoices])
 
   useEffect(() => {
@@ -136,7 +104,6 @@ export default function Dashboard() {
     { key: 'signals', label: 'Signals' },
     { key: 'portfolio', label: 'Portfolio' },
     { key: 'pnl', label: 'Performance' },
-    { key: 'methodology', label: 'Methodology' },
   ]
 
   const cumulativeReturn = latestSnapshot?.cumulative_return_pct ?? 0
@@ -146,7 +113,7 @@ export default function Dashboard() {
   const dateStr = latestSnapshot?.snapshot_date ? new Date(latestSnapshot.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : ''
 
   return (
-    <div style={{ minHeight: '100vh', background: t.bg, color: t.textPrimary, transition: 'background 0.3s, color 0.3s' }}>
+    <div style={{ minHeight: '100vh', background: `radial-gradient(135% 95% at 10% -8%, rgba(224,145,92,0.13), transparent 50%), radial-gradient(90% 70% at 78% 4%, rgba(214,150,96,0.07), transparent 52%), ${t.bg}`, color: t.textPrimary }}>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
       <style>{`
         input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: ${t.sliderTrack}; outline: none; cursor: pointer; }
@@ -189,9 +156,6 @@ export default function Dashboard() {
                 <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>Signal-Driven Investing</span>
               </div>
             </div>
-            <button onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-              style={{ position: 'absolute', right: 0, top: 0, width: 28, height: 28, borderRadius: 6, border: `1px solid ${t.border}`, background: t.cardPrimary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: t.textSecondary, transition: 'all 0.3s' }}
-            >{mode === 'dark' ? '☀' : '☾'}</button>
           </div>
         </div>
       </header>
@@ -245,7 +209,6 @@ export default function Dashboard() {
               {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} activeVoices={activeVoices} />}
               {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} />}
               {activeTab === 'pnl' && <PnLTracker theme={t} />}
-              {activeTab === 'methodology' && <Methodology snapshot={latestSnapshot} theme={t} />}
             </>
           )}
         </div>
@@ -260,7 +223,7 @@ export default function Dashboard() {
 
 function StatCard({ label, value, color, sub, t }: { label: string; value: string; color: string; sub?: string; t: Theme }) {
   return (
-    <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 8, padding: 16, transition: 'all 0.3s' }}>
+    <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 8, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2, textTransform: 'capitalize' }}>{sub}</div>}
