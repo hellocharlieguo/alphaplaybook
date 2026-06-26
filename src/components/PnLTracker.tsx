@@ -47,6 +47,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
   const spyCumulativeReturn = latest.spy_cumulative_return_pct ?? 0
   const alpha = cumulativeReturn - spyCumulativeReturn
   const momentumCumulative = latest.momentum_cumulative_return_pct
+  const momentumAlpha = momentumCumulative == null ? null : momentumCumulative - spyCumulativeReturn
   // Prefer the stored portfolio_value (exact, compounded off unrounded daily returns);
   // fall back to the computed value only if the field is null (older rows).
   const currentValue = latest.portfolio_value ?? PORTFOLIO_BASE * (1 + cumulativeReturn / 100)
@@ -74,7 +75,8 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
         <PnLStatCard label="Thematic Value" value={`$${currentValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} color={t.textPrimary} t={t} />
         <PnLStatCard label="Thematic Return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
         <PnLStatCard label="Momentum Return" value={momentumCumulative == null ? '—' : `${momentumCumulative >= 0 ? '+' : ''}${momentumCumulative.toFixed(2)}%`} color={momentumCumulative == null ? t.textTertiary : momentumCumulative >= 0 ? t.positive : t.negative} t={t} />
-        <PnLStatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
+        <PnLStatCard label="Thematic Alpha" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
+        <PnLStatCard label="Momentum Alpha" value={momentumAlpha == null ? '—' : `${momentumAlpha >= 0 ? '+' : ''}${momentumAlpha.toFixed(2)}%`} color={momentumAlpha == null ? t.textTertiary : momentumAlpha >= 0 ? t.positive : t.negative} t={t} />
         <PnLStatCard label="Max Drawdown" value={`-${maxDrawdown.toFixed(2)}%`} color={t.negative} t={t} />
         <PnLStatCard label="Days Tracked" value={String(daysSinceInception)} color={t.textPrimary} t={t} />
       </div>

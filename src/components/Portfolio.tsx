@@ -214,16 +214,28 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const cashRemainder = Math.max(0, portfolioValue - totalActualCost)
   const totalWeight = allocations.reduce((s, a) => s + a.weight, 0)
 
-  // Momentum sleeve = the above-200-DMA subset of Thematic (Uptrend + Pullback both
-  // count; Downtrend / below-200 excluded). Cash (SGOV) always rides along. We
-  // renormalize the live DRIFTED Thematic weights across that included set to 100%.
-  const inMomentum = (a: typeof allocations[number]): boolean =>
-    a.symbol === 'SGOV' ||
-    (a.price !== null && technicals[a.symbol]?.dma200 != null && a.price >= technicals[a.symbol].dma200)
-  const momentumDenom = allocations.reduce((s, a) => s + (inMomentum(a) ? a.weight : 0), 0) || 1
+  // Momentum sleeve = names above BOTH the 50- and 200-DMA (Uptrend only). Renormalize
+  // their drifted Thematic weights to 100%, cap each at 12% (ALL names incl. ETFs),
+  // and route the capped excess + any shortfall to cash (SGOV). No redistribution.
+  const MOM_CAP = 12
+  const inMomentum = (a: typeof allocations[number]): boolean => {
+    if (a.symbol === 'SGOV') return false
+    const tech = technicals[a.symbol]
+    return a.price !== null && tech?.dma50 != null && tech?.dma200 != null && a.price >= tech.dma50 && a.price >= tech.dma200
+  }
+  const momMembers = allocations.filter(inMomentum)
+  const momDenom = momMembers.reduce((s, a) => s + a.weight, 0) || 1
+  const momCapped: Record<string, number> = {}
+  let momCappedSum = 0
+  for (const a of momMembers) {
+    const w = Math.min((a.weight / momDenom) * 100, MOM_CAP)
+    momCapped[a.symbol] = w
+    momCappedSum += w
+  }
+  const momCash = Math.max(0, 100 - momCappedSum)
   const momentumWeight = (a: typeof allocations[number]): number | null =>
-    inMomentum(a) ? (a.weight / momentumDenom) * 100 : null
-  const momentumTotal = allocations.reduce((s, a) => s + (momentumWeight(a) ?? 0), 0)
+    a.symbol === 'SGOV' ? momCash : (a.symbol in momCapped ? momCapped[a.symbol] : null)
+  const momentumTotal = momCappedSum + momCash
 
   const toggleTheme = (name: string) => {
     const next = new Set(uncheckedThemes)

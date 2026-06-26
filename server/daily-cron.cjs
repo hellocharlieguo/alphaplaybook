@@ -1483,13 +1483,28 @@ async function calculateMomentumPnL(portfolio, prices, technicals, today) {
   const START = 100000
   const r2 = (x) => Math.round(x * 100) / 100
 
+  const CAP = 12  // single-ticker cap, applied to ALL names incl. ETFs; excess -> cash
   const isMember = (tk) => {
-    if (tk === 'SGOV') return true
+    if (tk === 'SGOV') return false  // cash bucket, handled as the residual
     const p = prices[tk]?.price
+    const d50 = technicals?.[tk]?.dma50
     const d200 = technicals?.[tk]?.dma200
-    return p != null && d200 != null && p >= d200
+    return p != null && d50 != null && d200 != null && p >= d50 && p >= d200
   }
   const todayMembers = Object.keys(portfolio).filter(isMember)
+
+  // Renorm a member set's Thematic weights -> 100%, cap each at CAP, residual -> cash.
+  const buildBook = (members, wMap) => {
+    const denom = members.reduce((s, tk) => s + (wMap[tk] ?? 0), 0)
+    const weights = {}
+    let capped = 0
+    if (denom > 0) for (const tk of members) {
+      const w = Math.min((wMap[tk] ?? 0) / denom * 100, CAP)
+      weights[tk] = w
+      capped += w
+    }
+    return { weights, cash: Math.max(0, 100 - capped) }
+  }
 
   const { data: prev } = await supabase
     .from('daily_snapshots')
@@ -1509,7 +1524,7 @@ async function calculateMomentumPnL(portfolio, prices, technicals, today) {
   const prevValue = prev.momentum_value
   const prevMembers = Array.isArray(prev.momentum_members) ? prev.momentum_members : todayMembers
 
-  // Yesterday's Thematic weights -> reconstruct yesterday's momentum book basis.
+  // Yesterday's Thematic weights -> reconstruct yesterday's CAPPED momentum book.
   const { data: prevHoldings } = await supabase
     .from('portfolio_holdings')
     .select('ticker, weight_pct')
@@ -1517,33 +1532,21 @@ async function calculateMomentumPnL(portfolio, prices, technicals, today) {
   const prevW = {}
   for (const h of (prevHoldings || [])) prevW[h.ticker] = h.weight_pct
 
-  let yWeightSum = 0
-  for (const tk of prevMembers) yWeightSum += (prevW[tk] ?? 0)
+  const book = buildBook(prevMembers, prevW)
 
-  // Fallback: can't rebuild yesterday's book -> carry momentum flat.
-  if (yWeightSum <= 0) {
-    console.warn('  Momentum: no prior member weights; carrying flat')
-    return { momentum_value: r2(prevValue), momentum_cumulative_return_pct: r2(((prevValue - START) / START) * 100), momentum_daily_return_pct: 0, momentum_members: todayMembers }
-  }
+  // Daily return = move of yesterday's held book. Every held member gets today's
+  // move (a name crossing out tonight was still held through today, sold at tonight's
+  // close); membership changes only affect TONIGHT's rebalance. Cash sits in SGOV.
+  let dailyRet = 0
+  for (const tk of prevMembers) dailyRet += (book.weights[tk] ?? 0) / 100 * (prices[tk]?.change_pct ?? 0)
+  dailyRet += book.cash / 100 * (prices['SGOV']?.change_pct ?? 0)
+  dailyRet = r2(dailyRet)
 
-  let yInvested = 0
-  let held = 0
-  for (const tk of prevMembers) {
-    const mvPrev = prevValue * ((prevW[tk] ?? 0) / yWeightSum)
-    yInvested += mvPrev
-    if (todayMembers.includes(tk)) {
-      const move = prices[tk]?.change_pct ?? 0
-      held += mvPrev * (1 + move / 100)   // held member: today's move
-    } else {
-      held += mvPrev                       // dropped below 200: carried flat
-    }
-  }
-  // Reclaimed members (today only) add no day-1 return -> excluded from the basis.
-
-  const dailyRet = yInvested > 0 ? r2(((held - yInvested) / yInvested) * 100) : 0
   const value = r2(prevValue * (1 + dailyRet / 100))
   const cum = r2(((value - START) / START) * 100)
-  console.log(`  Momentum: ${dailyRet >= 0 ? '+' : ''}${dailyRet}% -> $${value} (cum ${cum >= 0 ? '+' : ''}${cum}%, ${todayMembers.length} members)`)
+  const todayW = {}
+  for (const [tk, pos] of Object.entries(portfolio)) todayW[tk] = pos.weight_pct
+  console.log(`  Momentum: ${dailyRet >= 0 ? '+' : ''}${dailyRet}% -> $${value} (cum ${cum >= 0 ? '+' : ''}${cum}%, ${todayMembers.length} members, cash ${r2(buildBook(todayMembers, todayW).cash)}%)`)
   return { momentum_value: value, momentum_cumulative_return_pct: cum, momentum_daily_return_pct: dailyRet, momentum_members: todayMembers }
 }
 
