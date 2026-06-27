@@ -6,7 +6,7 @@ const ACCENT = '#e0915c'
 
 // Frosted-glass surface shared by the cards on this tab.
 const glass: CSSProperties = {
-  background: 'rgba(36,32,24,0.55)',
+  background: 'rgba(28,28,31,0.52)',
   backdropFilter: 'blur(20px) saturate(115%)',
   WebkitBackdropFilter: 'blur(20px) saturate(115%)',
   border: '1px solid rgba(255,255,255,0.08)',

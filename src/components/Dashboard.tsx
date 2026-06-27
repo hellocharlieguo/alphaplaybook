@@ -3,6 +3,7 @@ import { supabase } from '../supabase'
 import SignalRecap from './SignalRecap'
 import Portfolio from './Portfolio'
 import PnLTracker from './PnLTracker'
+import basaltBg from '../assets/Basalt.jpg'
 
 type Tab = 'signals' | 'portfolio' | 'pnl'
 
@@ -47,23 +48,23 @@ export interface Theme {
   ruleLine: string
 }
 
-// Dark-only, copper accent. Light mode retired 6/26/26.
+// Dark-only, cool/neutral grey identity, copper accent. Stone-photo backdrop. 6/27/26.
 const t: Theme = {
   mode: 'dark',
-  bg: '#1a1714',
-  cardPrimary: '#242018',
-  textPrimary: '#e8e0d4',
-  textSecondary: '#8a7e6e',
-  textTertiary: '#6b6050',
-  border: 'rgba(255,255,255,0.06)',
-  surfaceSubtle: 'rgba(255,255,255,0.025)',
+  bg: '#141416',
+  cardPrimary: '#1c1c1f',
+  textPrimary: '#e8e8ea',
+  textSecondary: '#a2a2a6',
+  textTertiary: '#6e6e72',
+  border: 'rgba(255,255,255,0.07)',
+  surfaceSubtle: 'rgba(255,255,255,0.03)',
   positive: '#7dba6a',
   negative: '#c9705a',
   tickerBg: 'rgba(176,140,214,0.12)',
   tickerText: '#b08cd6',
   badgeBg: 'rgba(255,255,255,0.04)',
-  badgeText: '#6b6050',
-  inputBg: '#1e1a14',
+  badgeText: '#6e6e72',
+  inputBg: '#1a1a1d',
   inputBorder: 'rgba(255,255,255,0.1)',
   accent: '#e0915c',
   accentMuted: 'rgba(224,145,92,0.18)',
@@ -113,109 +114,114 @@ export default function Dashboard() {
   const dateStr = latestSnapshot?.snapshot_date ? new Date(latestSnapshot.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : ''
 
   return (
-    <div style={{ minHeight: '100vh', background: `radial-gradient(135% 95% at 10% -8%, rgba(224,145,92,0.13), transparent 50%), radial-gradient(90% 70% at 78% 4%, rgba(214,150,96,0.07), transparent 52%), ${t.bg}`, color: t.textPrimary }}>
-      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
-      <style>{`
-        input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: ${t.sliderTrack}; outline: none; cursor: pointer; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
-        input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
-        input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: ${t.sliderTrack}; }
-        .ap-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-        .ap-signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-        .ap-portfolio-grid { display: grid; grid-template-columns: 1fr auto; gap: 16px; }
-        .ap-donut-grid { display: grid; grid-template-columns: 200px 1fr; gap: 16px; }
-        .ap-pnl-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-        .ap-history-detail { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-        .ap-bestworst { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .ap-voices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .ap-tabs { display: flex; gap: 2px; flex-wrap: wrap; }
-        @media (max-width: 768px) {
-          .ap-stats { grid-template-columns: repeat(2, 1fr); }
-          .ap-signals-grid { grid-template-columns: 1fr; }
-          .ap-portfolio-grid { grid-template-columns: 1fr; }
-          .ap-donut-grid { grid-template-columns: 1fr; }
-          .ap-pnl-stats { grid-template-columns: repeat(2, 1fr); }
-          .ap-history-detail { grid-template-columns: 1fr; }
-          .ap-bestworst { grid-template-columns: 1fr; }
-          .ap-voices-grid { grid-template-columns: 1fr; }
-        }
-      `}</style>
+    <div style={{ position: 'relative', minHeight: '100vh', background: t.bg, color: t.textPrimary }}>
+      {/* Full-page basalt backdrop + neutral scrim (fixed, content scrolls over) */}
+      <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: `url(${basaltBg})`, backgroundSize: 'cover', backgroundPosition: '18% 30%' }} />
+      <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, background: 'linear-gradient(180deg, rgba(18,18,20,0.42), rgba(18,18,20,0.52)), radial-gradient(70% 60% at 50% 30%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.24))' }} />
 
-      {/* Newspaper Masthead */}
-      <header style={{ padding: '20px 0 0', borderBottom: `3px double ${t.ruleLine}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ borderTop: `2px solid ${t.ruleLine}`, marginBottom: 12 }} />
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', position: 'relative', marginBottom: 8 }}>
-            <div style={{ textAlign: 'center' }}>
-              <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 900, margin: 0, letterSpacing: 2, lineHeight: 1, color: t.textPrimary }}>
-                ALPHA PLAYBOOK
-              </h1>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 6 }}>
-                <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>{dateStr}</span>
-                <span style={{ color: t.ruleLine }}>✦</span>
-                <span style={{ fontSize: 11, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1 }}>Signal-Driven Investing</span>
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+        <style>{`
+          input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: ${t.sliderTrack}; outline: none; cursor: pointer; }
+          input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
+          input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
+          input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: ${t.sliderTrack}; }
+          .ap-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+          .ap-signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+          .ap-portfolio-grid { display: grid; grid-template-columns: 1fr auto; gap: 16px; }
+          .ap-donut-grid { display: grid; grid-template-columns: 200px 1fr; gap: 16px; }
+          .ap-pnl-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+          .ap-history-detail { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+          .ap-bestworst { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+          .ap-voices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+          .ap-tabs { display: flex; gap: 2px; flex-wrap: wrap; }
+          @media (max-width: 768px) {
+            .ap-stats { grid-template-columns: repeat(2, 1fr); }
+            .ap-signals-grid { grid-template-columns: 1fr; }
+            .ap-portfolio-grid { grid-template-columns: 1fr; }
+            .ap-donut-grid { grid-template-columns: 1fr; }
+            .ap-pnl-stats { grid-template-columns: repeat(2, 1fr); }
+            .ap-history-detail { grid-template-columns: 1fr; }
+            .ap-bestworst { grid-template-columns: 1fr; }
+            .ap-voices-grid { grid-template-columns: 1fr; }
+          }
+        `}</style>
+
+        {/* Masthead */}
+        <header style={{ padding: '28px 0 0' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', position: 'relative', marginBottom: 8 }}>
+              <div style={{ textAlign: 'center' }}>
+                <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 900, margin: 0, letterSpacing: 2, lineHeight: 1, color: t.textPrimary, textShadow: '0 2px 18px rgba(0,0,0,0.5)' }}>
+                  ALPHA PLAYBOOK
+                </h1>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 8 }}>
+                  <span style={{ fontSize: 11, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: 1, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>{dateStr}</span>
+                  <span style={{ color: t.accent }}>✦</span>
+                  <span style={{ fontSize: 11, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: 1, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>Signal-Driven Investing</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
-        {/* Stat Cards */}
-        <div className="ap-stats">
-          <StatCard label="Cumulative return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
-          <StatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
-          <StatCard label="SPY RSI (14)" value={spyRsi !== null ? spyRsi.toFixed(1) : '—'} color={spyRsi !== null ? (spyRsi > 70 ? t.negative : spyRsi < 25 ? t.positive : t.textPrimary) : t.textTertiary} sub={latestSnapshot?.rsi_signal ?? undefined} t={t} />
-          <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
-        </div>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
+          {/* Stat Cards */}
+          <div className="ap-stats">
+            <StatCard label="Cumulative return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
+            <StatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
+            <StatCard label="SPY RSI (14)" value={spyRsi !== null ? spyRsi.toFixed(1) : '—'} color={spyRsi !== null ? (spyRsi > 70 ? t.negative : spyRsi < 25 ? t.positive : t.textPrimary) : t.textTertiary} sub={latestSnapshot?.rsi_signal ?? undefined} t={t} />
+            <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
+          </div>
 
-        {/* Contributors */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16, marginBottom: 16 }}>
-          <span style={{ fontSize: 9, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1.5 }}>Contributors</span>
-          {[{ key: 'Visser', label: 'Jordi Visser' }, { key: 'Camillo', label: 'Chris Camillo' }].map(voice => {
-            const checked = activeVoices.has(voice.key)
-            return (
-              <button key={voice.key} onClick={() => toggleVoice(voice.key)} style={{
-                display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-              }}>
-                <div style={{ width: 13, height: 13, borderRadius: 2, border: `1.5px solid ${checked ? t.accent : t.textTertiary}`, background: checked ? t.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-                  {checked && <span style={{ color: t.bg, fontSize: 8, fontWeight: 700 }}>✓</span>}
-                </div>
-                <span style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 12, color: checked ? t.textPrimary : t.textTertiary, fontStyle: 'italic', transition: 'color 0.2s' }}>{voice.label}</span>
-              </button>
-            )
-          })}
-        </div>
+          {/* Contributors */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16, marginBottom: 16 }}>
+            <span style={{ fontSize: 9, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1.5 }}>Contributors</span>
+            {[{ key: 'Visser', label: 'Jordi Visser' }, { key: 'Camillo', label: 'Chris Camillo' }].map(voice => {
+              const checked = activeVoices.has(voice.key)
+              return (
+                <button key={voice.key} onClick={() => toggleVoice(voice.key)} style={{
+                  display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                }}>
+                  <div style={{ width: 13, height: 13, borderRadius: 2, border: `1.5px solid ${checked ? t.accent : t.textTertiary}`, background: checked ? t.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                    {checked && <span style={{ color: t.bg, fontSize: 8, fontWeight: 700 }}>✓</span>}
+                  </div>
+                  <span style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 12, color: checked ? t.textPrimary : t.textSecondary, fontStyle: 'italic', transition: 'color 0.2s' }}>{voice.label}</span>
+                </button>
+              )
+            })}
+          </div>
 
-        {/* Tabs */}
-        <div className="ap-tabs" style={{ marginBottom: 24, borderBottom: `1px solid ${t.border}` }}>
-          {tabs.map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
-              padding: '8px 16px', fontSize: 13, fontWeight: activeTab === tab.key ? 500 : 400,
-              color: activeTab === tab.key ? t.textPrimary : t.textTertiary,
-              background: 'none', border: 'none', cursor: 'pointer',
-              borderBottom: activeTab === tab.key ? `2px solid ${t.accent}` : '2px solid transparent',
-              transition: 'all 0.2s',
-            }}>{tab.label}</button>
-          ))}
-        </div>
+          {/* Tabs */}
+          <div className="ap-tabs" style={{ marginBottom: 24, borderBottom: `1px solid ${t.border}` }}>
+            {tabs.map((tab) => (
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+                padding: '8px 16px', fontSize: 13, fontWeight: activeTab === tab.key ? 500 : 400,
+                color: activeTab === tab.key ? t.textPrimary : '#aeaeb2',
+                background: 'none', border: 'none', cursor: 'pointer',
+                borderBottom: activeTab === tab.key ? `2px solid ${t.accent}` : '2px solid transparent',
+                transition: 'all 0.2s',
+              }}>{tab.label}</button>
+            ))}
+          </div>
 
-        {/* Content */}
-        <div style={{ minHeight: 400 }}>
-          {loading ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256, color: t.textTertiary }}>Loading signals...</div>
-          ) : (
-            <>
-              {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} activeVoices={activeVoices} />}
-              {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} />}
-              {activeTab === 'pnl' && <PnLTracker theme={t} />}
-            </>
-          )}
-        </div>
+          {/* Content */}
+          <div style={{ minHeight: 400 }}>
+            {loading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256, color: t.textTertiary }}>Loading signals...</div>
+            ) : (
+              <>
+                {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} activeVoices={activeVoices} />}
+                {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} />}
+                {activeTab === 'pnl' && <PnLTracker theme={t} />}
+              </>
+            )}
+          </div>
 
-        <footer style={{ marginTop: 48, paddingTop: 24, borderTop: `1px solid ${t.border}`, textAlign: 'center', fontSize: 11, color: t.textTertiary, paddingBottom: 32, fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>
-          Not financial advice. For educational and portfolio demonstration purposes only.
-        </footer>
+          <footer style={{ marginTop: 48, paddingTop: 24, borderTop: `1px solid ${t.border}`, textAlign: 'center', fontSize: 11, color: t.textTertiary, paddingBottom: 32, fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>
+            Not financial advice. For educational and portfolio demonstration purposes only.
+          </footer>
+        </div>
       </div>
     </div>
   )
@@ -223,7 +229,7 @@ export default function Dashboard() {
 
 function StatCard({ label, value, color, sub, t }: { label: string; value: string; color: string; sub?: string; t: Theme }) {
   return (
-    <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 8, padding: 16 }}>
+    <div style={{ background: 'rgba(28,28,31,0.5)', backdropFilter: 'blur(20px) saturate(115%)', WebkitBackdropFilter: 'blur(20px) saturate(115%)', border: '1px solid rgba(255,255,255,0.09)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)', borderRadius: 12, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2, textTransform: 'capitalize' }}>{sub}</div>}
