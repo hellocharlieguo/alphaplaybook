@@ -1,5 +1,17 @@
+import type { CSSProperties } from 'react'
 import type { Theme } from './Dashboard'
 import SignalRadar from './SignalRadar'
+
+const ACCENT = '#e0915c'
+
+// Frosted-glass surface shared by the cards on this tab.
+const glass: CSSProperties = {
+  background: 'rgba(36,32,24,0.55)',
+  backdropFilter: 'blur(20px) saturate(115%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(115%)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+}
 
 interface SignalRecapProps {
   snapshot: {
@@ -154,13 +166,74 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
       .sort((a, b) => (heldWeight.get(b) ?? 0) - (heldWeight.get(a) ?? 0))
   }
 
+  const narrativeCount = visibleVoices.reduce((n, v) => n + v.themes.length, 0)
+  const regimeLabel = macro?.regime ? (macro.regime.above ? 'Above 4%' : 'Below 4%') : null
+
+  const pillars = [
+    {
+      label: 'Narrative',
+      value: String(narrativeCount),
+      sub: visibleVoices.length ? `${visibleVoices.map((v) => v.name).join(' · ')} · themes` : 'no voice selected',
+      icon: (
+        <>
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+          <line x1="12" y1="19" x2="12" y2="23" />
+          <line x1="8" y1="23" x2="16" y2="23" />
+        </>
+      ),
+    },
+    {
+      label: 'Crowd',
+      value: String(crowdSignals.length),
+      sub: crowdSignals.length ? 'Kalshi markets' : 'no markets today',
+      icon: (
+        <>
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </>
+      ),
+    },
+    {
+      label: 'Quant',
+      value: rsi != null ? rsi.toFixed(1) : '—',
+      sub: `SPY RSI${regimeLabel ? ' · ' + regimeLabel : ''}`,
+      icon: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
+    },
+  ]
+
   return (
     <div>
+      <style>{`
+        .ap-pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+        @media (max-width: 768px) { .ap-pillars { grid-template-columns: 1fr; } }
+      `}</style>
+
+      {/* Three signal pillars — at-a-glance summary above the detail panels */}
+      <div className="ap-pillars">
+        {pillars.map((p) => (
+          <div key={p.label} style={{ ...glass, borderRadius: 14, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
+            <span style={{ width: 38, height: 38, flexShrink: 0, borderRadius: '50%', background: 'rgba(224,145,92,0.12)', border: '1px solid rgba(224,145,92,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{p.icon}</svg>
+            </span>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 15, fontWeight: 700, color: t.textPrimary }}>{p.label}</span>
+                <span style={{ fontSize: 16, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{p.value}</span>
+              </div>
+              <div style={{ fontSize: 11, color: t.textTertiary, fontStyle: 'italic', fontFamily: "'Libre Baskerville', Georgia, serif", marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.sub}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Voice Sections — newspaper columns */}
       {visibleVoices.length > 0 && (
         <div className={visibleVoices.length > 1 ? 'ap-voices-grid' : ''} style={{ marginBottom: 24 }}>
           {visibleVoices.map((voice) => (
-            <div key={voice.name} style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: '24px 28px', transition: 'all 0.3s' }}>
+            <div key={voice.name} style={{ ...glass, borderRadius: 14, padding: '24px 28px' }}>
               {/* Voice headline — newspaper style */}
               <div style={{ borderBottom: `2px solid ${t.ruleLine}`, paddingBottom: 16, marginBottom: 20 }}>
                 <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 900, margin: 0, lineHeight: 1.15, color: t.textPrimary, letterSpacing: 0.5 }}>
@@ -226,10 +299,10 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
       {/* Crowd + Quant — two column below the voice sections */}
       <div className="ap-signals-grid">
         {/* Crowd Signals */}
-        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: '20px 24px' }}>
+        <div style={{ ...glass, borderRadius: 14, padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#c9a96e' }} />
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: ACCENT }} />
               <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, fontFamily: "'Playfair Display', Georgia, serif" }}>Crowd Signals</span>
               <span style={{ fontSize: 10, color: t.textTertiary, fontStyle: 'italic', fontFamily: "'Libre Baskerville', Georgia, serif" }}>via Kalshi</span>
             </div>
@@ -259,7 +332,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
         </div>
 
         {/* Quant Signal — macro regime panel */}
-        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: '20px 24px' }}>
+        <div style={{ ...glass, borderRadius: 14, padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#5ba3c9' }} />
             <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, fontFamily: "'Playfair Display', Georgia, serif" }}>Quant Signal</span>
@@ -294,7 +367,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                     <span style={{ fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textPrimary }}>{rsi.toFixed(1)}</span>
                   </div>
                   <div style={{ position: 'relative', height: 6, background: t.sliderTrack, borderRadius: 3, marginBottom: 4 }}>
-                    <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${rsi}%`, background: t.mode === 'dark' ? 'linear-gradient(90deg, #7dba6a, #c9a96e, #c9705a)' : 'linear-gradient(90deg, #2d8a5e, #c9a96e, #c44e4e)', borderRadius: 3 }} />
+                    <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${rsi}%`, background: 'linear-gradient(90deg, #7dba6a, #e0915c, #c9705a)', borderRadius: 3 }} />
                     <div style={{ position: 'absolute', left: '25%', top: -2, width: 1, height: 10, background: t.border }} />
                     <div style={{ position: 'absolute', left: '70%', top: -2, width: 1, height: 10, background: t.border }} />
                   </div>
@@ -340,7 +413,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                           <span style={{ fontSize: 13, color: t.textTertiary }}>Kalshi</span>
-                          <span style={{ fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', background: 'rgba(201,169,110,0.16)', color: '#c9a96e', padding: '2px 6px', borderRadius: 3, fontFamily: "'Playfair Display', Georgia, serif" }}>market</span>
+                          <span style={{ fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', background: 'rgba(224,145,92,0.16)', color: '#e0915c', padding: '2px 6px', borderRadius: 3, fontFamily: "'Playfair Display', Georgia, serif" }}>market</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                           <span style={{ fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: macro.kalshi.point_estimate >= 4 ? t.negative : t.textPrimary }}>{macro.kalshi.point_estimate.toFixed(1)}%</span>

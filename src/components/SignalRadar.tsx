@@ -1,4 +1,24 @@
+import type { CSSProperties } from 'react'
 import type { Theme } from './Dashboard'
+
+const ACCENT = '#e0915c'
+
+const glass: CSSProperties = {
+  background: 'rgba(36,32,24,0.55)',
+  backdropFilter: 'blur(20px) saturate(115%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(115%)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+}
+
+// Visser's 5-stage AI cycle — the framework the Thesis Clock points at.
+const STAGES: { n: number; name: string; status: string }[] = [
+  { n: 1, name: 'Memory', status: 'working' },
+  { n: 2, name: 'Optical · chem', status: 'working' },
+  { n: 3, name: 'Power · silver', status: 'now' },
+  { n: 4, name: 'Tokenization', status: 'Jul catalyst' },
+  { n: 5, name: 'Agentic', status: '2027+' },
+]
 
 /**
  * Signal Radar — a qualitative snapshot of what Visser (via his own pod + Pomp's)
@@ -73,7 +93,7 @@ export default function SignalRadar({ theme: t }: { theme: Theme }) {
   const display = "'Playfair Display', Georgia, serif"
 
   return (
-    <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: '20px 24px', marginTop: 24 }}>
+    <div style={{ ...glass, borderRadius: 14, padding: '20px 24px', marginTop: 24 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2px 12px', marginBottom: 4 }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: t.textPrimary, fontFamily: display }}>Signal Radar</span>
@@ -83,16 +103,42 @@ export default function SignalRadar({ theme: t }: { theme: Theme }) {
         What Visser is emphasizing now — and which way it's trending. Themes &amp; stage, not weights.
       </div>
 
-      {/* Stage call — the thesis clock, front and center */}
-      <div style={{ background: t.surfaceSubtle, borderRadius: 8, padding: '14px 16px', marginBottom: 16, borderLeft: `3px solid ${t.accent}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 6 }}>
-          <span style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: t.accent, fontWeight: 700, fontFamily: serif }}>Thesis Clock</span>
+      {/* Thesis Clock — the 5-stage cycle, current stage lit */}
+      <style>{`
+        .ap-stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        @media (max-width: 560px) { .ap-stages { grid-template-columns: repeat(2, 1fr); } }
+      `}</style>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
+          <span style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, fontWeight: 700, fontFamily: serif }}>Thesis Clock</span>
           <span style={{ fontSize: 15, fontWeight: 700, color: t.textPrimary, fontFamily: display }}>
             Stage {RADAR.stageCall.stage} — {RADAR.stageCall.name}
           </span>
           <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: 'rgba(125,186,106,0.15)', color: '#7dba6a' }}>{RADAR.stageCall.status}</span>
         </div>
-        <div style={{ fontSize: 12.5, color: t.textSecondary, lineHeight: 1.5 }}>{RADAR.stageCall.shift}</div>
+
+        <div className="ap-stages" style={{ marginBottom: 12 }}>
+          {STAGES.map((s) => {
+            const on = s.n === RADAR.stageCall.stage
+            return (
+              <div key={s.n} style={{
+                background: on ? 'rgba(224,145,92,0.12)' : t.surfaceSubtle,
+                border: `1px solid ${on ? 'rgba(224,145,92,0.4)' : t.border}`,
+                borderRadius: 10, padding: '11px 12px',
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: on ? ACCENT : t.textTertiary, marginBottom: 5 }}>S{s.n}</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: on ? t.textPrimary : t.textSecondary, fontFamily: serif, lineHeight: 1.2, marginBottom: 7 }}>{s.name}</div>
+                <span style={{
+                  display: 'inline-block', fontSize: 9.5, padding: '2px 7px', borderRadius: 4,
+                  background: on ? 'rgba(224,145,92,0.18)' : 'rgba(255,255,255,0.04)',
+                  color: on ? '#eaa877' : t.textTertiary,
+                }}>{s.status}</span>
+              </div>
+            )
+          })}
+        </div>
+
+        <div style={{ fontSize: 12.5, color: t.textSecondary, lineHeight: 1.5, paddingLeft: 12, borderLeft: `3px solid ${ACCENT}` }}>{RADAR.stageCall.shift}</div>
       </div>
 
       {/* Themes with direction arrows */}
