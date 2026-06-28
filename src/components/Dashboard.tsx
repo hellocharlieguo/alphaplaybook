@@ -229,7 +229,7 @@ export default function Dashboard() {
 
 function StatCard({ label, value, color, sub, t }: { label: string; value: string; color: string; sub?: string; t: Theme }) {
   return (
-    <div style={{ background: 'rgba(28,28,31,0.5)', backdropFilter: 'blur(20px) saturate(115%)', WebkitBackdropFilter: 'blur(20px) saturate(115%)', border: '1px solid rgba(255,255,255,0.09)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)', borderRadius: 12, padding: 16 }}>
+    <div style={{ background: 'rgba(26,26,29,0.40)', backdropFilter: 'blur(30px) saturate(120%)', WebkitBackdropFilter: 'blur(30px) saturate(120%)', border: '1px solid rgba(255,255,255,0.10)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)', borderRadius: 12, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2, textTransform: 'capitalize' }}>{sub}</div>}

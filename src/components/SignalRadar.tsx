@@ -4,11 +4,11 @@ import type { Theme } from './Dashboard'
 const ACCENT = '#e0915c'
 
 const glass: CSSProperties = {
-  background: 'rgba(28,28,31,0.52)',
-  backdropFilter: 'blur(20px) saturate(115%)',
-  WebkitBackdropFilter: 'blur(20px) saturate(115%)',
-  border: '1px solid rgba(255,255,255,0.08)',
-  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+  background: 'rgba(26,26,29,0.40)',
+  backdropFilter: 'blur(30px) saturate(120%)',
+  WebkitBackdropFilter: 'blur(30px) saturate(120%)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)',
 }
 
 // Visser's 5-stage AI cycle — the framework the Thesis Clock points at.
