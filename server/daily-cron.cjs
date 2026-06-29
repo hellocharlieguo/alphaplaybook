@@ -1035,7 +1035,7 @@ const BASE_PORTFOLIO = {
 // stored in yesterday's snapshot; a change forces a one-night rebalance-to-target.
 // Between bumps (same tickers, same version) holdings DRIFT with price — winners gain
 // weight, losers shed it. A ticker add/drop also forces a rebalance regardless.
-const PORTFOLIO_VERSION = '2026-06-09-v2.3-funnel'
+const PORTFOLIO_VERSION = '2026-06-29-v3.0-themes'
 
 function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('\n========================================')
