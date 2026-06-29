@@ -1016,19 +1016,19 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 //   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
 // Comments after each line are the engine composite scores (UNDISCOUNTED).
 const BASE_PORTFOLIO = {
-  AIPO: { base_weight: 19.2, theme: 'Power & Infrastructure',  action: 'Enter' },  // Power - ETF takes full theme weight, uncapped
-  HOOD: { base_weight: 12,   theme: 'Tokenization',            action: 'Enter' },  // single-stock cap; reclaimed 200-DMA
-  COPX: { base_weight: 9.5,  theme: 'Physical Scarcity',       action: 'Enter' },  // copper - clean pullback (s5 72)
-  LLY:  { base_weight: 8.9,  theme: 'AI Application',          action: 'Enter' },  // sole AI-App seat
-  SLV:  { base_weight: 7.9,  theme: 'Physical Scarcity',       action: 'Hold'  },  // silver - PAUSED below-200 (no add)
-  GLW:  { base_weight: 6.7,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // optical
-  COHR: { base_weight: 6.7,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // optical (NEW)
-  ENTG: { base_weight: 6.4,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // chemicals
-  MU:   { base_weight: 6.2,  theme: 'AI Hardware Bottleneck',  action: 'Enter' },  // memory bellwether (NEW)
-  SGOV: { base_weight: 5.1,  theme: 'Cash', min_weight: 3,     action: 'Hold'  },  // cash floor
-  IBIT: { base_weight: 4.2,  theme: 'Monetary Scarcity',       action: 'Hold'  },  // PAUSED below-200
-  GLDM: { base_weight: 4.2,  theme: 'Monetary Scarcity',       action: 'Hold'  },  // PAUSED below-200
-  ETHA: { base_weight: 3,    theme: 'Tokenization',            action: 'Hold'  },  // PAUSED below-200
+  AIPO: { base_weight: 18,   theme: 'AI Compute',        action: 'Enter' },              // power complex (held ETF)
+  SOXX: { base_weight: 15,   theme: 'AI Compute',        action: 'Enter' },              // chips/equipment/optical/memory
+  LLY:  { base_weight: 13,   theme: 'Healthcare',        action: 'Enter' },              // GLP + AI drug discovery anchor
+  GLW:  { base_weight: 9,    theme: 'AI Compute',        action: 'Enter' },              // fiber/optical-materials (Visser core)
+  HOOD: { base_weight: 9,    theme: 'Tokenization',      action: 'Enter' },              // 2-lens convergence (voice floor)
+  AMZN: { base_weight: 7,    theme: 'AI Application',    action: 'Enter' },              // AI efficiency flywheel (voice floor)
+  SLV:  { base_weight: 6.5,  theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
+  SGOV: { base_weight: 5.5,  theme: 'Cash', min_weight: 3, action: 'Hold' },             // cash floor
+  COPX: { base_weight: 4.5,  theme: 'AI Compute',        action: 'Hold' },               // copper (structural)
+  ASML: { base_weight: 4,    theme: 'AI Compute',        action: 'Enter' },              // EUV monopoly top-up
+  GLDM: { base_weight: 3,    theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
+  IBIT: { base_weight: 3,    theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
+  ETHA: { base_weight: 2.5,  theme: 'Tokenization',      action: 'Hold' },               // paused below-200
 }
 
 // Bump this on ANY engine rescore or weight change. The P&L compares it to the version

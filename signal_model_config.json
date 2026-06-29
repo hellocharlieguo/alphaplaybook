@@ -156,7 +156,7 @@
       "GLDM",
       "IBIT"
     ],
-    "s5_held_below_200_floor": 60,
+    "s5_held_below_200_floor": 55,
     "exit_accelerant": {
       "enabled": true,
       "applies_to": "company",
