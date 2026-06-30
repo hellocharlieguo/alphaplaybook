@@ -450,7 +450,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
       </div>
 
       {/* Signal Radar — what Visser is emphasizing now (themes + stage, not weights) */}
-      <SignalRadar theme={t} />
+      <SignalRadar theme={t} portfolio={snapshot?.portfolio} />
     </div>
   )
 }

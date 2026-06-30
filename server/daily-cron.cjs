@@ -1018,7 +1018,7 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 const BASE_PORTFOLIO = {
   AIPO: { base_weight: 18,   theme: 'AI Compute',        action: 'Enter' },              // power complex (held ETF)
   SOXX: { base_weight: 15,   theme: 'AI Compute',        action: 'Enter' },              // chips/equipment/optical/memory
-  LLY:  { base_weight: 13,   theme: 'Healthcare',        action: 'Enter' },              // GLP + AI drug discovery anchor
+  LLY:  { base_weight: 13,   theme: 'AI Application',        action: 'Enter' },              // GLP + AI drug discovery anchor
   GLW:  { base_weight: 9,    theme: 'AI Compute',        action: 'Enter' },              // fiber/optical-materials (Visser core)
   HOOD: { base_weight: 9,    theme: 'Tokenization',      action: 'Enter' },              // 2-lens convergence (voice floor)
   AMZN: { base_weight: 7,    theme: 'AI Application',    action: 'Enter' },              // AI efficiency flywheel (voice floor)
