@@ -54,28 +54,28 @@ const VOICES: VoiceSection[] = [
     themes: [
       {
         name: 'AI Compute',
-        editorial: 'The binding bottleneck: "I don\'t want to be in semis as much as I want to be in power." Data-center demand is a supply crisis the grid can\'t meet — nuclear, fuel cells, batteries, grid. He\'s taking profits in the parabolic chip names, not adding; optical and copper are the parts still working.',
+        editorial: `Power is still the binding bottleneck — data-center demand is a supply crisis the grid can't meet, and he frames the tape as "running hot into scarcity." He's scaled out of the parabolic chip names (effectively all of Micron) and leans on what's still working — optical, copper, and increasingly batteries and storage as the near-term grid fix, flagging the Fluence–Nvidia deal as the kind of catalyst that unlocks capacity.`,
         tickers: ['SOXX', 'AIPO', 'COPX', 'GLW', 'ASML'],
         bucket: 'AI Compute',
         wholeBucket: true,
       },
       {
         name: 'AI Application',
-        editorial: 'His newest conviction — money rotating up the stack. Peptides are "the API key for the human body," and Eli Lilly "has a chance to be the largest company in the world" within 5 years as drug discovery becomes human software. Amazon turns AI efficiency into real-world margin at scale.',
+        editorial: `His loudest June conviction — money rotating up the stack to the application layer. In his Eli Lilly paper he argues LLY could be the largest company in the US by the end of the decade, "larger than Nvidia": peptides are "this decade's API keys," and the Lily Pod (1,000+ Blackwells trained on Lilly's own data, not the internet) makes it, in his words, the most important AI company in the world. His tell: "we are moving into the application side right now — hardware is now more of a risk."`,
         tickers: ['LLY', 'AMZN'],
         bucket: 'AI Application',
         wholeBucket: true,
       },
       {
         name: 'Tokenization',
-        editorial: 'Building toward Stage 4. "I bought Ethereum because tokenization reality is going to set in this summer." AI agents "need food and that food is tokens," driving tokens, compute, and coordination while pressuring legacy SaaS. Watching the BTC/ETH 50-day as the trigger.',
+        editorial: `Building toward Stage 4. He's telling listeners to "start listening to everything I'm talking about in crypto," arguing tokenization will unleash two-thirds of dormant real-world assets — real estate, private credit, PE, VC — as the next leg on-chain. He bought Ethereum for the tokenization reality he expects to set in over the summer, watching the BTC/ETH 50-day as the trigger.`,
         tickers: ['HOOD', 'ETHA'],
         bucket: 'Tokenization',
         wholeBucket: true,
       },
       {
         name: 'Monetary Scarcity',
-        editorial: 'The scarcity trade into an inflationary, Fed-pressured regime: "I want to be in gold. I want to be in silver." Silver is the standout — dual industrial + monetary, sixth-year supply deficit. BTC is the "next parabola," the same long consolidation Micron ran before its move. Accumulating on weakness.',
+        editorial: `The scarcity trade, now held with patience. He still wants gold, silver, and Bitcoin — silver the standout on a sixth-year industrial deficit, BTC the "next parabola" echoing Micron's long base — accumulating on weakness while the three consolidate. But his June macro read softened: inflation swaps just posted their biggest drop since 2022 and the June CPI nowcast sits near zero, so he's calling inflation nearer a peak than an acceleration — patient accumulation, not a chase.`,
         tickers: ['SLV', 'GLDM', 'IBIT'],
         bucket: 'Monetary Scarcity',
         wholeBucket: true,
@@ -90,14 +90,14 @@ const VOICES: VoiceSection[] = [
     active: true,
     themes: [
       {
-        name: 'AI Platform Winners',
-        editorial: 'Amazon is the pinnacle of his AI-efficiency thesis and the #1 conviction of his career — automation, robotics, and logistics turning efficiency into margin at scale. Robinhood rides the retail-fintech and crypto-access wave into a generational wealth transfer.',
+        name: 'AI Application',
+        editorial: `Amazon is his anchor and the purest AI-efficiency bet — he keeps adding, citing AWS, in-house Trainium silicon, robotics, and logistics compounding into real-world margin; on 6/24 he called it the buildout of the largest logistics-and-digital infrastructure ecosystem "for the future of humanity." Robinhood is his other high-conviction hold — a top-30 position he's added on every dip into the 70s and expects to become one of the largest financial institutions in the world over 20 years (last reaffirmed 5/24).`,
         tickers: ['AMZN', 'HOOD'],
         curated: true,
       },
       {
-        name: 'Data Center Energy',
-        editorial: 'Bloom Energy\'s on-site fuel cells solve a power bottleneck the grid can\'t — the pick-and-shovel that powers the companies powering AI. Agentic trading is the next 18-24 months; he\'s sitting out the SpaceX hype.',
+        name: 'AI Compute',
+        editorial: `Bloom Energy is still one of the biggest trades of his career and, in his framing, the fastest way to scale a data center — on-site power where turbines and grid hookups are the bottleneck. But it's now a held winner he's been trimming for concentration, and on 6/24 he openly flagged the eventual rotation from single-name power plays toward the mega-caps spending $100–200B a year in capex — direction clear, timing unknown.`,
         tickers: ['BE'],
         curated: true,
       },
@@ -123,36 +123,6 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
     return `${names[parseInt(mo, 10) - 1]} ${y}`
   }
   const visibleVoices = VOICES.filter(v => activeVoices.has(v.name))
-
-  // ── Single source of truth for theme chips ──────────────────────────────────
-  // The live engine holdings from the latest snapshot (ticker, weight_pct, category).
-  // When present, ACTIVE voices derive their chips from the book so an exit/add can't
-  // leave the narrative stale (e.g. CEG drops, LLY/XLE surface automatically). Reference
-  // voices and the no-portfolio fallback use each theme's curated `tickers` list.
-  const liveHoldings: any[] = Array.isArray(snapshot.portfolio) ? snapshot.portfolio : []
-  const heldWeight = new Map<string, number>(liveHoldings.map((h: any) => [h.ticker, h.weight_pct ?? 0]))
-  const byBucket = new Map<string, string[]>()
-  for (const h of [...liveHoldings].sort((a: any, b: any) => (b.weight_pct ?? 0) - (a.weight_pct ?? 0))) {
-    if (!h?.category || !h?.ticker) continue
-    const arr = byBucket.get(h.category) || []
-    arr.push(h.ticker)
-    byBucket.set(h.category, arr)
-  }
-  const chipsFor = (voice: VoiceSection, theme: VoiceSection['themes'][number]): string[] => {
-    // Reference voices: always the curated/historical list (don't prune to the live book).
-    if (!voice.active) return theme.tickers
-    // Curated themes (e.g. Camillo's social-arb picks): show verbatim even if not held.
-    if (theme.curated) return theme.tickers
-    // No live portfolio in the snapshot → curated fallback (keeps the panel correct).
-    if (liveHoldings.length === 0) return theme.tickers
-    // Whole-bucket theme: every held name in that bucket, heaviest first.
-    if (theme.wholeBucket && theme.bucket) return byBucket.get(theme.bucket) || theme.tickers
-    // Sub-slice theme: curated list pruned to what's actually held, kept in weight order.
-    return theme.tickers
-      .filter((tk) => heldWeight.has(tk))
-      .sort((a, b) => (heldWeight.get(b) ?? 0) - (heldWeight.get(a) ?? 0))
-  }
-
 
   return (
     <div>
@@ -183,18 +153,9 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
               {voice.themes.map((theme, i) => (
                 <div key={i} style={{ marginBottom: i < voice.themes.length - 1 ? 20 : 0 }}>
                   {/* Theme name as section header */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 17, fontWeight: 700, margin: 0, color: t.textPrimary }}>
-                      {theme.name}
-                    </h3>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      {chipsFor(voice, theme).map((ticker, j) => (
-                        <span key={j} style={{ fontSize: 11, background: t.tickerBg, color: t.tickerText, padding: '2px 8px', borderRadius: 3, fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500 }}>
-                          {ticker}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                  <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 17, fontWeight: 700, margin: '0 0 8px', color: t.textPrimary }}>
+                    {theme.name}
+                  </h3>
 
                   {/* Editorial paragraph */}
                   <p style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 13, lineHeight: 1.7, color: t.textSecondary, margin: 0, textAlign: 'justify' }}>
