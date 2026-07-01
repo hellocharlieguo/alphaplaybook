@@ -116,8 +116,8 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
             <thead>
               <tr style={{ borderBottom: `1px solid ${t.border}`, position: 'sticky', top: 0, background: t.cardPrimary }}>
                 <th style={{ textAlign: 'left', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Date</th>
-                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Daily</th>
-                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Thematic</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Thematic Daily</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Thematic Cumul.</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>SPY Cumul.</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Alpha</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>RSI</th>
