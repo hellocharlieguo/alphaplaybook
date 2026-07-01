@@ -116,8 +116,8 @@ export default function Dashboard() {
   return (
     <div style={{ position: 'relative', minHeight: '100vh', background: t.bg, color: t.textPrimary }}>
       {/* Full-page basalt backdrop + neutral scrim (fixed, content scrolls over) */}
-      <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: `url(${basaltBg})`, backgroundSize: 'cover', backgroundPosition: '18% 30%' }} />
-      <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, background: 'linear-gradient(180deg, rgba(18,18,20,0.42), rgba(18,18,20,0.52)), radial-gradient(70% 60% at 50% 30%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.24))' }} />
+      <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: `url(${basaltBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+      <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, background: 'linear-gradient(180deg, rgba(14,14,16,0.52) 0%, rgba(14,14,16,0.30) 26%, rgba(14,14,16,0.34) 70%, rgba(14,14,16,0.42) 100%)' }} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
@@ -229,7 +229,7 @@ export default function Dashboard() {
 
 function StatCard({ label, value, color, sub, t }: { label: string; value: string; color: string; sub?: string; t: Theme }) {
   return (
-    <div style={{ background: 'rgba(26,26,29,0.40)', backdropFilter: 'blur(30px) saturate(120%)', WebkitBackdropFilter: 'blur(30px) saturate(120%)', border: '1px solid rgba(255,255,255,0.10)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)', borderRadius: 12, padding: 16 }}>
+    <div style={{ background: 'rgba(30,29,27,0.38)', backdropFilter: 'blur(32px) saturate(132%)', WebkitBackdropFilter: 'blur(32px) saturate(132%)', border: '1px solid rgba(255,255,255,0.11)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2, textTransform: 'capitalize' }}>{sub}</div>}

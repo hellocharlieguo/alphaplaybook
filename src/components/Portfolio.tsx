@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
+import type { CSSProperties } from 'react'
 import { supabase } from '../supabase'
 import type { Theme } from './Dashboard'
+
+// Frosted-glass surface — matches Signals tab (obsidian recipe).
+const glass: CSSProperties = {
+  background: 'rgba(30,29,27,0.38)',
+  backdropFilter: 'blur(32px) saturate(132%)',
+  WebkitBackdropFilter: 'blur(32px) saturate(132%)',
+  border: '1px solid rgba(255,255,255,0.11)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+}
 
 interface PortfolioProps {
   snapshot: { snapshot_date: string; portfolio: any[] | null; portfolio_value: number | null } | null
@@ -255,7 +265,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
 
   if (modelHoldings.length === 0) {
     return (
-      <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 40, textAlign: 'center', color: t.textTertiary, fontSize: 13 }}>
+      <div style={{ ...glass, borderRadius: 12, padding: 40, textAlign: 'center', color: t.textTertiary, fontSize: 13 }}>
         Waiting for today's portfolio snapshot…
       </div>
     )
@@ -265,7 +275,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Theme Checkboxes + Portfolio Value */}
       <div className="ap-portfolio-grid">
-        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20 }}>
+        <div style={{ ...glass, borderRadius: 12, padding: 20 }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, marginBottom: 12 }}>Select themes</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {presentThemes.map(name => {
@@ -293,7 +303,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
           </div>
         </div>
 
-        <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 20, minWidth: 200 }}>
+        <div style={{ ...glass, borderRadius: 12, padding: 20, minWidth: 200 }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, marginBottom: 12 }}>Portfolio value</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 18, fontWeight: 500, color: t.textTertiary }}>$</span>
@@ -308,7 +318,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
       </div>
 
       {/* Holdings table */}
-      <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ ...glass, borderRadius: 12, overflow: 'hidden' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: `1px solid ${t.border}` }}>
           <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Holdings ({allocations.length})</span>
           <span style={{ fontSize: 11, color: t.textTertiary }}>Weights drift with price · reset on rescore · delta = vs engine target</span>

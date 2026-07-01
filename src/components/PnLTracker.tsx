@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react'
+import type { CSSProperties } from 'react'
 import { supabase } from '../supabase'
 import type { Theme } from './Dashboard'
+
+// Frosted-glass surface — matches Signals tab (obsidian recipe).
+const glass: CSSProperties = {
+  background: 'rgba(30,29,27,0.38)',
+  backdropFilter: 'blur(32px) saturate(132%)',
+  WebkitBackdropFilter: 'blur(32px) saturate(132%)',
+  border: '1px solid rgba(255,255,255,0.11)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+}
 
 interface PnLTrackerProps {
   theme: Theme
@@ -82,7 +92,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
       </div>
 
       {/* Equity Curve Chart */}
-      <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 24 }}>
+      <div style={{ ...glass, borderRadius: 12, padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Equity curve — Thematic vs Momentum vs SPY</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -105,7 +115,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
       </div>
 
       {/* Daily Returns Table */}
-      <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ ...glass, borderRadius: 12, overflow: 'hidden' }}>
         <div style={{ padding: '12px 20px', borderBottom: `1px solid ${t.border}` }}>
           <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary }}>Daily returns</span>
         </div>
@@ -164,12 +174,12 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
       {/* Best/Worst Days */}
       {bestDay && worstDay && (
         <div className="ap-bestworst">
-          <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 16 }}>
+          <div style={{ ...glass, borderRadius: 12, padding: 16 }}>
             <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Best day</div>
             <div style={{ fontSize: 18, fontWeight: 500, color: t.positive, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>+{bestDay.ret.toFixed(2)}%</div>
             <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{new Date(bestDay.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
           </div>
-          <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 12, padding: 16 }}>
+          <div style={{ ...glass, borderRadius: 12, padding: 16 }}>
             <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Worst day</div>
             <div style={{ fontSize: 18, fontWeight: 500, color: t.negative, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{worstDay.ret.toFixed(2)}%</div>
             <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{new Date(worstDay.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
@@ -182,7 +192,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
 
 function PnLStatCard({ label, value, color, t }: { label: string; value: string; color: string; t: Theme }) {
   return (
-    <div style={{ background: t.cardPrimary, border: `1px solid ${t.border}`, borderRadius: 10, padding: 16 }}>
+    <div style={{ ...glass, borderRadius: 10, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 18, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
     </div>
