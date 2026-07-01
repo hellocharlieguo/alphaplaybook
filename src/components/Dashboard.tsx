@@ -77,12 +77,8 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('signals')
   const [latestSnapshot, setLatestSnapshot] = useState<DailySnapshot | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeVoices, setActiveVoices] = useState<Set<string>>(() => {
-    try { const s = localStorage.getItem('ap-voices'); if (s) return new Set(JSON.parse(s)) } catch {}
-    return new Set(['Visser', 'Camillo'])
-  })
-
-  useEffect(() => { try { localStorage.setItem('ap-voices', JSON.stringify(Array.from(activeVoices))) } catch {} }, [activeVoices])
+  // Both voice cards always render; the contributor toggle UI was removed (the cards name their own author).
+  const activeVoices = new Set(['Visser', 'Camillo'])
 
   useEffect(() => {
     async function fetchLatest() {
@@ -94,12 +90,6 @@ export default function Dashboard() {
     }
     fetchLatest()
   }, [])
-
-  const toggleVoice = (voice: string) => {
-    const next = new Set(activeVoices)
-    if (next.has(voice)) next.delete(voice); else next.add(voice)
-    setActiveVoices(next)
-  }
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'signals', label: 'Signals' },
@@ -172,24 +162,6 @@ export default function Dashboard() {
             <StatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
             <StatCard label="SPY RSI (14)" value={spyRsi !== null ? spyRsi.toFixed(1) : '—'} color={spyRsi !== null ? (spyRsi > 70 ? t.negative : spyRsi < 25 ? t.positive : t.textPrimary) : t.textTertiary} sub={latestSnapshot?.rsi_signal ?? undefined} t={t} />
             <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
-          </div>
-
-          {/* Contributors */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16, marginBottom: 16 }}>
-            <span style={{ fontSize: 9, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: 1.5 }}>Contributors</span>
-            {[{ key: 'Visser', label: 'Jordi Visser' }, { key: 'Camillo', label: 'Chris Camillo' }].map(voice => {
-              const checked = activeVoices.has(voice.key)
-              return (
-                <button key={voice.key} onClick={() => toggleVoice(voice.key)} style={{
-                  display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                }}>
-                  <div style={{ width: 13, height: 13, borderRadius: 2, border: `1.5px solid ${checked ? t.accent : t.textTertiary}`, background: checked ? t.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-                    {checked && <span style={{ color: t.bg, fontSize: 8, fontWeight: 700 }}>✓</span>}
-                  </div>
-                  <span style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 12, color: checked ? t.textPrimary : t.textSecondary, fontStyle: 'italic', transition: 'color 0.2s' }}>{voice.label}</span>
-                </button>
-              )
-            })}
           </div>
 
           {/* Tabs */}

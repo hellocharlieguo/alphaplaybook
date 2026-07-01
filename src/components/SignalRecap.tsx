@@ -38,6 +38,7 @@ interface VoiceSection {
     name: string
     editorial: string
     tickers: string[]      // curated list; ALSO the fallback when no live portfolio is in the snapshot
+    curated?: boolean       // true: always show these tickers verbatim (social-arb picks not in the book)
     bucket?: string         // which engine portfolio bucket these tickers map to
     wholeBucket?: boolean    // true: chips = ALL live holdings in `bucket` (auto add/drop). false/undefined: chips = `tickers` pruned to what's actually held.
   }[]
@@ -52,49 +53,31 @@ const VOICES: VoiceSection[] = [
     active: true,
     themes: [
       {
-        name: 'Power & the Physical AI Upgrade',
-        editorial: 'The defining rotation: "I don\'t want to be in semis as much as I want to be in power." Data-center electricity demand is a supply crisis the grid can\'t meet — nuclear, fuel cells, batteries, and grid buildout are the binding bottleneck (Stage 3). Power semis are "going through the roof," but the parabolic AI names are where he\'s taking profits, not adding. Fluence reaffirmed even through the cooling sweep — battery storage is now "a necessity."',
-        tickers: ['AIPO', 'BE', 'COPX', 'WGMI', 'FLNC'],
-        bucket: 'Power & Infrastructure',
+        name: 'AI Compute',
+        editorial: 'The binding bottleneck: "I don\'t want to be in semis as much as I want to be in power." Data-center demand is a supply crisis the grid can\'t meet — nuclear, fuel cells, batteries, grid. He\'s taking profits in the parabolic chip names, not adding; optical and copper are the parts still working.',
+        tickers: ['SOXX', 'AIPO', 'COPX', 'GLW', 'ASML'],
+        bucket: 'AI Compute',
         wholeBucket: true,
       },
       {
-        name: 'Hard Assets & Monetary Scarcity',
-        editorial: 'Gold doubled and silver ran 4-5x last year, then "have been consolidating." With a regime shift toward inflation and pressure on the Fed, he wants to own the scarcity trade: "I want to be in gold. I want to be in silver." Silver is the standout — dual industrial + monetary, sixth-year supply deficit. Copper is the metal of electrification.',
-        tickers: ['SLV', 'GLDM', 'COPX'],
-        bucket: 'Monetary Scarcity & Tokenization',
-      },
-      {
-        name: 'Bitcoin & Digital Scarcity',
-        editorial: 'Over 100% of Bitcoin\'s cumulative returns come from one quadrant: negative real yields + an accommodative Fed — exactly the setup he sees forming. He calls BTC the "next parabola," tracing the same long consolidation Micron did before its run, and watches Bitcoin and Dogecoin as signals of when it fires.',
-        tickers: ['IBIT'],
-        bucket: 'Monetary Scarcity & Tokenization',
-      },
-      {
-        name: 'Tokenization — Ownership Becomes Programmable',
-        editorial: 'The next wave, building toward Stage 4. "I bought Ethereum because tokenization reality is going to set in this summer" — referencing the July launch. AI agents "need food and that food is tokens," driving demand for tokens, compute, and real-time coordination, while pressuring traditional SaaS. AI and crypto are "two parts of the same transition."',
-        tickers: ['HOOD', 'ETHA'],
-        bucket: 'Monetary Scarcity & Tokenization',
-      },
-      {
-        name: 'AI Application — Human Software',
-        editorial: 'His newest conviction, and the application layer of the whole thesis. Peptides are "the API key for the human body," and Eli Lilly — a 150-year-old firm now running a specialized model on its own data center and decades of trial data — "has a chance to be the largest company in the world" within 5 years. Drug discovery is becoming "human software": Lilly even stopped disclosing phase-one trials once AI made the IP easy to copy. The obesity TAM alone is $200-300B, barely tapped.',
-        tickers: ['LLY'],
+        name: 'AI Application',
+        editorial: 'His newest conviction — money rotating up the stack. Peptides are "the API key for the human body," and Eli Lilly "has a chance to be the largest company in the world" within 5 years as drug discovery becomes human software. Amazon turns AI efficiency into real-world margin at scale.',
+        tickers: ['LLY', 'AMZN'],
         bucket: 'AI Application',
         wholeBucket: true,
       },
       {
-        name: 'Optical & Semiconductors — Selective',
-        editorial: 'Where memory exits and optical stays. He sold his entire Micron position — memory (Stage 1) is exhausted after its parabolic run. But optical/interconnect is still working (Stage 2): Marvell and Corning are the non-memory semis he still wants, the picks-and-shovels of the bandwidth bottleneck. Equal-weight semis capture breadth without the memory mega-cap concentration.',
-        tickers: ['GLW', 'ENTG', 'MRVL', 'XSD'],
-        bucket: 'Compute',
+        name: 'Tokenization',
+        editorial: 'Building toward Stage 4. "I bought Ethereum because tokenization reality is going to set in this summer." AI agents "need food and that food is tokens," driving tokens, compute, and coordination while pressuring legacy SaaS. Watching the BTC/ETH 50-day as the trigger.',
+        tickers: ['HOOD', 'ETHA'],
+        bucket: 'Tokenization',
         wholeBucket: true,
       },
       {
-        name: 'Energy — The Other Side of the Trade',
-        editorial: 'The hedge against his own AI book. "I bought Exxon. I bought Chevron" — "defensive safe names" for when the parabolic chip names turn volatile. With "Hormuz is still shut," oil able to migrate higher (his tail case: "$300 oil"), and a >4% CPI / rising-rate regime, energy is the other side of the trade: "if you don\'t have energy stocks in there, you are playing a big risk." Held as a basket rather than the two single names.',
-        tickers: ['XLE'],
-        bucket: 'Energy Hedge',
+        name: 'Monetary Scarcity',
+        editorial: 'The scarcity trade into an inflationary, Fed-pressured regime: "I want to be in gold. I want to be in silver." Silver is the standout — dual industrial + monetary, sixth-year supply deficit. BTC is the "next parabola," the same long consolidation Micron ran before its move. Accumulating on weakness.',
+        tickers: ['SLV', 'GLDM', 'IBIT'],
+        bucket: 'Monetary Scarcity',
         wholeBucket: true,
       },
     ],
@@ -103,18 +86,20 @@ const VOICES: VoiceSection[] = [
     name: 'Camillo',
     headline: 'BET ON WHAT PEOPLE DO, NOT WHAT MARKETS THINK',
     subtitle: 'Chris Camillo — social arbitrage and the companies AI will make dominant',
-    asOf: 'Apr 2026 (reference — no recent signal)',
-    active: false,
+    asOf: 'June 2026',
+    active: true,
     themes: [
       {
         name: 'AI Platform Winners',
-        editorial: 'Amazon is Camillo\'s biggest trade of his career — positioned at the intersection of AI automation, robotics, and logistics to turn efficiency into real-world margin at scale. Robinhood captures the retail fintech and crypto-accessibility wave. (Last reaffirmed Apr 2026; not in the live signal set.)',
+        editorial: 'Amazon is the pinnacle of his AI-efficiency thesis and the #1 conviction of his career — automation, robotics, and logistics turning efficiency into margin at scale. Robinhood rides the retail-fintech and crypto-access wave into a generational wealth transfer.',
         tickers: ['AMZN', 'HOOD'],
+        curated: true,
       },
       {
         name: 'Data Center Energy',
-        editorial: 'Bloom Energy\'s 800-volt DC platform solves a power bottleneck utilities can\'t — on-site power faster than the grid delivers it. Camillo\'s pick-and-shovel play on AI infrastructure: the company that powers the companies that power AI. (Reference view as of Apr 2026.)',
+        editorial: 'Bloom Energy\'s on-site fuel cells solve a power bottleneck the grid can\'t — the pick-and-shovel that powers the companies powering AI. Agentic trading is the next 18-24 months; he\'s sitting out the SpaceX hype.',
         tickers: ['BE'],
+        curated: true,
       },
     ],
   },
@@ -156,6 +141,8 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
   const chipsFor = (voice: VoiceSection, theme: VoiceSection['themes'][number]): string[] => {
     // Reference voices: always the curated/historical list (don't prune to the live book).
     if (!voice.active) return theme.tickers
+    // Curated themes (e.g. Camillo's social-arb picks): show verbatim even if not held.
+    if (theme.curated) return theme.tickers
     // No live portfolio in the snapshot → curated fallback (keeps the panel correct).
     if (liveHoldings.length === 0) return theme.tickers
     // Whole-bucket theme: every held name in that bucket, heaviest first.
@@ -166,68 +153,11 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
       .sort((a, b) => (heldWeight.get(b) ?? 0) - (heldWeight.get(a) ?? 0))
   }
 
-  const narrativeCount = visibleVoices.reduce((n, v) => n + v.themes.length, 0)
-  const regimeLabel = macro?.regime ? (macro.regime.above ? 'Above 4%' : 'Below 4%') : null
-
-  const pillars = [
-    {
-      label: 'Narrative',
-      value: String(narrativeCount),
-      sub: visibleVoices.length ? `${visibleVoices.map((v) => v.name).join(' · ')} · themes` : 'no voice selected',
-      icon: (
-        <>
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-          <line x1="12" y1="19" x2="12" y2="23" />
-          <line x1="8" y1="23" x2="16" y2="23" />
-        </>
-      ),
-    },
-    {
-      label: 'Crowd',
-      value: String(crowdSignals.length),
-      sub: crowdSignals.length ? 'Kalshi markets' : 'no markets today',
-      icon: (
-        <>
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-        </>
-      ),
-    },
-    {
-      label: 'Quant',
-      value: rsi != null ? rsi.toFixed(1) : '—',
-      sub: `SPY RSI${regimeLabel ? ' · ' + regimeLabel : ''}`,
-      icon: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
-    },
-  ]
 
   return (
     <div>
-      <style>{`
-        .ap-pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-        @media (max-width: 768px) { .ap-pillars { grid-template-columns: 1fr; } }
-      `}</style>
-
-      {/* Three signal pillars — at-a-glance summary above the detail panels */}
-      <div className="ap-pillars">
-        {pillars.map((p) => (
-          <div key={p.label} style={{ ...glass, borderRadius: 14, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
-            <span style={{ width: 38, height: 38, flexShrink: 0, borderRadius: '50%', background: 'rgba(224,145,92,0.12)', border: '1px solid rgba(224,145,92,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{p.icon}</svg>
-            </span>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 15, fontWeight: 700, color: t.textPrimary }}>{p.label}</span>
-                <span style={{ fontSize: 16, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{p.value}</span>
-              </div>
-              <div style={{ fontSize: 11, color: t.textTertiary, fontStyle: 'italic', fontFamily: "'Libre Baskerville', Georgia, serif", marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.sub}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Themes radar — moved to top, replaces the pillar row */}
+      <SignalRadar theme={t} portfolio={snapshot?.portfolio} />
 
       {/* Voice Sections — newspaper columns */}
       {visibleVoices.length > 0 && (
@@ -449,8 +379,6 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
         </div>
       </div>
 
-      {/* Signal Radar — what Visser is emphasizing now (themes + stage, not weights) */}
-      <SignalRadar theme={t} />
     </div>
   )
 }
