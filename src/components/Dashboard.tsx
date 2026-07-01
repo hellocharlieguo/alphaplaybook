@@ -22,6 +22,7 @@ interface DailySnapshot {
   spy_cumulative_return_pct: number | null
   capex_yoy_pct?: number | null
   visser_stage?: number | null
+  macro_signals?: any | null
 }
 
 export interface Theme {
@@ -173,7 +174,7 @@ export default function Dashboard() {
           <div className="ap-stats">
             <StatCard label="Cumulative return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
             <StatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
-            <StatCard label="SPY RSI (14)" value={spyRsi !== null ? spyRsi.toFixed(1) : '—'} color={spyRsi !== null ? (spyRsi > 70 ? t.negative : spyRsi < 25 ? t.positive : t.textPrimary) : t.textTertiary} sub={latestSnapshot?.rsi_signal ?? undefined} t={t} />
+            <InflationRegimeCard regime={latestSnapshot?.macro_signals?.regime ?? null} t={t} />
             {activeTab === 'portfolio' ? (
               <PortfolioValueCard input={portfolioInput} onInput={setPortfolioInput} onCommit={handlePortfolioSubmit} t={t} />
             ) : (
@@ -236,6 +237,26 @@ function PortfolioValueCard({ input, onInput, onCommit, t }: { input: string; on
           style={{ flex: 1, minWidth: 0, fontSize: 20, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '2px 8px', color: t.textPrimary, outline: 'none' }} />
       </div>
       <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 4, fontStyle: 'italic' }}>Sizing only — live engine weights</div>
+    </div>
+  )
+}
+
+function InflationRegimeCard({ regime, t }: { regime: any; t: Theme }) {
+  const has = regime && typeof regime.above === 'boolean'
+  const above = !!regime?.above
+  const val = typeof regime?.value === 'number' ? regime.value : null
+  const thr = typeof regime?.threshold === 'number' ? regime.threshold : null
+  const color = has ? (above ? t.negative : t.positive) : t.textTertiary
+  const verdict = has ? (above ? 'Above 4%' : 'Below 4%') : '—'
+  const detail = [
+    val != null && thr != null ? `${val.toFixed(1)}% ${above ? '>' : '<'} ${thr.toFixed(1)}%` : null,
+    has ? `S&P ${above ? 'hist. negative' : '~+12%/yr'}` : 'Awaiting CPI data',
+  ].filter(Boolean).join(' · ')
+  return (
+    <div style={{ background: 'rgba(30,29,27,0.38)', backdropFilter: 'blur(32px) saturate(132%)', WebkitBackdropFilter: 'blur(32px) saturate(132%)', border: '1px solid rgba(255,255,255,0.11)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
+      <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Inflation regime</div>
+      <div style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{verdict}</div>
+      <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{detail}</div>
     </div>
   )
 }
