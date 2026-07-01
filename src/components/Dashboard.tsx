@@ -245,18 +245,23 @@ function InflationRegimeCard({ regime, t }: { regime: any; t: Theme }) {
   const has = regime && typeof regime.above === 'boolean'
   const above = !!regime?.above
   const val = typeof regime?.value === 'number' ? regime.value : null
-  const thr = typeof regime?.threshold === 'number' ? regime.threshold : null
   const color = has ? (above ? t.negative : t.positive) : t.textTertiary
-  const verdict = has ? (above ? 'Above 4%' : 'Below 4%') : '—'
-  const detail = [
-    val != null && thr != null ? `${val.toFixed(1)}% ${above ? '>' : '<'} ${thr.toFixed(1)}%` : null,
-    has ? `S&P ${above ? 'hist. negative' : '~+12%/yr'}` : 'Awaiting CPI data',
-  ].filter(Boolean).join(' · ')
+  const value = val != null ? `${val.toFixed(1)}%` : '—'
+  const pill = above ? 'BEARISH' : 'BULLISH'
+  const pillColors = above
+    ? { text: '#d98e79', bg: 'rgba(201,112,90,0.16)', border: 'rgba(201,112,90,0.34)' }
+    : { text: '#8fd07e', bg: 'rgba(125,186,106,0.16)', border: 'rgba(125,186,106,0.34)' }
+  const sub = has ? `${above ? 'Above' : 'Below'} 4% line · S&P ${above ? 'hist. negative' : '+12%/yr'}` : 'Awaiting CPI data'
   return (
     <div style={{ background: 'rgba(30,29,27,0.38)', backdropFilter: 'blur(32px) saturate(132%)', WebkitBackdropFilter: 'blur(32px) saturate(132%)', border: '1px solid rgba(255,255,255,0.11)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Inflation regime</div>
-      <div style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{verdict}</div>
-      <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{detail}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+        <span style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</span>
+        {has && (
+          <span style={{ alignSelf: 'center', fontSize: 9.5, letterSpacing: 0.5, color: pillColors.text, background: pillColors.bg, border: `1px solid ${pillColors.border}`, padding: '2px 7px', borderRadius: 5 }}>{pill}</span>
+        )}
+      </div>
+      <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{sub}</div>
     </div>
   )
 }
