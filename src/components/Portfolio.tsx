@@ -15,17 +15,16 @@ const glass: CSSProperties = {
 interface PortfolioProps {
   snapshot: { snapshot_date: string; portfolio: any[] | null; portfolio_value: number | null } | null
   theme: Theme
+  portfolioValue: number
 }
 
 // The holdings list, weights, and themes are SNAPSHOT-DRIVEN: they come from the
 // nightly cron via daily_snapshots.portfolio ({ ticker, weight_pct, target_weight_pct,
 // category }), and live (close) prices from portfolio_holdings. weight_pct is the LIVE
-// DRIFTED weight at the last close (winners gain weight between rebalances);
-// target_weight_pct is the engine base weight it drifts from. The tab shows current +
-// a delta vs target. Manual weight sliders are gone — weights are engine output
-// ("fix scores, not weights"). The only static metadata here is per-ticker display
-// name + color and per-theme color/voice. A new ticker still renders with a sensible
-// fallback (its symbol + neutral dot); add it to TICKER_META for a nicer label.
+// DRIFTED weight at the last close; target_weight_pct is the engine base weight it
+// drifts from. The only static metadata here is per-ticker display name + color and
+// per-theme color. A new ticker still renders with a sensible fallback (its symbol +
+// neutral dot); add it to TICKER_META for a nicer label.
 
 const TICKER_META: Record<string, { name: string; color: string }> = {
   // AI Hardware Bottleneck
@@ -58,36 +57,25 @@ const TICKER_META: Record<string, { name: string; color: string }> = {
   XSD:  { name: 'Equal-Weight Semis ETF',            color: '#06b6d4' },
 }
 
-const THEME_META: Record<string, { color: string; voices: string[] }> = {
-  'AI Hardware Bottleneck':            { color: '#06b6d4', voices: ['Visser'] },
-  'Power & Infrastructure':            { color: '#10b981', voices: ['Visser'] },
-  'Physical Scarcity':                 { color: '#f59e0b', voices: ['Visser'] },
-  'Tokenization':                      { color: '#8b5cf6', voices: ['Visser'] },
-  'AI Application':                    { color: '#3b82f6', voices: ['Visser'] },
-  'Monetary Scarcity':                 { color: '#eab308', voices: ['Visser'] },
-  'Cash':                              { color: '#6b7280', voices: [] },
+const THEME_META: Record<string, { color: string }> = {
+  'AI Hardware Bottleneck':            { color: '#06b6d4' },
+  'Power & Infrastructure':            { color: '#10b981' },
+  'Physical Scarcity':                 { color: '#f59e0b' },
+  'Tokenization':                      { color: '#8b5cf6' },
+  'AI Application':                    { color: '#3b82f6' },
+  'Monetary Scarcity':                 { color: '#eab308' },
+  'AI Compute':                        { color: '#06b6d4' },
+  'Cash':                              { color: '#6b7280' },
   // legacy theme labels (older snapshots)
-  'Compute':                           { color: '#06b6d4', voices: ['Visser'] },
-  'Monetary Scarcity & Tokenization':  { color: '#8b5cf6', voices: ['Visser'] },
-}
-
-// Preferred theme order; any theme not listed is appended in first-seen order.
-const THEME_ORDER = [
-  'AI Hardware Bottleneck', 'Power & Infrastructure', 'Physical Scarcity',
-  'Tokenization', 'AI Application', 'Monetary Scarcity', 'Cash',
-]
-
-const VOICE_COLORS: Record<string, { bg: string; text: string }> = {
-  Visser: { bg: 'rgba(139,92,246,0.12)', text: '#a78bfa' },
-  Camillo: { bg: 'rgba(234,179,8,0.12)', text: '#eab308' },
+  'Compute':                           { color: '#06b6d4' },
+  'Monetary Scarcity & Tokenization':  { color: '#8b5cf6' },
 }
 
 const tickerName = (s: string) => TICKER_META[s]?.name ?? s
 const tickerColor = (s: string) => TICKER_META[s]?.color ?? '#64748b'
 const themeColor = (name: string) => THEME_META[name]?.color ?? '#64748b'
-const themeVoices = (name: string) => THEME_META[name]?.voices ?? ['Visser']
 
-// --- trend pill + momentum tag (unchanged) ---
+// --- trend pill (unchanged) ---
 const PILL_STYLE: Record<string, { bg: string; text: string }> = {
   uptrend:   { bg: 'rgba(34,197,94,0.13)',  text: '#22c55e' },
   pullback:  { bg: 'rgba(148,163,184,0.14)', text: '#94a3b8' },
@@ -108,19 +96,6 @@ function trendPill(symbol: string, price: number | null, tech: any): { label: st
   return { label: 'Pullback', state: 'pullback' }
 }
 
-
-// v5: sliders + weightOverrides removed (weights are engine output now). State kept:
-// theme filter + the mock portfolio value used for $-alloc / share sizing.
-const STORAGE_KEY = 'ap-portfolio-v5'
-
-interface SavedState { uncheckedThemes: string[]; portfolioValue: number }
-
-function loadState(): SavedState {
-  try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r) } catch {}
-  return { uncheckedThemes: [], portfolioValue: 100000 }
-}
-function saveState(s: SavedState) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)) } catch {} }
-
 function roundShares(raw: number): number {
   if (raw < 1) return 0
   if (raw < 5) return Math.floor(raw)
@@ -131,11 +106,7 @@ const fmt = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 0 
 
 interface ModelHolding { symbol: string; theme: string; modelWeight: number; targetWeight: number }
 
-export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
-  const [saved] = useState(loadState)
-  const [uncheckedThemes, setUncheckedThemes] = useState<Set<string>>(new Set(saved.uncheckedThemes))
-  const [portfolioValue, setPortfolioValue] = useState(saved.portfolioValue)
-  const [portfolioInput, setPortfolioInput] = useState(saved.portfolioValue.toLocaleString('en-US'))
+export default function Portfolio({ snapshot, theme: t, portfolioValue }: PortfolioProps) {
   const [livePrices, setLivePrices] = useState<Record<string, number>>({})
   const [technicals, setTechnicals] = useState<Record<string, any>>({})
 
@@ -150,17 +121,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
       targetWeight: Number(h.target_weight_pct ?? h.weight_pct) || 0,
     }))
     .filter((h: ModelHolding) => h.symbol && h.symbol !== 'undefined')
-
-  // Distinct themes present in the snapshot, in preferred order.
-  const presentThemes: string[] = (() => {
-    const seen: string[] = []
-    for (const h of modelHoldings) if (!seen.includes(h.theme)) seen.push(h.theme)
-    const ordered = THEME_ORDER.filter(x => seen.includes(x))
-    const extras = seen.filter(x => !THEME_ORDER.includes(x))
-    return [...ordered, ...extras]
-  })()
-
-  const isThemeChecked = useCallback((name: string) => !uncheckedThemes.has(name), [uncheckedThemes])
 
   useEffect(() => {
     async function fetchData() {
@@ -177,12 +137,9 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
     fetchData()
   }, [snapshot])
 
-  useEffect(() => { saveState({ uncheckedThemes: Array.from(uncheckedThemes), portfolioValue }) }, [uncheckedThemes, portfolioValue])
-
   const activeTickers = useCallback(() => {
-    const out: { symbol: string; name: string; price: number | null; theme: string; voices: string[]; weight: number; target: number }[] = []
+    const out: { symbol: string; name: string; price: number | null; theme: string; weight: number; target: number }[] = []
     for (const h of modelHoldings) {
-      if (uncheckedThemes.has(h.theme)) continue
       if (out.find(o => o.symbol === h.symbol)) continue
       const lp = livePrices[h.symbol]
       out.push({
@@ -190,14 +147,13 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
         name: tickerName(h.symbol),
         price: typeof lp === 'number' && lp > 0 ? lp : null,
         theme: h.theme,
-        voices: themeVoices(h.theme),
         weight: h.modelWeight,           // drifted engine weight (no override)
         target: h.targetWeight,          // engine base weight it drifts from
       })
     }
     return out
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uncheckedThemes, livePrices, snapshot])
+  }, [livePrices, snapshot])
 
   const tickers = activeTickers()
 
@@ -224,45 +180,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
   const cashRemainder = Math.max(0, portfolioValue - totalActualCost)
   const totalWeight = allocations.reduce((s, a) => s + a.weight, 0)
 
-  // Momentum sleeve = names above BOTH the 50- and 200-DMA (Uptrend only). Renormalize
-  // their drifted Thematic weights to 100%, cap each at 12% (ALL names incl. ETFs),
-  // and route the capped excess + any shortfall to cash (SGOV). No redistribution.
-  const MOM_CAP = 12
-  const inMomentum = (a: typeof allocations[number]): boolean => {
-    if (a.symbol === 'SGOV') return false
-    const tech = technicals[a.symbol]
-    return a.price !== null && tech?.dma50 != null && tech?.dma200 != null && a.price >= tech.dma50 && a.price >= tech.dma200
-  }
-  const momMembers = allocations.filter(inMomentum)
-  const momDenom = momMembers.reduce((s, a) => s + a.weight, 0) || 1
-  const momCapped: Record<string, number> = {}
-  let momCappedSum = 0
-  for (const a of momMembers) {
-    const w = Math.min((a.weight / momDenom) * 100, MOM_CAP)
-    momCapped[a.symbol] = w
-    momCappedSum += w
-  }
-  const momCash = Math.max(0, 100 - momCappedSum)
-  const momentumWeight = (a: typeof allocations[number]): number | null =>
-    a.symbol === 'SGOV' ? momCash : (a.symbol in momCapped ? momCapped[a.symbol] : null)
-  const momentumTotal = momCappedSum + momCash
-
-  const toggleTheme = (name: string) => {
-    const next = new Set(uncheckedThemes)
-    if (next.has(name)) next.delete(name); else next.add(name)
-    setUncheckedThemes(next)
-  }
-
-  const handlePortfolioSubmit = () => {
-    const val = parseFloat(portfolioInput.replace(/[^0-9.]/g, ''))
-    if (!isNaN(val) && val > 0) {
-      setPortfolioValue(val)
-      setPortfolioInput(val.toLocaleString('en-US'))
-    } else {
-      setPortfolioInput(portfolioValue.toLocaleString('en-US'))
-    }
-  }
-
   if (modelHoldings.length === 0) {
     return (
       <div style={{ ...glass, borderRadius: 12, padding: 40, textAlign: 'center', color: t.textTertiary, fontSize: 13 }}>
@@ -273,50 +190,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Theme Checkboxes + Portfolio Value */}
-      <div className="ap-portfolio-grid">
-        <div style={{ ...glass, borderRadius: 12, padding: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, marginBottom: 12 }}>Select themes</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {presentThemes.map(name => {
-              const checked = isThemeChecked(name)
-              const tc = themeColor(name)
-              return (
-                <button key={name} onClick={() => toggleTheme(name)} style={{
-                  display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 8,
-                  border: `1px solid ${checked ? tc : t.border}`,
-                  background: checked ? `${tc}15` : 'transparent', cursor: 'pointer', transition: 'all 0.2s',
-                }}>
-                  <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? tc : t.textTertiary}`, background: checked ? tc : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {checked && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✓</span>}
-                  </div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: checked ? t.textPrimary : t.textTertiary }}>{name}</span>
-                  <div style={{ display: 'flex', gap: 3 }}>
-                    {themeVoices(name).map((v, j) => {
-                      const vc = VOICE_COLORS[v] || { bg: t.badgeBg, text: t.badgeText }
-                      return <span key={j} style={{ fontSize: 9, background: vc.bg, color: vc.text, padding: '1px 5px', borderRadius: 3 }}>{v}</span>
-                    })}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <div style={{ ...glass, borderRadius: 12, padding: 20, minWidth: 200 }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, marginBottom: 12 }}>Portfolio value</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 18, fontWeight: 500, color: t.textTertiary }}>$</span>
-            <input type="text" inputMode="numeric" value={portfolioInput} onChange={e => setPortfolioInput(e.target.value)}
-              onBlur={handlePortfolioSubmit} onKeyDown={e => e.key === 'Enter' && handlePortfolioSubmit()}
-              style={{ width: 120, fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '6px 10px', color: t.textPrimary, outline: 'none' }} />
-          </div>
-          <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 8, fontStyle: 'italic' }}>
-            Sizing only — weights are live engine output
-          </div>
-        </div>
-      </div>
-
       {/* Holdings table */}
       <div style={{ ...glass, borderRadius: 12, overflow: 'hidden' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: `1px solid ${t.border}` }}>
@@ -331,7 +204,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                 <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Ticker</th>
                 <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Trend</th>
                 <th style={{ textAlign: 'right', padding: '8px 12px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Thematic</th>
-                <th style={{ textAlign: 'right', padding: '8px 12px', fontWeight: 400, fontSize: 11, color: '#2dd4bf' }}>Momentum</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Price</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>50-DMA</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>200-DMA</th>
@@ -349,7 +221,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                 const rsiColor = rsi == null ? t.textTertiary : rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textSecondary
                 const momDown = !!tech?.mom?.down
                 const drift = a.weight - a.target
-                const momWt = momentumWeight(a)
                 return (
                   <tr key={a.symbol} style={{ borderBottom: i < allocations.length - 1 ? `1px solid ${t.border}` : 'none' }}>
                     <td style={{ padding: '8px 16px' }}>
@@ -379,11 +250,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                             : <span style={{ fontSize: 9, color: t.textTertiary }}>at target</span>}
                       </div>
                     </td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>
-                      {momWt == null
-                        ? <span style={{ color: t.textTertiary, fontSize: 11 }}>— <span style={{ fontSize: 9 }}>excl.</span></span>
-                        : <span style={{ color: '#2dd4bf', fontWeight: 500 }}>{momWt.toFixed(1)}%</span>}
-                    </td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{a.price !== null ? `$${a.price.toFixed(2)}` : '—'}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textTertiary }}>{tech?.dma50 != null ? `$${tech.dma50.toFixed(2)}` : '—'}</td>
                     <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textTertiary }}>{tech?.dma200 != null ? `$${tech.dma200.toFixed(2)}` : '—'}</td>
@@ -406,9 +272,6 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                 <td style={{ padding: '10px 12px', textAlign: 'right' }}>
                   <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, fontWeight: 500, color: totalWeight > 100.5 ? t.negative : t.textSecondary }}>{totalWeight.toFixed(1)}%</span>
                 </td>
-                <td style={{ padding: '10px 12px', textAlign: 'right' }}>
-                  <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, fontWeight: 500, color: '#2dd4bf' }}>{momentumTotal.toFixed(1)}%</span>
-                </td>
                 <td style={{ padding: '10px 16px' }} />
                 <td style={{ padding: '10px 16px' }} />
                 <td style={{ padding: '10px 16px' }} />
@@ -418,7 +281,7 @@ export default function Portfolio({ snapshot, theme: t }: PortfolioProps) {
                 <td style={{ padding: '10px 16px' }} />
               </tr>
               {cashRemainder > 0 && (
-                <tr><td colSpan={11} style={{ padding: '8px 16px', fontSize: 11, color: t.textTertiary }}>${fmt(cashRemainder)} uninvested (from rounding) — consider adding to SGOV</td></tr>
+                <tr><td colSpan={10} style={{ padding: '8px 16px', fontSize: 11, color: t.textTertiary }}>${fmt(cashRemainder)} uninvested (from rounding) — consider adding to SGOV</td></tr>
               )}
             </tfoot>
           </table>

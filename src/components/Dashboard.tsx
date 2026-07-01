@@ -80,6 +80,19 @@ export default function Dashboard() {
   // Both voice cards always render; the contributor toggle UI was removed (the cards name their own author).
   const activeVoices = new Set(['Visser', 'Camillo'])
 
+  // Portfolio value lives here so it can render in the top stat row on the Portfolio tab.
+  const [portfolioValue, setPortfolioValue] = useState<number>(() => {
+    try { const s = localStorage.getItem('ap-portfolio-value'); if (s) { const n = parseFloat(s); if (!isNaN(n) && n > 0) return n } } catch {}
+    return 100000
+  })
+  const [portfolioInput, setPortfolioInput] = useState(() => portfolioValue.toLocaleString('en-US'))
+  useEffect(() => { try { localStorage.setItem('ap-portfolio-value', String(portfolioValue)) } catch {} }, [portfolioValue])
+  const handlePortfolioSubmit = () => {
+    const val = parseFloat(portfolioInput.replace(/[^0-9.]/g, ''))
+    if (!isNaN(val) && val > 0) { setPortfolioValue(val); setPortfolioInput(val.toLocaleString('en-US')) }
+    else { setPortfolioInput(portfolioValue.toLocaleString('en-US')) }
+  }
+
   useEffect(() => {
     async function fetchLatest() {
       setLoading(true)
@@ -161,7 +174,11 @@ export default function Dashboard() {
             <StatCard label="Cumulative return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
             <StatCard label="Alpha vs SPY" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
             <StatCard label="SPY RSI (14)" value={spyRsi !== null ? spyRsi.toFixed(1) : '—'} color={spyRsi !== null ? (spyRsi > 70 ? t.negative : spyRsi < 25 ? t.positive : t.textPrimary) : t.textTertiary} sub={latestSnapshot?.rsi_signal ?? undefined} t={t} />
-            <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
+            {activeTab === 'portfolio' ? (
+              <PortfolioValueCard input={portfolioInput} onInput={setPortfolioInput} onCommit={handlePortfolioSubmit} t={t} />
+            ) : (
+              <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
+            )}
           </div>
 
           {/* Tabs */}
@@ -184,7 +201,7 @@ export default function Dashboard() {
             ) : (
               <>
                 {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} activeVoices={activeVoices} />}
-                {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} />}
+                {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} portfolioValue={portfolioValue} />}
                 {activeTab === 'pnl' && <PnLTracker theme={t} />}
               </>
             )}
@@ -205,6 +222,20 @@ function StatCard({ label, value, color, sub, t }: { label: string; value: strin
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2, textTransform: 'capitalize' }}>{sub}</div>}
+    </div>
+  )
+}
+
+function PortfolioValueCard({ input, onInput, onCommit, t }: { input: string; onInput: (v: string) => void; onCommit: () => void; t: Theme }) {
+  return (
+    <div style={{ background: 'rgba(30,29,27,0.38)', backdropFilter: 'blur(32px) saturate(132%)', WebkitBackdropFilter: 'blur(32px) saturate(132%)', border: '1px solid rgba(255,255,255,0.11)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
+      <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Portfolio value</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontSize: 20, fontWeight: 500, color: t.textTertiary, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>$</span>
+        <input type="text" inputMode="numeric" value={input} onChange={(e) => onInput(e.target.value)} onBlur={onCommit} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+          style={{ flex: 1, minWidth: 0, fontSize: 20, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '2px 8px', color: t.textPrimary, outline: 'none' }} />
+      </div>
+      <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 4, fontStyle: 'italic' }}>Sizing only — live engine weights</div>
     </div>
   )
 }
