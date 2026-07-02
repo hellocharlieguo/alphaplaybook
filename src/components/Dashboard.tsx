@@ -79,7 +79,7 @@ export default function Dashboard() {
   const [latestSnapshot, setLatestSnapshot] = useState<DailySnapshot | null>(null)
   const [loading, setLoading] = useState(true)
   // Both voice cards always render; the contributor toggle UI was removed (the cards name their own author).
-  const activeVoices = new Set(['Visser', 'Camillo'])
+  const activeVoices = new Set(['Visser', 'Camillo', 'ZaStocks'])
 
   // Portfolio value lives here so it can render in the top stat row on the Portfolio tab.
   const [portfolioValue, setPortfolioValue] = useState<number>(() => {

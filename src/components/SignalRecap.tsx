@@ -103,6 +103,27 @@ const VOICES: VoiceSection[] = [
       },
     ],
   },
+  {
+    name: 'ZaStocks',
+    headline: 'THINK BIGGER ON THE LEADERS',
+    subtitle: 'ZaStocks (@ZaStocks) — technical setups and the AI market broadening beyond core semis',
+    asOf: 'wk of Jun 23–29 · via Grok',
+    active: true,
+    themes: [
+      {
+        name: 'AI Healthcare & Genomics',
+        editorial: `His clearest application-layer setups sit in AI healthcare and genomics — where he expects the next parabolic moves once "curing diseases" headlines hit. Tempus AI (TEM): ~27% short interest, reclaiming its key moving averages inside a multi-month base (he flags the Pelosi-disclosure attention). AbCellera (ABCL): an explosive-looking base on strong volume he likens to prior big runners, and one he's added on (~+30% since). Both are chart-driven reads from his X posts — candidates to run through the gates, not confirmed holds. TEM notably converges with our own AI Application 2nd-seat watch.`,
+        tickers: ['TEM', 'ABCL'],
+        curated: true,
+      },
+      {
+        name: 'Software & Fintech (broadening)',
+        editorial: `His broadening thesis: as semis cool, under-owned software and fintech rotate next. Snowflake (SNOW): a 5-plus-year base, the AI data-warehouse name he sees holding up best amid software weakness. Upstart (UPST): AI-plus-fintech with ~35% short interest sitting on a base. Neither is in the current sleeve — they're broadening candidates outside the book, flagged for the watchlist if the rotation gets going.`,
+        tickers: ['SNOW', 'UPST'],
+        curated: true,
+      },
+    ],
+  },
 ]
 
 
@@ -123,61 +144,71 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
     return `${names[parseInt(mo, 10) - 1]} ${y}`
   }
   const visibleVoices = VOICES.filter(v => activeVoices.has(v.name))
+  // Layout: lead voice (Visser) fills the left column; the rest stack in the right column.
+  const leadVoice = visibleVoices.find(v => v.name === 'Visser') ?? visibleVoices[0] ?? null
+  const rightVoices = visibleVoices.filter(v => v !== leadVoice)
+
+  const renderVoiceCard = (voice: VoiceSection) => (
+    <div key={voice.name} style={{ ...glass, borderRadius: 14, padding: '24px 28px' }}>
+      {/* Voice headline — newspaper style */}
+      <div style={{ borderBottom: `2px solid ${t.ruleLine}`, paddingBottom: 16, marginBottom: 20 }}>
+        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 900, margin: 0, lineHeight: 1.15, color: t.textPrimary, letterSpacing: 0.5 }}>
+          {voice.headline}
+        </h2>
+        <p style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 13, color: t.textSecondary, margin: '8px 0 0', fontStyle: 'italic' }}>
+          {voice.subtitle}
+        </p>
+        <span style={{ display: 'inline-block', marginTop: 8, fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
+          background: voice.active ? 'rgba(125,186,106,0.15)' : 'rgba(138,126,110,0.15)',
+          color: voice.active ? '#7dba6a' : t.textTertiary }}>
+          {voice.active ? '● Live signal' : '○ Reference'} · {voice.asOf}
+        </span>
+      </div>
+
+      {/* Theme sections — editorial style */}
+      {voice.themes.map((theme, i) => (
+        <div key={i} style={{ marginBottom: i < voice.themes.length - 1 ? 20 : 0 }}>
+          {/* Theme name as section header */}
+          <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 17, fontWeight: 700, margin: '0 0 8px', color: t.textPrimary }}>
+            {theme.name}
+          </h3>
+
+          {/* Editorial paragraph */}
+          <p style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 13, lineHeight: 1.7, color: t.textSecondary, margin: 0, textAlign: 'justify' }}>
+            {theme.editorial}
+          </p>
+
+          {/* Engine bucket mapping — shows how this narrative theme maps to a portfolio weighting bucket */}
+          {theme.bucket && (
+            <div style={{ marginTop: 8, fontSize: 10, color: t.textTertiary }}>
+              <span style={{ fontStyle: 'italic' }}>maps to engine bucket:</span>{' '}
+              <span style={{ fontWeight: 600, color: t.textSecondary }}>{theme.bucket}</span>
+            </div>
+          )}
+
+          {/* Separator between themes */}
+          {i < voice.themes.length - 1 && (
+            <div style={{ borderBottom: `1px solid ${t.border}`, marginTop: 16 }} />
+          )}
+        </div>
+      ))}
+    </div>
+  )
 
   return (
     <div>
       {/* Themes radar — moved to top, replaces the pillar row */}
       <SignalRadar theme={t} portfolio={snapshot?.portfolio} />
 
-      {/* Voice Sections — newspaper columns */}
+      {/* Voice Sections — Visser leads the left column; Camillo + ZaStocks stack on the right */}
       {visibleVoices.length > 0 && (
-        <div className={visibleVoices.length > 1 ? 'ap-voices-grid' : ''} style={{ marginBottom: 24 }}>
-          {visibleVoices.map((voice) => (
-            <div key={voice.name} style={{ ...glass, borderRadius: 14, padding: '24px 28px' }}>
-              {/* Voice headline — newspaper style */}
-              <div style={{ borderBottom: `2px solid ${t.ruleLine}`, paddingBottom: 16, marginBottom: 20 }}>
-                <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 900, margin: 0, lineHeight: 1.15, color: t.textPrimary, letterSpacing: 0.5 }}>
-                  {voice.headline}
-                </h2>
-                <p style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 13, color: t.textSecondary, margin: '8px 0 0', fontStyle: 'italic' }}>
-                  {voice.subtitle}
-                </p>
-                <span style={{ display: 'inline-block', marginTop: 8, fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
-                  background: voice.active ? 'rgba(125,186,106,0.15)' : 'rgba(138,126,110,0.15)',
-                  color: voice.active ? '#7dba6a' : t.textTertiary }}>
-                  {voice.active ? '● Live signal' : '○ Reference'} · {voice.asOf}
-                </span>
-              </div>
-
-              {/* Theme sections — editorial style */}
-              {voice.themes.map((theme, i) => (
-                <div key={i} style={{ marginBottom: i < voice.themes.length - 1 ? 20 : 0 }}>
-                  {/* Theme name as section header */}
-                  <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 17, fontWeight: 700, margin: '0 0 8px', color: t.textPrimary }}>
-                    {theme.name}
-                  </h3>
-
-                  {/* Editorial paragraph */}
-                  <p style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 13, lineHeight: 1.7, color: t.textSecondary, margin: 0, textAlign: 'justify' }}>
-                    {theme.editorial}
-                  </p>
-
-                  {/* Engine bucket mapping — shows how this narrative theme maps to a portfolio weighting bucket */}
-                  {theme.bucket && (
-                    <div style={{ marginTop: 8, fontSize: 10, color: t.textTertiary }}>
-                      <span style={{ fontStyle: 'italic' }}>maps to engine bucket:</span>{' '}
-                      <span style={{ fontWeight: 600, color: t.textSecondary }}>{theme.bucket}</span>
-                    </div>
-                  )}
-
-                  {/* Separator between themes */}
-                  {i < voice.themes.length - 1 && (
-                    <div style={{ borderBottom: `1px solid ${t.border}`, marginTop: 16 }} />
-                  )}
-                </div>
-              ))}
+        <div className={rightVoices.length > 0 ? 'ap-voices-grid' : ''} style={{ marginBottom: 24, alignItems: 'start' }}>
+          {leadVoice && renderVoiceCard(leadVoice)}
+          {rightVoices.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {rightVoices.map((v) => renderVoiceCard(v))}
             </div>
-          ))}
+          )}
         </div>
       )}
 
