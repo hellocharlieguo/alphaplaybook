@@ -49,7 +49,7 @@ const VOICES: VoiceSection[] = [
     name: 'Visser',
     headline: 'LONG SCARCITY, SHORT ABUNDANCE',
     subtitle: 'Jordi Visser — macro framework for the physical AI upgrade',
-    asOf: 'June 2026 (live)',
+    asOf: 'June 2026',
     active: true,
     themes: [
       {
@@ -149,7 +149,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
   const rightVoices = visibleVoices.filter(v => v !== leadVoice)
 
   const renderVoiceCard = (voice: VoiceSection) => (
-    <div key={voice.name} style={{ ...glass, borderRadius: 14, padding: '24px 28px' }}>
+    <div key={voice.name} style={{ ...glass, borderRadius: 14, padding: '24px 28px', flexGrow: 1 }}>
       {/* Voice headline — newspaper style */}
       <div style={{ borderBottom: `2px solid ${t.ruleLine}`, paddingBottom: 16, marginBottom: 20 }}>
         <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 900, margin: 0, lineHeight: 1.15, color: t.textPrimary, letterSpacing: 0.5 }}>
@@ -178,14 +178,6 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
             {theme.editorial}
           </p>
 
-          {/* Engine bucket mapping — shows how this narrative theme maps to a portfolio weighting bucket */}
-          {theme.bucket && (
-            <div style={{ marginTop: 8, fontSize: 10, color: t.textTertiary }}>
-              <span style={{ fontStyle: 'italic' }}>maps to engine bucket:</span>{' '}
-              <span style={{ fontWeight: 600, color: t.textSecondary }}>{theme.bucket}</span>
-            </div>
-          )}
-
           {/* Separator between themes */}
           {i < voice.themes.length - 1 && (
             <div style={{ borderBottom: `1px solid ${t.border}`, marginTop: 16 }} />
@@ -202,7 +194,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
 
       {/* Voice Sections — Visser leads the left column; Camillo + ZaStocks stack on the right */}
       {visibleVoices.length > 0 && (
-        <div className={rightVoices.length > 0 ? 'ap-voices-grid' : ''} style={{ marginBottom: 24, alignItems: 'start' }}>
+        <div className={rightVoices.length > 0 ? 'ap-voices-grid' : ''} style={{ marginBottom: 24 }}>
           {leadVoice && renderVoiceCard(leadVoice)}
           {rightVoices.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
