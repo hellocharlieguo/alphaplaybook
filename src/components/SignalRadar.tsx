@@ -1,15 +1,6 @@
-import type { CSSProperties } from 'react'
 import type { Theme } from './Dashboard'
 
 const ACCENT = '#e0915c'
-
-const glass: CSSProperties = {
-  background: 'rgba(30,29,27,0.38)',
-  backdropFilter: 'blur(32px) saturate(132%)',
-  WebkitBackdropFilter: 'blur(32px) saturate(132%)',
-  border: '1px solid rgba(255,255,255,0.11)',
-  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
-}
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
   { name: 'AI Compute',        tag: 'binding now',  blurb: 'Power + chips + copper; trimming parabolic semis.', binding: true },
@@ -39,7 +30,7 @@ export default function SignalRadar({ theme: t, portfolio }: { theme: Theme; por
   )
 
   return (
-    <div style={{ ...glass, borderRadius: 14, padding: '20px 24px', marginBottom: 24 }}>
+    <div style={{ marginBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2px 12px', marginBottom: 14 }}>
         <span style={{ fontSize: 18, fontWeight: 700, color: t.textPrimary, fontFamily: display }}>Themes</span>
         <span style={{ fontSize: 11, color: t.textTertiary }}>Visser · June 2026</span>
