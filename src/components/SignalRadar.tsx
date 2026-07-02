@@ -1,6 +1,15 @@
+import type { CSSProperties } from 'react'
 import type { Theme } from './Dashboard'
 
 const ACCENT = '#e0915c'
+
+const glass: CSSProperties = {
+  background: 'rgba(30,29,27,0.38)',
+  backdropFilter: 'blur(32px) saturate(132%)',
+  WebkitBackdropFilter: 'blur(32px) saturate(132%)',
+  border: '1px solid rgba(255,255,255,0.11)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+}
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
   { name: 'AI Compute',        tag: 'binding now',  blurb: 'Power + chips + copper; trimming parabolic semis.', binding: true },
@@ -33,7 +42,6 @@ export default function SignalRadar({ theme: t, portfolio }: { theme: Theme; por
     <div style={{ marginBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2px 12px', marginBottom: 14 }}>
         <span style={{ fontSize: 18, fontWeight: 700, color: t.textPrimary, fontFamily: display }}>Themes</span>
-        <span style={{ fontSize: 11, color: t.textTertiary }}>Visser · June 2026</span>
       </div>
 
       <style>{`
@@ -45,8 +53,11 @@ export default function SignalRadar({ theme: t, portfolio }: { theme: Theme; por
           const syms = tickersFor(m.name)
           return (
             <div key={m.name} style={{
-              background: m.binding ? 'rgba(224,145,92,0.10)' : t.surfaceSubtle,
-              border: `1px solid ${m.binding ? ACCENT : t.border}`,
+              ...glass,
+              border: `1px solid ${m.binding ? ACCENT : 'rgba(255,255,255,0.11)'}`,
+              boxShadow: m.binding
+                ? 'inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 200px rgba(224,145,92,0.07)'
+                : 'inset 0 1px 0 rgba(255,255,255,0.08)',
               borderRadius: 10, padding: '12px 11px', display: 'flex', flexDirection: 'column',
             }}>
               <span style={{
@@ -62,10 +73,6 @@ export default function SignalRadar({ theme: t, portfolio }: { theme: Theme; por
             </div>
           )
         })}
-      </div>
-
-      <div style={{ fontSize: 11, color: t.textTertiary, margin: '0 2px' }}>
-        Watch · Robotics / physical autonomy — Stage 5, 2027+ <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>KOID</span>
       </div>
     </div>
   )
