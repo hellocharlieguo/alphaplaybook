@@ -54,16 +54,12 @@ export default function SignalRadar({ theme: t, portfolio }: { theme: Theme; por
           return (
             <div key={m.name} style={{
               ...glass,
-              border: `1px solid ${m.binding ? ACCENT : 'rgba(255,255,255,0.11)'}`,
-              boxShadow: m.binding
-                ? 'inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 200px rgba(224,145,92,0.07)'
-                : 'inset 0 1px 0 rgba(255,255,255,0.08)',
               borderRadius: 10, padding: '12px 11px', display: 'flex', flexDirection: 'column',
             }}>
               <span style={{
                 alignSelf: 'flex-start', fontSize: 10, marginBottom: 7, padding: '1px 7px', borderRadius: 4,
-                background: m.binding ? ACCENT : 'rgba(255,255,255,0.07)',
-                color: m.binding ? '#1a1a1d' : t.textSecondary,
+                background: 'rgba(255,255,255,0.07)',
+                color: t.textSecondary,
               }}>{m.tag}</span>
               <span style={{ fontSize: 15, color: t.textPrimary, fontFamily: display, lineHeight: 1.2, marginBottom: 5 }}>{m.name}</span>
               <span style={{ fontSize: 11.5, color: t.textSecondary, lineHeight: 1.45, marginBottom: 10 }}>{m.blurb}</span>
