@@ -92,6 +92,16 @@
     "one_lens": 20,
     "none": 0
   },
+  "convergence_voices": {
+    "_added": "2026-07-02 (tiered 3-voice convergence). Widens convergence from Visser-only cross-source to CROSS-VOICE. Aschenbrenner dropped from the auto-count.",
+    "_doc": "lenses_pointing (0-3) is computed UPSTREAM in pull_candidates.cjs from BASE_PORTFOLIO membership + the voice_mentions ledger, then pasted into the rescore SignalInput rows. Payout is unchanged: convergence_bonus_values still maps 2->60, 3->100 (the 0.6/1.0 curve). Only positive legs count (conviction in count_convictions); 'Mentioned'/'Caution' do not. ZaStocks is corroboration-only: his leg counts ONLY if Visser or Camillo also point at the name, he never seats a name alone, and he never trips the voice_floor by himself.",
+    "voices": ["Visser", "Camillo", "ZaStocks"],
+    "visser_leg": "base_portfolio_membership_OR_logged_mention",
+    "decay_days": { "visser": 120, "camillo": 75, "zastocks": 45 },
+    "zastocks_corroboration_only": true,
+    "count_convictions": ["Added", "Adding-Holding", "Watching"],
+    "voice_floor_voices": ["Visser", "Camillo"]
+  },
   "weighting": {
     "method": "Conviction-proportional: weight proportional to (composite - floor_score)^k. k solved each run so the TOP name hits target_top_pct.",
     "target_top_pct": 18,

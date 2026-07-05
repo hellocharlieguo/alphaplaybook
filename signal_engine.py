@@ -34,7 +34,12 @@ class SignalInput:
     s5_entry_quality: Optional[float] = None   # ANTI-MOMENTUM: parabolic = low
     s4_catalyst: Optional[float] = None        # asset-type routed
     s6_valuation_risk: Optional[float] = None
-    lenses_pointing: int = 0             # 0-3 (Visser / Aschenbrenner / Camillo)
+    lenses_pointing: int = 0             # 0-3 cross-voice convergence count (Visser / Camillo / ZaStocks).
+                                         # Computed UPSTREAM in pull_candidates.cjs from BASE_PORTFOLIO
+                                         # membership + the voice_mentions ledger (decay windows + positive-
+                                         # conviction filter), with ZaStocks corroboration-only (his leg
+                                         # counts only when Visser or Camillo also point at the name).
+                                         # Aschenbrenner dropped from the auto-count (2026-07-02).
     # context for the report
     price: Optional[float] = None
     pct_from_52w_high: Optional[float] = None
@@ -52,7 +57,10 @@ class SignalInput:
     notes: str = ""
 
 
-def _conv(lenses): 
+def _conv(lenses):
+    # Maps the cross-voice lens count (0-3) to the convergence sub-score. The count is
+    # already corroboration-adjusted upstream (ZaStocks-only names arrive as a lower count),
+    # so this stays a pure count->value lookup. 2 lenses -> 60, 3 -> 100 (the 0.6/1.0 curve).
     v = CFG["convergence_bonus_values"]
     return {3:v["three_lenses"],2:v["two_lenses"],1:v["one_lens"]}.get(lenses, v["none"])
 
