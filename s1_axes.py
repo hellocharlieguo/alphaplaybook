@@ -26,6 +26,11 @@ def physical_s1(name, capex_on, cfg):
     p = axes(cfg)["physical_scarcity"]
     return p["floor"][name] + (p["boost"][name] if capex_on else 0)
 
+def dominance_s1(name, cfg):
+    b = axes(cfg)["application_dominance"]
+    w = b["rubric"]["weights"]; v = b["rubric"][name]
+    return round(sum(wi*vi for wi, vi in zip(w, v)))
+
 def cap_relax_multiple(cpi, cfg):
     """monetary pause-cap multiple. 1.0 dormant (<4%); graded 4-6.5%; None = uncap (>=6.5%)."""
     cr = axes(cfg)["monetary_scarcity"]["cap_relax"]
@@ -42,4 +47,6 @@ def s1_for(name, regime, cfg):
         return monetary_s1(name, cfg)
     if name in a["physical_scarcity"]["names"]:
         return physical_s1(name, regime["capex_on"], cfg)
+    if name in a.get("application_dominance", {}).get("names", []):
+        return dominance_s1(name, cfg)
     return None   # application/other names carry their own hand-set S1 (not an axis)

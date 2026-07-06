@@ -1,8 +1,8 @@
-# S1 Three-Axis Redesign — Spec
+# S1 Four-Axis Redesign — Spec
 
-**Status:** Design locked 2026-07-05. **NOT yet built** — the live `signal_model_config.json` and `signal_engine.py` are unchanged. This is the reviewable spec to build against.
+**Status:** Design locked & BUILT (offline) 2026-07-05. The engine (config block + `s1_axes.py` + `rescore_current_v3.py`) is validated in-repo; `score_ticker` and the live cron are untouched. The live `BASE_PORTFOLIO` still holds the pre-four-axis frozen book until a rescore is frozen.
 
-**Motivation:** the old S1 conflated two spines (AI bottleneck + monetary scarcity) into one hand-set 0.25-weight score. That single number was the source of every distortion we traced: application names structurally capped, hard money inflated but weight-inert, COPX becoming a weight sink, and no forward inflation response anywhere in the engine. The fix is to split S1 into **three independent axes**, each aging on its own clock, so the bottleneck can fade with the AI cycle while the scarcity anchors persist.
+**Motivation:** the old S1 conflated two spines (AI bottleneck + monetary scarcity) into one hand-set 0.25-weight score. That single number was the source of every distortion we traced: application names structurally capped, hard money inflated but weight-inert, COPX becoming a weight sink, and no forward inflation response anywhere in the engine. The fix is to split S1 into **four independent axes**, each aging on its own clock, so the bottleneck can fade with the AI cycle while the scarcity anchors persist.
 
 S1 keeps its **0.25 composite weight**. The composite formula is unchanged:
 ```
@@ -105,24 +105,36 @@ A ~45% cap on the combined scarcity sleeve (monetary + physical) is a **tail gua
 
 **H2-2026 dormant base case** — neither trigger, chips cooling, copper floor 55:
 
-| ticker | axis | target |
-|---|---|---|
-| AIPO | bottleneck | 18.0% |
-| GLW | bottleneck | 9.5% |
-| ASML | bottleneck | 9.0% |
-| SOXX | bottleneck | 5.0% |
-| LLY | application | 10.0% |
-| AMZN | application | 9.5% |
-| HOOD | tokenization | 9.5% |
-| COPX | physical | 9.0% |
-| IBIT | monetary | 3.0% |
-| GLDM | monetary | 3.0% |
-| SLV_M | monetary | 3.0% |
-| SLV_P | physical | 3.5% |
-| ETHA | monetary | 2.5% |
-| SGOV | cash | 5.5% |
+| ticker | axis | target | deployed |
+|---|---|---|---|
+| AIPO | bottleneck | 18.0% | 18.0 |
+| GLW | bottleneck | 8.0% | 9.0 |
+| ASML | bottleneck | 7.5% | 4.0 |
+| SOXX | bottleneck | 4.0% | 15.0 |
+| LLY | app-dominance | 13.5% | 13.0 |
+| AMZN | app-dominance | 12.5% | 7.0 |
+| HOOD | app-dominance | 9.0% | 9.0 |
+| COPX | physical | 7.5% | 4.5 |
+| IBIT | monetary | 3.0% | 3.0 |
+| GLDM | monetary | 3.0% | 3.0 |
+| SLV_M | monetary | 3.0% | (6.5 SLV) |
+| SLV_P | physical | 3.5% | (6.5 SLV) |
+| ETHA | monetary | 2.5% | 2.5 |
+| SGOV | cash | 5.0% | 5.5 |
 
-Sleeves: scarcity **24%** · AI-compute **41.5%** · app-token **29%** · cash **5.5%**. (Silver total = 6.5%.)
+Sleeves: AI-compute **37.5%** · app-token **35%** · scarcity **22.5%** · cash **5.0%**. (Silver total = 6.5%.)
+
+### Regime behavior (four-axis book)
+
+| regime | scarcity | AI-comp | app/tok | BTC | gold | SLV_P | COPX | LLY | AMZN |
+|---|---|---|---|---|---|---|---|---|---|
+| BASE (neither) | 22.5% | 37.5% | 35.0% | 3.0 | 3.0 | 3.5 | 7.5 | 13.5 | 12.5 |
+| CPI debase 6% | 34.5% | 31.0% | 29.5% | 7.5 | 7.5 | 3.5 | 5.5 | 12.0 | 10.5 |
+| CPI deep 6.5% (uncap) | 45.0%\* | 27.4% | 23.1% | 17.1 | 14.2 | 2.8 | 3.3 | 10.0 | 8.4 |
+| CapEx surge | 31.0% | 33.0% | 31.0% | 3.0 | 3.0 | 7.5 | 12.0 | 12.5 | 11.0 |
+| BOTH fire | 45.1%\* | 27.9% | 22.2% | 15.9 | 12.8 | 3.5 | 7.1 | 9.7 | 8.0 |
+
+\* = 45% scarcity cap binds. The app layer *funds* the scarcity surge — LLY/AMZN release weight (13.5→10, 12.5→8.4) into the debasement bid rather than blocking it. No crowd-out; the cap catches only the genuine tail.
 
 **CPI debasement (CPI ≥ 4%, buildout dormant):** monetary sleeve wakes via cap-relax. BTC 18 / gold 15.5 lead, silver-mon follows at ~6, physical unchanged. Scarcity → ~53%.
 
@@ -132,12 +144,13 @@ Sleeves: scarcity **24%** · AI-compute **41.5%** · app-token **29%** · cash *
 
 ---
 
-## Drift vs the deployed book (all previously traced, not new)
+## Drift vs the deployed book (four-axis)
+- AMZN 7 → 12.5 — application-dominance axis corrects the old voice-floor underweight.
 
-- SOXX 15 → 5 — discretionary core-basket overweight the engine sheds as chips cool.
-- COPX 4.5 → 9 — physical-axis re-rating.
-- LLY 13 → 10 — application axis (would need the dominance lever for 13).
-- ASML 4 → 9 — engine wants more.
+- SOXX 15 → 4 — discretionary core-basket overweight; engine sheds it as chips cool AND the app layer bids weight away.
+- COPX 4.5 → 7.5 — physical-axis re-rating.
+- LLY 13 → 13.5 — **now engine-justified** via the application-dominance axis (was 10 pre-axis).
+- ASML 4 → 7.5 — engine wants the pure chokepoint heavier.
 
 ---
 
@@ -184,6 +197,10 @@ Replace `two_spines` in `signal_model_config.json` with a `three_axes` block:
 
 ## Open decisions (deferred)
 
-- **Application-dominance axis** — whether to build the orthogonal lever that would let LLY/AMZN score on "how dominant does AI make this franchise" and justify their deployed weights.
-- **Scarcity cap level** — 45% is the working number; confirm against a risk budget.
-- **Copper floor** — locked at 55 (→ ~9% dormant). 52 would put it at ~8.5%; the two are functionally identical, 55 chosen so COPX doesn't rank below a decaying optical name.
+- **App-sleeve cap** — the application layer sits at ~35% dormant with NO cap (parallel to the 45% scarcity cap). Not binding in base/debasement (app releases weight when scarcity fires), but a strong-application regime could push it higher. A ~30-32% cap would guardrail the LLY/AMZN flagship pair. **Not yet set.**
+- **Scarcity cap level** — locked at 45%; binds only in deep-debasement / both-fire (a tail brake, confirmed).
+- **The first freeze** — this four-axis book is a large rebalance vs deployed (SOXX 15→4, AMZN 7→12.5, ASML 4→7.5, COPX 4.5→7.5). Stage deliberately.
+
+## Status
+- **BUILT & validated in-repo 2026-07-05:** all four axes, config block, s1_axes.py, rescore_current_v3.py. score_ticker + cron untouched.
+- Live `BASE_PORTFOLIO` still holds the pre-four-axis frozen book until a rescore is frozen.
