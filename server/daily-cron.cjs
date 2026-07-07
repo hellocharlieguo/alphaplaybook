@@ -1016,18 +1016,18 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 //   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
 // Comments after each line are the engine composite scores (UNDISCOUNTED).
 const BASE_PORTFOLIO = {
-  AIPO: { base_weight: 18,   theme: 'AI Compute',        action: 'Enter' },              // power complex (held ETF)
-  SOXX: { base_weight: 15,   theme: 'AI Compute',        action: 'Enter' },              // chips/equipment/optical/memory
-  LLY:  { base_weight: 13,   theme: 'AI Application',        action: 'Enter' },              // GLP + AI drug discovery anchor
-  GLW:  { base_weight: 9,    theme: 'AI Compute',        action: 'Enter' },              // fiber/optical-materials (Visser core)
-  HOOD: { base_weight: 9,    theme: 'Tokenization',      action: 'Enter' },              // 2-lens convergence (voice floor)
-  AMZN: { base_weight: 7,    theme: 'AI Application',    action: 'Enter' },              // AI efficiency flywheel (voice floor)
+  AIPO: { base_weight: 18.0,   theme: 'AI Compute',        action: 'Enter' },              // power complex (held ETF)
+  SOXX: { base_weight: 4.0,   theme: 'AI Compute',        action: 'Enter' },              // chips/equipment/optical/memory
+  LLY:  { base_weight: 13.5,   theme: 'AI Application',        action: 'Enter' },              // GLP + AI drug discovery anchor
+  GLW:  { base_weight: 7.5,    theme: 'AI Compute',        action: 'Enter' },              // fiber/optical-materials (Visser core)
+  HOOD: { base_weight: 9.0,    theme: 'Tokenization',      action: 'Enter' },              // 2-lens convergence (voice floor)
+  AMZN: { base_weight: 12.5,    theme: 'AI Application',    action: 'Enter' },              // AI efficiency flywheel (voice floor)
   SLV:  { base_weight: 6.5,  theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
-  SGOV: { base_weight: 5.5,  theme: 'Cash', min_weight: 3, action: 'Hold' },             // cash floor
-  COPX: { base_weight: 4.5,  theme: 'AI Compute',        action: 'Hold' },               // copper (structural)
-  ASML: { base_weight: 4,    theme: 'AI Compute',        action: 'Enter' },              // EUV monopoly top-up
-  GLDM: { base_weight: 3,    theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
-  IBIT: { base_weight: 3,    theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
+  SGOV: { base_weight: 6.0,  theme: 'Cash', min_weight: 3, action: 'Hold' },             // cash floor
+  COPX: { base_weight: 7.5,  theme: 'AI Compute',        action: 'Hold' },               // copper (structural)
+  ASML: { base_weight: 7.0,    theme: 'AI Compute',        action: 'Enter' },              // EUV monopoly top-up
+  GLDM: { base_weight: 3.0,    theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
+  IBIT: { base_weight: 3.0,    theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
   ETHA: { base_weight: 2.5,  theme: 'Tokenization',      action: 'Hold' },               // paused below-200
 }
 
@@ -1035,7 +1035,7 @@ const BASE_PORTFOLIO = {
 // stored in yesterday's snapshot; a change forces a one-night rebalance-to-target.
 // Between bumps (same tickers, same version) holdings DRIFT with price — winners gain
 // weight, losers shed it. A ticker add/drop also forces a rebalance regardless.
-const PORTFOLIO_VERSION = '2026-06-29-v3.0-themes'
+const PORTFOLIO_VERSION = '2026-06-29-v3.0-themes.1'
 
 function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('\n========================================')
