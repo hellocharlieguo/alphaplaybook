@@ -49,12 +49,12 @@ const VOICES: VoiceSection[] = [
     name: 'Visser',
     headline: 'LONG SCARCITY, SHORT ABUNDANCE',
     subtitle: 'Jordi Visser — macro framework for the physical AI upgrade',
-    asOf: 'June 2026',
+    asOf: 'July 2026',
     active: true,
     themes: [
       {
         name: 'AI Compute',
-        editorial: `Power is still the binding bottleneck — data-center demand is a supply crisis the grid can't meet, and he frames the tape as "running hot into scarcity." He's scaled out of the parabolic chip names (effectively all of Micron) and leans on what's still working — optical, copper, and increasingly batteries and storage as the near-term grid fix, flagging the Fluence–Nvidia deal as the kind of catalyst that unlocks capacity.`,
+        editorial: `Power is still the binding bottleneck — grid capacity is the supply crisis data-center demand can't outrun — but he's turned far more selective on the compute side. On 7/5 he said he'd "rotated the majority of my AI-infrastructure money, particularly on the semi side," out of the parabolic chip trade and into scarcity and the application layer, keeping only what's structurally working — power, optical, copper, and batteries as the near-term grid fix (he still holds Marvell and Fluence, and flags the Fluence–Nvidia deal as a capacity-unlock catalyst). His tell: the infrastructure trade is "consolidating," not leading — semis are the funding side now, not the driver.`,
         tickers: ['SOXX', 'AIPO', 'COPX', 'GLW', 'ASML'],
         bucket: 'AI Compute',
         wholeBucket: true,
@@ -75,7 +75,7 @@ const VOICES: VoiceSection[] = [
       },
       {
         name: 'Monetary Scarcity',
-        editorial: `The scarcity trade, now held with patience. He still wants gold, silver, and Bitcoin — silver the standout on a sixth-year industrial deficit, BTC the "next parabola" echoing Micron's long base — accumulating on weakness while the three consolidate. But his June macro read softened: inflation swaps just posted their biggest drop since 2022 and the June CPI nowcast sits near zero, so he's calling inflation nearer a peak than an acceleration — patient accumulation, not a chase.`,
+        editorial: `The scarcity trade, now being actively accumulated into weakness. On 7/5 he said he'd "moved into a bunch of silver and Bitcoin names," buying the debasement selloff that Fed-hike repositioning drove — a move he thinks is wrong, since the dollar is crowded long and its unwind is "good for gold, good for silver, good for Bitcoin." Bitcoin is bottoming below its 200-day, echoing Micron's long base, with a clean trigger: "if we get above the 200-day, Bitcoin will probably lead." Silver stays the standout on a sixth-year industrial deficit. He still reads inflation as nearer a peak than an acceleration (expectations at a year-low), so this is conviction in structural debasement, not an inflation chase.`,
         tickers: ['SLV', 'GLDM', 'IBIT'],
         bucket: 'Monetary Scarcity',
         wholeBucket: true,
@@ -107,7 +107,7 @@ const VOICES: VoiceSection[] = [
     name: 'ZaStocks',
     headline: 'THINK BIGGER ON THE LEADERS',
     subtitle: 'ZaStocks (@ZaStocks) — technical setups and the AI market broadening beyond core semis',
-    asOf: 'wk of Jun 26 – Jul 2 · via Grok',
+    asOf: 'wk of Jun 29 – Jul 6 · via Grok',
     active: true,
     themes: [
       {
