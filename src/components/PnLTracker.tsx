@@ -116,39 +116,40 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
             <thead>
               <tr style={{ borderBottom: `1px solid ${t.border}`, position: 'sticky', top: 0, background: t.cardPrimary }}>
                 <th style={{ textAlign: 'left', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Date</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>SPY Daily</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Thematic Daily</th>
-                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Thematic Cumul.</th>
                 <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>SPY Cumul.</th>
-                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Alpha</th>
-                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>RSI</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Thematic Cumul.</th>
+                <th style={{ textAlign: 'right', padding: '8px 20px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Alpha vs. SPY</th>
               </tr>
             </thead>
             <tbody>
-              {[...snapshots].reverse().map((s, i) => {
+              {[...snapshots].reverse().map((s, i, arr) => {
                 const daily = s.daily_return_pct ?? 0
                 const cum = s.cumulative_return_pct ?? 0
                 const spyCum = s.spy_cumulative_return_pct ?? 0
                 const a = cum - spyCum
-                const rsi = s.spy_rsi
+                const prevSpyCum = arr[i + 1]?.spy_cumulative_return_pct
+                const spyDaily = prevSpyCum == null ? null : spyCum - prevSpyCum
                 return (
                   <tr key={i} style={{ borderBottom: `1px solid ${t.border}` }}>
                     <td style={{ padding: '8px 20px', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>
                       {new Date(s.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </td>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: spyDaily === null ? t.textTertiary : spyDaily >= 0 ? t.positive : t.negative }}>
+                      {spyDaily === null ? '—' : `${spyDaily >= 0 ? '+' : ''}${spyDaily.toFixed(2)}%`}
+                    </td>
                     <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: daily >= 0 ? t.positive : t.negative }}>
                       {daily >= 0 ? '+' : ''}{daily.toFixed(2)}%
-                    </td>
-                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: cum >= 0 ? t.positive : t.negative }}>
-                      {cum >= 0 ? '+' : ''}{cum.toFixed(2)}%
                     </td>
                     <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: spyCum >= 0 ? t.positive : t.negative }}>
                       {spyCum >= 0 ? '+' : ''}{spyCum.toFixed(2)}%
                     </td>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: cum >= 0 ? t.positive : t.negative }}>
+                      {cum >= 0 ? '+' : ''}{cum.toFixed(2)}%
+                    </td>
                     <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: a >= 0 ? t.positive : t.negative }}>
                       {a >= 0 ? '+' : ''}{a.toFixed(2)}%
-                    </td>
-                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsi === null ? t.textTertiary : rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textSecondary }}>
-                      {rsi === null ? '—' : rsi.toFixed(1)}
                     </td>
                   </tr>
                 )
