@@ -198,11 +198,11 @@ export default function Portfolio({ snapshot, theme: t, portfolioValue }: Portfo
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}><table style={{ minWidth: 720,  width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${t.border}` }}>
-                <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Ticker</th>
-                <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Trend</th>
+                <th style={{ textAlign: 'center', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Ticker</th>
+                <th style={{ textAlign: 'center', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Trend</th>
                 <th style={{ textAlign: 'right', padding: '8px 12px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Thematic</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Price</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>50-DMA</th>
@@ -210,7 +210,7 @@ export default function Portfolio({ snapshot, theme: t, portfolioValue }: Portfo
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>RSI</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>$ Alloc</th>
                 <th style={{ textAlign: 'right', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Shares</th>
-                <th style={{ textAlign: 'left', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Theme</th>
+                <th style={{ textAlign: 'center', padding: '8px 16px', fontWeight: 400, fontSize: 11, color: t.textTertiary }}>Theme</th>
               </tr>
             </thead>
             <tbody>
@@ -284,7 +284,7 @@ export default function Portfolio({ snapshot, theme: t, portfolioValue }: Portfo
                 <tr><td colSpan={10} style={{ padding: '8px 16px', fontSize: 11, color: t.textTertiary }}>${fmt(cashRemainder)} uninvested (from rounding) — consider adding to SGOV</td></tr>
               )}
             </tfoot>
-          </table>
+          </table></div>
         </div>
       </div>
     </div>

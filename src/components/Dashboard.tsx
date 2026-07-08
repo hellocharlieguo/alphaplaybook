@@ -140,11 +140,11 @@ export default function Dashboard() {
           .ap-voices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
           .ap-tabs { display: flex; gap: 2px; flex-wrap: wrap; }
           @media (max-width: 768px) {
-            .ap-stats { grid-template-columns: repeat(2, 1fr); }
+            .ap-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .ap-signals-grid { grid-template-columns: 1fr; }
             .ap-portfolio-grid { grid-template-columns: 1fr; }
             .ap-donut-grid { grid-template-columns: 1fr; }
-            .ap-pnl-stats { grid-template-columns: repeat(2, 1fr); }
+            .ap-pnl-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .ap-history-detail { grid-template-columns: 1fr; }
             .ap-bestworst { grid-template-columns: 1fr; }
             .ap-voices-grid { grid-template-columns: 1fr; }
