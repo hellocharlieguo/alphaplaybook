@@ -913,7 +913,7 @@ async function fetchKalshiCPI() {
       data_month,
       event_ticker: ev.event_ticker || null,
       close_time: eventClose(ev),
-      as_of: new Date().toISOString().slice(0, 10),
+      as_of: TODAY, // ET, matching the crowd rows — UTC stamp split by a day past 8pm EDT
       source: 'Kalshi',
     }
     console.log(`Kalshi CPI: ${out.point_estimate}% YoY pt-est · P(>4%)=${out.prob_above_4} · ${out.data_month} · ${out.event_ticker} · via ${got.host}`)
