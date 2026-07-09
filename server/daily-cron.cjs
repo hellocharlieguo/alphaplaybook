@@ -395,6 +395,55 @@ const KALSHI_WATCHLIST = [
     direction: 'bearish', mapped_assets: ['IBIT', 'ETHA'] },
 ]
 
+// Next S&P 500 additions — KXSP500ADDQ, one event per quarter. AUTO-ROLLS: picks the
+// open event with the NEAREST close_time, so when Q3 (26SEP30) settles the Q4 event
+// takes over with no code change. Probabilities are bid/ask MIDPOINTS — these strikes
+// are thin (OI in the hundreds) and last-trade goes stale (RDDT printed 28% on zero
+// 24h volume at build time). Display-only row: the caller sets direction 'neutral' and
+// mapped_assets [] so it never feeds aggregateBullishAssets. Skip-safe -> null.
+const KALSHI_SP500_SERIES = 'KXSP500ADDQ'
+async function fetchSP500Additions() {
+  for (const host of KALSHI_HOSTS) {
+    try {
+      const res = await fetch(`${host}/markets?series_ticker=${KALSHI_SP500_SERIES}&status=open&limit=200`,
+        { headers: { 'User-Agent': 'Mozilla/5.0 (AlphaPlaybook cron)' } })
+      if (!res.ok) continue
+      const ms = ((await res.json()).markets) || []
+      if (!ms.length) return null
+      const events = {}
+      for (const m of ms) {
+        const ev = String(m.ticker || '').split('-').slice(0, -1).join('-')
+        if (!ev) continue
+        ;(events[ev] = events[ev] || []).push(m)
+      }
+      const nearest = Object.entries(events)
+        .map(([ev, list]) => ({ ev, list, close: String(list[0].close_time || '') }))
+        .sort((a, b) => a.close.localeCompare(b.close))[0]
+      if (!nearest) return null
+      const top = nearest.list
+        .map((m) => {
+          const b = parseFloat(m.yes_bid_dollars), a = parseFloat(m.yes_ask_dollars)
+          let prob = (!isNaN(b) && !isNaN(a) && a > 0) ? (b + a) / 2 : parseFloat(m.last_price_dollars)
+          if (isNaN(prob) || prob <= 0 || prob >= 1) return null
+          return {
+            ticker: String(m.ticker || '').split('-').pop(),
+            company: m.yes_sub_title || m.subtitle || '',
+            prob: Math.round(prob * 100) / 100,
+          }
+        })
+        .filter(Boolean)
+        .sort((x, y) => y.prob - x.prob)
+        .slice(0, 5)
+      if (top.length < 3) return null // sparse board = no-signal, render nothing
+      const close = nearest.list[0].close_time || null
+      const quarter = close ? `Q${Math.ceil((new Date(close).getUTCMonth() + 1) / 3)}` : ''
+      console.log(`  S&P 500 additions (${nearest.ev}${quarter ? ' · ' + quarter : ''}): ${top.map((x) => `${x.ticker} ${Math.round(x.prob * 100)}%`).join(' · ')}`)
+      return { event_ticker: nearest.ev, quarter, close_time: close, top }
+    } catch (e) { /* next host */ }
+  }
+  return null
+}
+
 // One Kalshi market's probability by series + subtitle matcher. Working host first.
 // Returns 0..1 or null; trusts last trade on a deep market, falls back to bid/ask mid.
 async function kalshiMarketProb(series, matcher) {
@@ -443,6 +492,21 @@ async function runCrowdPipeline() {
       direction: w.direction, mapped_assets: w.mapped_assets, conviction: 'medium',
     })
     console.log(`  ${w.label}: ${Math.round(prob * 100)}% — ${read}`)
+  }
+
+  // Next S&P 500 additions — 5th market row. Display-only by construction:
+  // direction 'neutral' + empty mapped_assets keep it out of the bullish-asset
+  // aggregation; probability field carries the TOP name's odds (signals-table shape).
+  const sp = await fetchSP500Additions()
+  if (sp) {
+    signals.push({
+      market: 'Next S&P 500 additions', probability: sp.top[0].prob,
+      read: 'index-inclusion odds, top 5', close_time: sp.close_time, as_of: TODAY,
+      direction: 'neutral', mapped_assets: [], conviction: 'medium',
+      sp500_add: { event_ticker: sp.event_ticker, quarter: sp.quarter, top: sp.top },
+    })
+  } else {
+    console.warn('  Next S&P 500 additions: no Kalshi reading — skipping')
   }
 
   // Write to the signals table (source 'crowd') — keeps aggregateBullishAssets fed.
@@ -1576,6 +1640,7 @@ async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, b
     direction: s.direction,
     mapped_assets: s.mapped_assets,
     conviction: s.conviction,
+    sp500_add: s.sp500_add ?? null,
   }))
 
   const portfolioData = pnl.holdings.map((h) => ({

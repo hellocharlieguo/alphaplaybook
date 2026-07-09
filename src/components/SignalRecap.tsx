@@ -4,6 +4,13 @@ import SignalRadar from './SignalRadar'
 
 const ACCENT = '#e0915c'
 
+// Book-overlap tags for the S&P-additions block — mirrors the voice ledger state
+// (RDDT = ZaStocks-only quarantine; BE = Camillo trim-and-rotate). Hand-maintained.
+const SP_ADD_TAGS: Record<string, { label: string; color: string }> = {
+  RDDT: { label: 'quarantined', color: '#c9705a' },
+  BE: { label: 'Camillo', color: ACCENT },
+}
+
 // Frosted-glass surface shared by the cards on this tab.
 const glass: CSSProperties = {
   background: 'rgba(30,29,27,0.38)',
@@ -140,6 +147,8 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
   }
 
   const crowdSignals = snapshot.polymarket_signals || []
+  const spAddSignal = (crowdSignals as any[]).find((s: any) => s.sp500_add) || null
+  const stdCrowd = (crowdSignals as any[]).filter((s: any) => !s.sp500_add)
   const rsi = snapshot.spy_rsi
   const macro = snapshot.macro_signals || null
   const hasQuant = rsi !== null || !!(macro && (macro.spy || macro.cpi || macro.nowcast))
@@ -232,8 +241,8 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
             <div style={{ fontSize: 13, color: t.textTertiary, padding: '16px 0', fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>No crowd signals today.</div>
           ) : (
             <div>
-              {crowdSignals.slice(0, 6).map((s: any, i: number) => (
-                <div key={i} style={{ padding: '10px 0', borderBottom: i < Math.min(crowdSignals.length, 6) - 1 ? `1px solid ${t.border}` : 'none' }}>
+              {stdCrowd.slice(0, 6).map((s: any, i: number) => (
+                <div key={i} style={{ padding: '10px 0', borderBottom: i < Math.min(stdCrowd.length, 6) - 1 ? `1px solid ${t.border}` : 'none' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
                     <span style={{ fontSize: 12, color: t.textSecondary, flex: 1, lineHeight: 1.3, fontFamily: "'Libre Baskerville', Georgia, serif" }}>{s.market}</span>
                     <span style={{ fontSize: 13, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary, flexShrink: 0 }}>{(s.probability * 100).toFixed(0)}%</span>
@@ -246,7 +255,29 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                 )}
                 </div>
               ))}
-              {crowdSignals.length > 6 && <div style={{ fontSize: 11, color: t.textTertiary, paddingTop: 8, fontStyle: 'italic' }}>+{crowdSignals.length - 6} more</div>}
+              {spAddSignal && spAddSignal.sp500_add && (
+                <div style={{ padding: '12px 0 2px', borderTop: `1px solid ${t.border}` }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+                    <span style={{ fontSize: 12, color: t.textSecondary, lineHeight: 1.3, fontFamily: "'Libre Baskerville', Georgia, serif" }}>
+                      Next S&amp;P 500 additions
+                      {spAddSignal.sp500_add.quarter && <span style={{ fontSize: 9, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: ACCENT, border: `1px solid ${ACCENT}66`, borderRadius: 4, padding: '1px 5px', marginLeft: 6, verticalAlign: 1 }}>{spAddSignal.sp500_add.quarter}</span>}
+                    </span>
+                    {spAddSignal.close_time && <span style={{ fontSize: 10, color: t.textTertiary, flexShrink: 0, opacity: 0.9, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>resolves {new Date(spAddSignal.close_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</span>}
+                  </div>
+                  <div style={{ fontSize: 11, color: t.textTertiary, fontStyle: 'italic', fontFamily: "'Libre Baskerville', Georgia, serif", margin: '2px 0 8px' }}>{spAddSignal.read || 'index-inclusion odds, top 5'}</div>
+                  {(spAddSignal.sp500_add.top || []).map((n: any, j: number) => (
+                    <div key={j} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '2.5px 0' }}>
+                      <span style={{ fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>
+                        {n.ticker}
+                        <span style={{ fontSize: 11, color: t.textTertiary, marginLeft: 8, fontFamily: "'Libre Baskerville', Georgia, serif" }}>{n.company}</span>
+                        {SP_ADD_TAGS[n.ticker] && <span style={{ fontSize: 9.5, marginLeft: 8, color: SP_ADD_TAGS[n.ticker].color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{SP_ADD_TAGS[n.ticker].label}</span>}
+                      </span>
+                      <span style={{ fontSize: 13, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary, flexShrink: 0 }}>{Math.round(n.prob * 100)}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {stdCrowd.length > 6 && <div style={{ fontSize: 11, color: t.textTertiary, paddingTop: 8, fontStyle: 'italic' }}>+{stdCrowd.length - 6} more</div>}
             </div>
           )}
         </div>
