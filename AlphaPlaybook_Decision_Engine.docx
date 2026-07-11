@@ -1,0 +1,171 @@
+# AlphaPlaybook Decision Engine — Methodology
+
+**Version 2.1 · The complete playbook.** *(2026-07-09: S4 Catalyst removed as redundant with S1's monetary axis; its 0.15 redistributed S1+S2 → S1 .30 / S2 .30. Labels kept S1/S2/S5/S6, no renumber.)*
+
+**Version 2.0 · The complete playbook.** Hand this to a web-enabled Claude with a list of voices/transcripts and it runs the full loop: parse themes, propose tickers, score them, weight them, and flag entry/exit — with you approving each stage. Encodes a Leopold/Visser-style conviction engine into a repeatable, auditable process.
+
+**This is decision-support, not autopilot.** Every output is a probability-weighted suggestion you review before acting. Claude always shows its scoring math.
+
+## 1. Philosophy
+
+This engine thinks like a concentrated thesis manager (Aschenbrenner) running a scarcity macro view (Visser):
+
+- **Conviction-weighted.** Highest scores get highest weights. No diversification-for-its-own-sake. If a weight feels wrong, fix the *score*, never override the *weight*.
+
+- **Anti-momentum.** A name being up large is a reason to own *less*, not more — the asymmetry has decayed. The engine rotates toward what hasn’t moved yet. This is the core Visser/Leopold edge: be early, buy the bottleneck before the crowd.
+
+- **Decisive repositioning.** Like Leopold’s quarter-to-quarter 13F swings, the engine moves weights hard when scores change rather than anchoring to last month’s book.
+
+- **Two scarcity spines.** Long AI-input scarcity (power/compute/memory) AND long monetary scarcity (gold/silver/BTC in a debasement regime). Co-equal.
+
+- **Long-only adaptation.** A real fund (Leopold) concentrates ~20%+ in single names because an offsetting short book hedges him. This is long-only, so structural guardrails — an 18% (not 20%+) top, a 2% floor for breadth, a 5% cash floor — substitute for the put-hedge. You run his offense with caps instead of his defense.
+
+## 2. The loop — who does what
+
+The process is circular: transcripts in → themes → tickers → scores → weights → (new transcripts) → themes… Each step is either a **[CHAT]** judgment step (Claude reasons, you approve) or an **[ENGINE]** deterministic step (a formula we’ve fixed).
+
+| # | Step | Owner | Type |
+| --- | --- | --- | --- |
+| 1 | Feed in transcripts (Visser, Camillo, Aschenbrenner, etc.) | **You** | input |
+| 2 | Parse themes from transcripts | **[CHAT]** Claude → you approve | judgment |
+| 3 | Themes → candidate tickers (with tradeoffs per theme) | **[CHAT]** Claude → you approve/tweak | judgment |
+| 4a | Gather the 6 signals per ticker via web search | **[CHAT]** Claude | judgment |
+| 4b | Signals → composite → action → tier | **[ENGINE]** formula | deterministic |
+| 5 | Composite → exact weights → share counts | **[ENGINE]** normalizer | deterministic |
+| 6 | Entry/exit action flags | **[ENGINE]** from scores | deterministic |
+| 6b | Execution timing (when to actually trade) | **You** | judgment |
+| 7 | New transcript → diff themes → re-score affected names | **[CHAT]** Claude → you approve | judgment |
+
+**Principle:** Claude-in-chat owns every judgment step (themes, ticker discovery, reading signals, theme-change detection), always with your approval. The engine owns every deterministic step (signal→score, score→weight, action flags). You are the approval gate throughout and can tweak anywhere.
+
+**Ticker discovery (step 3) matters.** The engine does not only score tickers you hand it — Claude proposes the candidate universe per theme so you don’t miss the best expression of a theme. E.g. theme “nuclear” → CEG, VST, OKLO, CCJ, NLR, LEU, here are the tradeoffs → you pick the set → then scoring.
+
+## 3. The six signals
+
+Each ticker is scored 0-100 on six signals. Weights reflect thesis priority.
+
+| Signal | Weight | What it measures |
+| --- | --- | --- |
+| **S1 Bottleneck** | 0.30 | Is it on a real scarcity bottleneck — AI-input OR monetary? |
+| **S2 Timing** | 0.30 | Is the bottleneck binding NOW in Visser’s 5-stage cycle? |
+| **S5 Entry Quality** | 0.20 | Anti-momentum: pullback (good) vs. parabolic run (bad). |
+| **S6 Valuation/Crowding** | 0.10 | Over-owned / over-valued risk discount. |
+| **Convergence** | 0.10 | How many of the 3 lenses agree (3=100, 2=60, 1=20). |
+
+Plus a portfolio-wide **capex multiplier** (not a per-ticker signal) applied to the composite.
+
+### S1 — Bottleneck (two spines, tightly scoped)
+
+- **AI-input scarcity** (power gen, grid/equipment, compute, memory, DC real estate): pure-play 90-100, diversified ETF 70-89, partial 50-69.
+
+- **Monetary scarcity** (gold, silver, Bitcoin in a debasement regime): flagship hard-money 85-95.
+
+- **Scope discipline:** ONLY these two categories score high. A random growth stock does not get to claim “scarcity.” Keeping this boundary sharp is what keeps S1 meaningful.
+
+### S2 — Timing (the Visser stage clock)
+
+Maps to the current stage. Binding-now stage = 100; one stage out = 70; peaked/rolling-over = 40; two+ stages out = 30. **The**** ****“****thesis clock****”**** ****(current_visser_stage in the config) is the master switch — flip it as the cycle rotates and every timing score re-weights.**
+
+### S5 — Entry Quality (ANTI-MOMENTUM — the key discipline)
+
+Rewards un-run names, penalizes parabolic ones: - Down / pullback-in-uptrend, thesis intact: 85-100 - Off-highs, hasn’t run recently: 65-80 - Near highs, has run meaningfully: 50-64 - Parabolic (up multiples in <1yr, RSI>75): 25-45
+
+**Signals stay independent — no fundamental cushion.** A strong thesis (high S1) does NOT soften a parabolic entry penalty. S1 already gets 25% direct weight; letting it also cushion S5 would double-count and defeat the anti-momentum brake. A best-in-class name that has run 10x lands at a poor entry score honestly (e.g. a name up ~1,300% scores S5 ~30 even with S1=95).
+
+### S6 — Valuation / Crowding
+
+Under-owned/reasonable 85-100, fair 55-84, crowded/expensive 35-54, bubble+insider-selling 0-34.
+
+### Convergence
+
+3 lenses (Visser+Aschenbrenner+Camillo) = 100, 2 = 60, 1 = 20, none = 0.
+
+### The capex multiplier (portfolio-wide circuit breaker)
+
+Aggregate hyperscaler capex YoY: ≥40% GREEN ×1.00; 25-40% AMBER ×0.92; <25% RED ×0.82; negative ×0.65. RED two quarters running → trim high-beta 25%, raise cash. Negative → defensive shift.
+
+## 4. The composite formula
+
+composite = ( S1·.30 + S2·.30 + S5·.20 + S6·.10 + Convergence·.10 ) × capex_multiplier
+
+Composite (0-100) maps to an action:
+
+| Composite | Action |
+| --- | --- |
+| ≥ 78 | STRONG ENTRY |
+| 65-77 | ENTER |
+| 55-64 | STARTER / WATCH |
+| 45-54 | HOLD (no new entry) |
+| < 45 | AVOID / EXIT |
+
+## 5. Weighting (score → exact %)
+
+**Conviction-proportional.** One set of numbers — no separate “engine %” and “my %.” Your conviction enters through approving themes, tickers, and scores; not through a post-hoc override.
+
+weight(name) = min_floor + (composite - floor_score)^k  / Σ(...) × distributable
+  floor_score   = 45   (below this, weight = 0)
+  min_floor     = 2%   (every included name gets at least this — preserves theme breadth)
+  cash_floor    = 5% aggressive / 12% conservative
+  k             = solved each run so the TOP name hits target_top_pct
+  distributable = 100% - cash_floor - (min_floor × number of names)
+
+**target_top_pct is the convexity dial and the difference between the two engines:** - **Aggressive (online): top = 18%.** Concentrated. Top name ~18%, top theme (power) ~45-50%. Long-only translation of Leopold’s ~20% top — one notch lower because there’s no put-hedge. - **Conservative (offline): top = 11%.** Gentler curve → diversified. Same code, lower target_top.
+
+**Single-stock cap = 12% (decided 5/22/26).** No individual stock exceeds 12%, so a diversified ETF anchors the book (the top ETF, e.g. SLV, holds the 18% top) while the highest-scoring single stock (e.g. CEG) sizes just below at the cap. CEG still scores #1 — the cap is a portfolio-construction rule, not a scoring change. Risk is also managed by the 18% top, the 2% floor for breadth, and the cash floor — together substituting for the put-hedge a real fund uses. Fix scores, never override weights; the cap is the one sanctioned structural override.
+
+## 6. When to act — exit / trim triggers
+
+| Trigger | Action |
+| --- | --- |
+| Composite drops ≥ 10 pts since last run | Trim one tier down |
+| Composite drops ≥ 20 pts | Exit fully |
+| Visser stage flips (e.g. memory peaks) | Trim that sleeve 25-50% |
+| Capex cascade RED two quarters running | Trim high-beta 25%, raise cash |
+| Capex cascade NEGATIVE | Defensive: SGOV / XLU / GLDM / XLV |
+| Thesis break (bottleneck resolved/bypassed) | Exit regardless of price |
+
+**Turnover note (taxable accounts):** the engine repositions decisively (Leopold-like), which means real turnover. In taxable accounts, rebalance only when a target moves >3-4% to limit short-term gains. The engine outputs targets; you decide when to actually trade.
+
+**Being early is the deal.** The anti-momentum brake means you’ll sometimes underweight a ripper (watch it run without you) or enter a faller too soon. That’s the cost of being early — the same tradeoff Leopold accepts. Being early on the right structural call beats being on-time with the crowd.
+
+## 7. When to run it
+
+| Cadence | What |
+| --- | --- |
+| **Weekly** | Refresh fast signals only (S5 price/technicals). Re-run held names. Check exit flags. |
+| **Monthly** | Full re-score all 5 signals. Run normalizer → rebalance within band. Save to state. |
+| **Quarterly** | Update current_visser_stage (the thesis clock) + matching prose. Re-baseline tiers. Aligns with 13F season + earnings. |
+| **Event-driven** | New transcript (diff themes) · >100MW power contract · hyperscaler capex revision · contributor stance change · one-off news. |
+
+**The single routine edit:** current_visser_stage in the config. Flip 3→4 when tokenization binds (~Jul 2026); every S2 timing score re-weights automatically.
+
+## 8. Required output format
+
+## Decision Engine Run — <date>  [AGGRESSIVE | CONSERVATIVE]
+Capex cascade: <GREEN/AMBER/RED/NEG> (agg hyperscaler capex YoY = x%) → ×m
+Visser stage: <N — name> (binding)
+
+| Ticker | S1 | S2 | S5 | S6 | Conv | Composite | Action | Weight | Shares |
+...
+
+### Per-name notes  (what drove the score; entry guidance; key risk)
+### Portfolio actions this cycle  (adds/trims/exits with targets)
+### Data gaps / low-confidence flags
+
+Always show the math. Where data is thin, lower confidence and size down rather than guessing. Never fabricate a price, contract, capex, or flow number — search or mark UNKNOWN.
+
+## 9. Guardrails
+
+- Decision-support only. You approve every trade.
+
+- Never fabricate numbers. Search or mark UNKNOWN; thin data → smaller size, stated plainly.
+
+- Fix scores, never override weights — that is the entire discipline.
+
+- Keep S1’s two-spine scope tight (AI inputs + hard money only).
+
+- Keep signals independent (no fundamental cushion on S5).
+
+- The engine is pro-cyclical and concentrated by design; the capex multiplier, the 2% floor, the cash floor, and the 18% (not higher) top are the circuit breakers. Respect them — they are your long-only substitute for a hedge.
+
+- Past performance of the voices, or this model, does not guarantee future results.

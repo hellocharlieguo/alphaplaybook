@@ -32,7 +32,7 @@ class SignalInput:
     s1_bottleneck: Optional[float] = None
     s2_timing: Optional[float] = None
     s5_entry_quality: Optional[float] = None   # ANTI-MOMENTUM: parabolic = low
-    s4_catalyst: Optional[float] = None        # asset-type routed
+    s4_catalyst: Optional[float] = None        # DEPRECATED 2026-07-09 (S4 removed from composite; field kept as no-op so existing callers don't break)
     s6_valuation_risk: Optional[float] = None
     lenses_pointing: int = 0             # 0-3 cross-voice convergence count (Visser / Camillo / ZaStocks).
                                          # Computed UPSTREAM in pull_candidates.cjs from BASE_PORTFOLIO
@@ -130,7 +130,6 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float, regime_above: bool = Fa
     s1 = 50 if sig.s1_bottleneck    is None else sig.s1_bottleneck
     s2 = 50 if sig.s2_timing        is None else sig.s2_timing
     s5 = 50 if sig.s5_entry_quality is None else sig.s5_entry_quality
-    s4 = 50 if sig.s4_catalyst      is None else sig.s4_catalyst
     s6 = 50 if sig.s6_valuation_risk is None else sig.s6_valuation_risk
     conv = _conv(sig.lenses_pointing)
 
@@ -192,7 +191,7 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float, regime_above: bool = Fa
             s5_floored = True
 
     raw = (s1*w["S1_bottleneck"] + s2*w["S2_timing"] + s5*w["S5_entry_quality"]
-           + s4*w["S4_catalyst"] + s6*w["S6_valuation_risk"] + conv*w["convergence_bonus"])
+           + s6*w["S6_valuation_risk"] + conv*w["convergence_bonus"])
     regime, mult = capex_multiplier(capex_yoy_pct)
     composite = round(raw*mult, 1)
 
@@ -225,7 +224,7 @@ def score_ticker(sig: SignalInput, capex_yoy_pct: float, regime_above: bool = Fa
     return {
         "ticker": sig.ticker, "asset_type": sig.asset_type, "sleeve": sig.sleeve,
         "is_etf": sig.is_etf, "etf_redundant": sig.etf_redundant,
-        "sub_scores": {"S1":s1,"S2":s2,"S5":s5,"S4":s4,"S6":s6,"convergence":conv},
+        "sub_scores": {"S1":s1,"S2":s2,"S5":s5,"S6":s6,"convergence":conv},
         "raw": round(raw,1), "capex_regime": regime, "capex_multiplier": mult,
         "composite": composite,
         "weighting_score": weighting_score,
@@ -412,8 +411,8 @@ if __name__ == "__main__":
     regime, mult = capex_multiplier(CAPEX)
     print(f"=== Decision Engine — {date.today()} ===")
     print(f"Capex: {regime} ({CAPEX}% YoY) x{mult}\n")
-    print(f"{'TKR':<6}{'type':<16}{'S1':>4}{'S2':>4}{'S5':>4}{'S4':>4}{'S6':>4}{'Cv':>4}{'Comp':>7}  Action")
+    print(f"{'TKR':<6}{'type':<16}{'S1':>4}{'S2':>4}{'S5':>4}{'S6':>4}{'Cv':>4}{'Comp':>7}  Action")
     for s in demo:
         r = score_ticker(s, CAPEX); ss = r["sub_scores"]
         print(f"{r['ticker']:<6}{r['asset_type']:<16}{ss['S1']:>4}{ss['S2']:>4}{ss['S5']:>4}"
-              f"{ss['S4']:>4}{ss['S6']:>4}{ss['convergence']:>4}{r['composite']:>7}  {r['action']}")
+              f"{ss['S6']:>4}{ss['convergence']:>4}{r['composite']:>7}  {r['action']}")

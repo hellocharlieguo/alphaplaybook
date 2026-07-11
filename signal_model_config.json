@@ -36,10 +36,9 @@
     }
   },
   "composite_weights": {
-    "S1_bottleneck": 0.25,
-    "S2_timing": 0.2,
+    "S1_bottleneck": 0.3,
+    "S2_timing": 0.3,
     "S5_entry_quality": 0.2,
-    "S4_catalyst": 0.15,
     "S6_valuation_risk": 0.1,
     "convergence_bonus": 0.1
   },
@@ -410,5 +409,6 @@
       }
     },
     "scarcity_sleeve_cap_pct": 45
-  }
+  },
+  "_composite_weights_note": "S4_catalyst REMOVED 2026-07-09 (redundant with S1 monetary axis; see S4-removal note). Weights = redistribution option C (S1+S2 split): S1 .25->.30, S2 .20->.30, S4 .15->0. Labels intentionally left S1/S2/S5/S6 (no renumber)."
 }
