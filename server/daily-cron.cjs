@@ -1080,26 +1080,29 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 //   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
 // Comments after each line are the engine composite scores (UNDISCOUNTED).
 const BASE_PORTFOLIO = {
-  AIPO: { base_weight: 18.0,   theme: 'AI Compute',        action: 'Enter' },              // power complex (held ETF)
-  SOXX: { base_weight: 4.0,   theme: 'AI Compute',        action: 'Enter' },              // chips/equipment/optical/memory
-  LLY:  { base_weight: 13.5,   theme: 'AI Application',        action: 'Enter' },              // GLP + AI drug discovery anchor
-  GLW:  { base_weight: 7.5,    theme: 'AI Compute',        action: 'Enter' },              // fiber/optical-materials (Visser core)
-  HOOD: { base_weight: 9.0,    theme: 'Tokenization',      action: 'Enter' },              // 2-lens convergence (voice floor)
-  AMZN: { base_weight: 12.5,    theme: 'AI Application',    action: 'Enter' },              // AI efficiency flywheel (voice floor)
-  SLV:  { base_weight: 6.5,  theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
-  SGOV: { base_weight: 6.0,  theme: 'Cash', min_weight: 3, action: 'Hold' },             // cash floor
-  COPX: { base_weight: 7.5,  theme: 'AI Compute',        action: 'Hold' },               // copper (structural)
-  ASML: { base_weight: 7.0,    theme: 'AI Compute',        action: 'Enter' },              // EUV monopoly top-up
-  GLDM: { base_weight: 3.0,    theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
-  IBIT: { base_weight: 3.0,    theme: 'Monetary Scarcity', action: 'Hold' },               // paused below-200
-  ETHA: { base_weight: 2.5,  theme: 'Tokenization',      action: 'Hold' },               // paused below-200
+  AIPO:  { base_weight: 18.0, theme: 'AI Compute',         action: 'Enter', }, // power infra ETF (mislabeled compute; really power)
+  LLY:   { base_weight: 11.0, theme: 'AI Application',     action: 'Enter', }, // GLP + AI drug-discovery anchor
+  MRVL:  { base_weight: 9.5,   theme: 'AI Compute',         action: 'Enter', }, // active-optical/CPO; optics-stretch S6 haircut
+  MU:    { base_weight: 7.5,   theme: 'AI Compute',         action: 'Enter', }, // memory (DRAM/HBM shortage); Visser biggest add
+  AMZN:  { base_weight: 7.0,   theme: 'AI Application',     action: 'Enter', }, // consumer-agent platform; voice floor
+  SKHY:  { base_weight: 6.0,   theme: 'AI Compute',         action: 'Enter', }, // SK Hynix ADR (HBM); thesis-seated, NO technicals yet
+  SLV:   { base_weight: 6.0,   theme: 'Monetary Scarcity',  action: 'Hold', }, // monetary leg paused below-200 (freefall)
+  GLW:   { base_weight: 5.5,   theme: 'AI Compute',         action: 'Watch', }, // fiber optical, cooling (stretched leg)
+  ASML:  { base_weight: 5.0,   theme: 'AI Compute',         action: 'Watch', }, // EUV monopoly; underweight on mid entry (add on dip)
+  HOOD:  { base_weight: 4.0,   theme: 'Tokenization',       action: 'Watch', }, // 2-lens convergence (voice floor)
+  SOXX:  { base_weight: 3.0,   theme: 'AI Compute',         action: 'Watch', }, // diversified semi basket
+  IBIT:  { base_weight: 3.0,   theme: 'Monetary Scarcity',  action: 'Hold', }, // paused below-200
+  GLDM:  { base_weight: 3.0,   theme: 'Monetary Scarcity',  action: 'Hold', }, // paused below-200
+  ETHA:  { base_weight: 3.0,   theme: 'Tokenization',       action: 'Hold', }, // paused below-200
+  COPX:  { base_weight: 3.0,   theme: 'AI Compute',         action: 'Hold', }, // copper; below-200 (carve-out exempts pause, honest entry score)
+  SGOV:  { base_weight: 5.5,   theme: 'Cash',               action: 'Hold', min_weight: 3, }, // cash floor (min 3); absorbs rounding residual -> book sums 100
 }
 
 // Bump this on ANY engine rescore or weight change. The P&L compares it to the version
 // stored in yesterday's snapshot; a change forces a one-night rebalance-to-target.
 // Between bumps (same tickers, same version) holdings DRIFT with price — winners gain
 // weight, losers shed it. A ticker add/drop also forces a rebalance regardless.
-const PORTFOLIO_VERSION = '2026-06-29-v3.0-themes.1'
+const PORTFOLIO_VERSION = '2026-07-13-v3.1-themes'
 
 function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('\n========================================')
