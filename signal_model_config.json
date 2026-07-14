@@ -202,9 +202,13 @@
       "conviction_proximity_carveout": {
         "enabled": true,
         "band_pct": 0.03,
-        "hardmoney_only": true,
+        "hardmoney_only": false,
         "_added": "2026-06-15 (Spec A). Motivated by SLV sitting on its 200-DMA (+0.1%) with Visser reaffirming/buying.",
-        "_doc": "A HELD macro_hardmoney name below its 200-DMA is EXEMPT from the entry pause + S5 floor if it is within band_pct of the 200-DMA AND voice_conviction=True. At-trend + voice-buying != downtrend. Re-arms automatically if price falls outside the band (the pause/floor returns). Removes the FREEZE only; the name flows to its normal engine weight, no boost (fix scores not weights). Narrow by design: hard money only, tight band, voice-gated. Does NOT touch companies, deep-downtrend hard money (IBIT -27%, ETHA -43% are outside the band), or non-voice names."
+        "_doc": "A HELD macro_hardmoney name below its 200-DMA is EXEMPT from the entry pause + S5 floor if it is within band_pct of the 200-DMA AND voice_conviction=True. At-trend + voice-buying != downtrend. Re-arms automatically if price falls outside the band (the pause/floor returns). Removes the FREEZE only; the name flows to its normal engine weight, no boost (fix scores not weights). Narrow by design: hard money only, tight band, voice-gated. Does NOT touch companies, deep-downtrend hard money (IBIT -27%, ETHA -43% are outside the band), or non-voice names.",
+        "eligible_axes": [
+          "physical_scarcity"
+        ],
+        "_extended": "2026-07-13: extended to physical-scarcity names (COPX). Same at-trend + voice + within-band logic; band unchanged at 3%. Companies still excluded unless on an eligible scarcity axis."
       }
     },
     "stage_decay": {
@@ -325,14 +329,20 @@
       "names": [
         "AIPO",
         "SOXX",
+        "MU",
+        "SKHY",
         "GLW",
+        "MRVL",
         "ASML"
       ],
       "raw_s1": {
         "AIPO": 85,
         "SOXX": 70,
         "GLW": 80,
-        "ASML": 88
+        "ASML": 88,
+        "MRVL": 83,
+        "MU": 82,
+        "SKHY": 84
       },
       "stage_decay": {
         "binding": 1.0,

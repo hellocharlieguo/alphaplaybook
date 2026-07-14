@@ -95,7 +95,16 @@ def _pause_carveout(sig: "SignalInput", below_200: bool) -> bool:
         return False
     if not (sig.held and below_200):
         return False
-    if sig.asset_type != "macro_hardmoney":
+    # Eligibility: hard money always; other asset types only if on an eligible scarcity
+    # axis (2026-07-13: physical-scarcity added, so COPX/SLV_P qualify). hardmoney_only
+    # kept for back-compat — when True, behaves exactly as before.
+    _elig_axes = co.get("eligible_axes", [])
+    _phys = CFG.get("three_axes", {}).get("physical_scarcity", {}).get("names", [])
+    _is_eligible = (sig.asset_type == "macro_hardmoney")
+    if not co.get("hardmoney_only", True):
+        if "physical_scarcity" in _elig_axes and sig.ticker in _phys:
+            _is_eligible = True
+    if not _is_eligible:
         return False
     if not sig.voice_conviction:
         return False
