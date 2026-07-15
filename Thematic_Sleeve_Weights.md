@@ -1,58 +1,71 @@
-# AlphaPlaybook — Thematic Sleeve Weights (LIVE)
+# AlphaPlaybook — Thematic Sleeve Weights
 
-**Frozen:** 2026-07-07 · `portfolio_version = '2026-06-29-v3.0-themes.1'` · verified in Supabase `daily_snapshots`.
-This is the first freeze off the four-axis S1 engine (see `S1_Four_Axis_Spec.md`). 13 holdings + cash, 5 display buckets. Weights drift daily off these targets; they reset only on a `PORTFOLIO_VERSION` bump (next Monday freeze).
+**Live book:** `2026-07-15-v3.3-coresat` · frozen 2026-07-15 · 14 holdings
+**Construction:** top-down (themes → pillars → names) with a **core-satellite** structure.
 
-## Live book
+---
 
-| Ticker | Bucket (display) | S1 axis | Weight |
-|---|---|---|---:|
-| AIPO | AI Compute | bottleneck | 18.0% |
-| LLY | AI Application | app-dominance | 13.5% |
-| AMZN | AI Application | app-dominance | 12.5% |
-| HOOD | Tokenization | app-dominance | 9.0% |
-| COPX | AI Compute | physical scarcity | 7.5% |
-| GLW | AI Compute | bottleneck | 7.5% |
-| ASML | AI Compute | bottleneck | 7.0% |
-| SLV | Monetary Scarcity | dual (monetary + physical) | 6.5% |
-| SGOV | Cash | — | 6.0% |
-| SOXX | AI Compute | bottleneck | 4.0% |
-| IBIT | Monetary Scarcity | monetary | 3.0% |
-| GLDM | Monetary Scarcity | monetary | 3.0% |
-| ETHA | Tokenization | monetary | 2.5% |
-| | | **Total** | **100.0%** |
+## The live book (v3.3)
 
-## Sleeve mix
+| Name | Weight | Theme | Role |
+|---|---:|---|---|
+| AIPO | 16.0% | AI Compute | **CORE** — power-infrastructure basket |
+| SOXX | 12.0% | AI Compute | **CORE** — broad semiconductor basket |
+| LLY | 10.0% | AI Application | app anchor (50/50 with AMZN) |
+| AMZN | 10.0% | AI Application | consumer-agent platform (50/50 with LLY) |
+| SKHY | 8.0% | AI Compute | memory conviction — SK Hynix HBM pure-play |
+| ASML | 7.0% | AI Compute | satellite — EUV monopoly |
+| SLV | 7.0% | Monetary Scarcity | silver (dual monetary + physical) |
+| HOOD | 6.0% | Tokenization | financial rails |
+| SGOV | 6.0% | Cash | T-bills / dry powder |
+| GLW | 4.5% | AI Compute | satellite — optical fiber (Corning) |
+| IBIT | 4.0% | Monetary Scarcity | bitcoin |
+| GLDM | 4.0% | Monetary Scarcity | gold |
+| COPX | 3.0% | AI Compute | satellite — copper miners |
+| ETHA | 2.5% | Tokenization | ethereum |
+| | **100.0%** | | |
 
-| Sleeve | Weight |
-|---|---:|
-| AI Compute (AIPO+GLW+ASML+SOXX+COPX) | 44.0% |
-| AI Application (LLY+AMZN) | 26.0% |
-| Tokenization (HOOD+ETHA) | 11.5% |
-| Monetary Scarcity (SLV+GLDM+IBIT) | 12.5% |
-| Cash (SGOV) | 6.0% |
+**Sleeve mix:** AI Compute 50.5 · AI Application 20.0 · Monetary Scarcity 15.0 · Tokenization 8.5 · Cash 6.0
 
-*(By S1 axis, not display bucket: bottleneck ~36.5%, app-dominance ~35%, scarcity ~22.5% [monetary + physical, incl. silver's split], cash 6%.)*
+---
 
-## What changed this freeze (vs the prior ~6/30 book)
+## The core-satellite structure (why the book looks like this)
 
-| Ticker | Old | New | Δ | why |
-|---|---:|---:|---:|---|
-| SOXX | 15.0% | 4.0% | −11.0 | chips cooling (decay) + engine values the chokepoint (ASML), not the diversified basket |
-| AMZN | 7.0% | 12.5% | +5.5 | application-dominance axis corrects an old voice-floor underweight |
-| ASML | 4.0% | 7.0% | +3.0 | pure EUV chokepoint (raw S1 88), engine wants it heavier |
-| COPX | 4.5% | 7.5% | +3.0 | physical-scarcity axis re-rating |
-| LLY | 13.0% | 13.5% | +0.5 | now engine-justified (dominance 68), no longer a hand-override |
-| SGOV | 5.5% | 6.0% | +0.5 | cash residual |
-| GLW | 9.0% | 7.5% | −1.5 | cooling with the semi complex |
+**Cores = diversified baskets, sized biggest.** AIPO (power) and SOXX (semis) are the two largest holdings. The logic is *early-innings breadth*: when the winners within a theme aren't yet decided, own the basket as the anchor rather than betting the sleeve on single names. This is a deliberate flip from the earlier "concentrate the resolved chokepoint" stance.
 
-One-way turnover: **12.5%**.
+**Satellites = specific chokepoints, additive to the cores.** ASML, SKHY, GLW, COPX are concentrated tilts, each chosen because SOXX does **not** meaningfully cover it:
+- **ASML** — EUV lithography monopoly; Amsterdam-listed, ~absent from SOXX's US index. The one semi chokepoint the basket doesn't give you.
+- **SKHY** — SK Hynix (50–70% of global HBM); Korean, not in SOXX. Carries the memory conviction.
+- **GLW** — Corning optical fiber; a materials name, not in the semi basket.
+- **COPX** — copper miners; not a semiconductor holding.
 
-## Mechanics
-- **Rebalance vs drift:** the cron (`daily-cron.cjs` line 1289) fires the rebalance branch when the prior snapshot's `portfolio_version` ≠ the code's `PORTFOLIO_VERSION`. Since the ticker set was unchanged, the version bump (`v3.0-themes` → `v3.0-themes.1`) is what forced the reset. Fires once, then drifts on price.
-- **Silver is dual** in the engine (SLV_M monetary + SLV_P physical) but collapses to a single **SLV** row in the live book.
-- **Regenerate** this book via the offline engine: `python3 rescore_current_v3.py` (four-axis), then freeze with `patch_base_portfolio_4axis.py`.
+**Removed as redundant:** MU (~9% of SOXX) and MRVL (~4.9% of SOXX) were dropped as standalone names — SOXX now carries that exposure. Effective memory ≈ SKHY 8 + SOXX's Micron slice ≈ 9.1%.
 
-## Standing watch
-- **FLNC** — only corroborated ZaStocks candidate (Visser holds Fluence); ~+4.9% below its 200-DMA → watch, not a seat.
-- **BTC / silver 200-DMA reclaim** — the trigger that uncaps the monetary sleeve and rotates the book mechanically.
+**Core-satellite ordering holds:** AIPO 16 > SOXX 12 > all satellites (SKHY 8, ASML 7, GLW 4.5, COPX 3).
+
+---
+
+## Key decisions embedded in v3.3
+
+- **S4 signal removed** (option-C composite weights: S1 .30 / S2 .30 / S5 .20 / S6 .10 / conv .10).
+- **Memory is a different cycle** — AI/agentic demand is secular, not the old commodity boom-bust. Micron's Q3'26 gross margin hit a record 84.9% (validated); the shortage narrative is data-confirmed, not just conviction.
+- **ASML boosted 5→7** — the monopoly kept screening underweight under pure severity scoring because severity measures "binding now," not "irreplaceable." The two-lens engine is structurally blind to moat; ASML's size is a deliberate override reflecting that.
+- **Scarcity held at theme level (15%)** despite the silver/BTC selloff — conviction is set top-down, the entry-pause is a within-theme timing note (weight returns on 200-DMA reclaim).
+
+---
+
+## Standing watch list
+
+- **BTC / silver 200-DMA reclaim** — key trigger; uncaps the monetary sleeve.
+- **VST / CEG** — power 2nd-seat candidates (note: both already inside AIPO; a standalone seat = deliberate overweight).
+- **TEM vs PLTR** — AI-Application 2nd-seat, head-to-head on a reclaim.
+- **DRAM ETF** — alternative memory vehicle (SK Hynix + Samsung + Micron) if concentrating SKHY feels too rich; carries ~14% cash drag.
+- **SKHY re-score ~Sept** — seated on thesis only (3-day-old ADR, no technicals); validate entry once it has price history.
+
+---
+
+## Notes
+
+- Weights drift daily on price; reset to these targets on a `PORTFOLIO_VERSION` change or ticker-set change.
+- SKHY carries no technicals yet (listed 2026-07-10) — thesis-seated, S5 neutral until ~50 trading days.
+- Pillar weights come from the two-lens backbone (severity × stage, no-vol); name splits within contested pillars from the composite engine. See `Weekly_Workflow_v2.docx`.
