@@ -1080,28 +1080,27 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 //   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
 // Comments after each line are the engine composite scores (UNDISCOUNTED).
 const BASE_PORTFOLIO = {
-  AIPO:  { base_weight: 16.0, theme: 'AI Compute',         action: 'Enter', }, // power pillar (basket; contested->diversified)
-  LLY:   { base_weight: 12.0, theme: 'AI Application',     action: 'Enter', }, // application dominance anchor
-  ASML:  { base_weight: 9.0, theme: 'AI Compute',         action: 'Enter', }, // CHIPS PILLAR (resolved->concentrated: EUV monopoly gets whole pillar)
-  AMZN:  { base_weight: 8.0, theme: 'AI Application',     action: 'Enter', }, // consumer-agent platform; voice floor
-  SLV:   { base_weight: 7.0, theme: 'Monetary Scarcity',  action: 'Hold', }, // monetary; theme conviction held despite selloff
-  MRVL:  { base_weight: 7.0, theme: 'AI Compute',         action: 'Enter', }, // interconnect pillar (contested); better leg
-  MU:    { base_weight: 6.5, theme: 'AI Compute',         action: 'Enter', }, // memory pillar (contested); DRAM/HBM
-  SKHY:  { base_weight: 6.5, theme: 'AI Compute',         action: 'Enter', }, // memory pillar (contested); SK Hynix ADR, no technicals yet
-  GLW:   { base_weight: 4.0, theme: 'AI Compute',         action: 'Watch', }, // interconnect (contested); fiber, stretched leg
-  IBIT:  { base_weight: 4.0, theme: 'Monetary Scarcity',  action: 'Hold', }, // theme-restored; paused below-200 (dry powder on reclaim)
-  GLDM:  { base_weight: 4.0, theme: 'Monetary Scarcity',  action: 'Hold', }, // theme-restored; paused below-200
-  HOOD:  { base_weight: 4.5, theme: 'Tokenization',       action: 'Watch', }, // 2-lens convergence
-  COPX:  { base_weight: 3.0, theme: 'AI Compute',         action: 'Hold', }, // copper satellite; carve-out exempt
-  ETHA:  { base_weight: 2.5, theme: 'Tokenization',       action: 'Hold', }, // paused below-200
+  AIPO:  { base_weight: 16.0, theme: 'AI Compute',         action: 'Enter', }, // CORE — power basket (Visser's top bottleneck)
+  SOXX:  { base_weight: 12.0, theme: 'AI Compute',         action: 'Enter', }, // CORE — broad semi basket (carries MU/MRVL/AMD/NVDA)
+  LLY:   { base_weight: 10.0, theme: 'AI Application',     action: 'Enter', }, // application anchor (50/50 with AMZN)
+  AMZN:  { base_weight: 10.0, theme: 'AI Application',     action: 'Enter', }, // consumer-agent platform (50/50 with LLY)
+  SKHY:  { base_weight: 8.0, theme: 'AI Compute',         action: 'Enter', }, // memory conviction — SK Hynix HBM pure-play; no technicals yet
+  ASML:  { base_weight: 7.0, theme: 'AI Compute',         action: 'Enter', }, // satellite — EUV MONOPOLY, additive (SOXX has ~0 ASML)
+  SLV:   { base_weight: 7.0, theme: 'Monetary Scarcity',  action: 'Hold', }, // monetary; paused below-200
+  HOOD:  { base_weight: 6.0, theme: 'Tokenization',       action: 'Enter', }, // tokenization; uptrend
   SGOV:  { base_weight: 6.0, theme: 'Cash',               action: 'Hold', min_weight: 3, }, // cash floor (min 3)
+  GLW:   { base_weight: 4.5, theme: 'AI Compute',         action: 'Enter', }, // satellite — optical fiber (Corning)
+  IBIT:  { base_weight: 4.0, theme: 'Monetary Scarcity',  action: 'Hold', }, // paused below-200
+  GLDM:  { base_weight: 4.0, theme: 'Monetary Scarcity',  action: 'Hold', }, // paused below-200
+  COPX:  { base_weight: 3.0, theme: 'AI Compute',         action: 'Hold', }, // satellite — copper; carve-out exempt
+  ETHA:  { base_weight: 2.5, theme: 'Tokenization',       action: 'Hold', }, // paused below-200
 }
 
 // Bump this on ANY engine rescore or weight change. The P&L compares it to the version
 // stored in yesterday's snapshot; a change forces a one-night rebalance-to-target.
 // Between bumps (same tickers, same version) holdings DRIFT with price — winners gain
 // weight, losers shed it. A ticker add/drop also forces a rebalance regardless.
-const PORTFOLIO_VERSION = '2026-07-13-v3.2-topdown'
+const PORTFOLIO_VERSION = '2026-07-15-v3.3-coresat'
 
 function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('\n========================================')
