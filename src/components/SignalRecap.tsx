@@ -93,12 +93,12 @@ const VOICES: VoiceSection[] = [
     name: 'Camillo',
     headline: 'BET ON WHAT PEOPLE DO, NOT WHAT MARKETS THINK',
     subtitle: 'Chris Camillo — social arbitrage and the companies AI will make dominant',
-    asOf: 'June 2026',
+    asOf: 'July 2026',
     active: true,
     themes: [
       {
         name: 'AI Application',
-        editorial: `Amazon is his anchor and the purest AI-efficiency bet — he keeps adding, citing AWS, in-house Trainium silicon, robotics, and logistics compounding into real-world margin; on 6/24 he called it the buildout of the largest logistics-and-digital infrastructure ecosystem "for the future of humanity." Robinhood is his other high-conviction hold — a top-30 position he's added on every dip into the 70s and expects to become one of the largest financial institutions in the world over 20 years (last reaffirmed 5/24).`,
+        editorial: `Amazon is his anchor and the purest AI-efficiency bet — he keeps adding, citing AWS, in-house Trainium silicon, robotics, and logistics compounding into real-world margin; on 6/24 he called it the buildout of the largest logistics-and-digital infrastructure ecosystem “for the future of humanity.” Robinhood is his other high-conviction hold, and on 7/15 he sharpened it around agentic trading — “the biggest gamechanger I’ve ever seen for brokers like Robin Hood,” one he thinks could “100x the trading volume” as AI agents trade on behalf of every retail customer and “completely change the entire industry of online brokerage.” Still a top-30 name he’s added on every dip into the 70s.`,
         tickers: ['AMZN', 'HOOD'],
         curated: true,
       },
