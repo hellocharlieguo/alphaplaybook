@@ -61,28 +61,28 @@ const VOICES: VoiceSection[] = [
     themes: [
       {
         name: 'AI Compute',
-        editorial: `Power is still the binding bottleneck — grid capacity is the supply crisis data-center demand can't outrun — but he's turned far more selective on the compute side. On 7/5 he said he'd "rotated the majority of my AI-infrastructure money, particularly on the semi side," out of the parabolic chip trade and into scarcity and the application layer, keeping only what's structurally working — power, optical, copper, and batteries as the near-term grid fix (he still holds Marvell and Fluence, and flags the Fluence–Nvidia deal as a capacity-unlock catalyst). His tell: the infrastructure trade is "consolidating," not leading — semis are the funding side now, not the driver.`,
+        editorial: `Power is still the binding bottleneck, but the compute call has flipped from defense to re-engagement: on 7/12 he said “the midcycle slowdown is ending.” He’d already cut the concentrated basket hard — “I reduced my position in a bunch of these things down significantly with Micron being the biggest one” — and rotated the proceeds into silver and Bitcoin (adds that “haven’t worked out as well”). Now, with the basket back at its 50-day and RSI reset, he’s looking to add semis back: “probably going to be buying some back at some point soon, especially after the SK Hynix deal.” The thesis anchor is unchanged — there’s no compute glut (“there is no excess capacity because Meta is selling some off”), and on 7/11 he cited Goldman’s estimate that consumer agents will burn ~30× the compute of coding agents: “if you think there is excess capacity of compute, you are absolutely wrong.”`,
         tickers: ['SOXX', 'AIPO', 'COPX', 'GLW', 'ASML'],
         bucket: 'AI Compute',
         wholeBucket: true,
       },
       {
         name: 'AI Application',
-        editorial: `His loudest June conviction — money rotating up the stack to the application layer. In his Eli Lilly paper he argues LLY could be the largest company in the US by the end of the decade, "larger than Nvidia": peptides are "this decade's API keys," and the Lily Pod (1,000+ Blackwells trained on Lilly's own data, not the internet) makes it, in his words, the most important AI company in the world. His tell: "we are moving into the application side right now — hardware is now more of a risk."`,
+        editorial: `Still his loudest conviction — money rotating up the stack — and on 7/12 he sharpened the forward call to consumer AI agents: “I’m spending a lot of my time on consumer AI agents which I think is the next theme,” pointing at agentic commerce (Stripe’s June sessions) as the tell. The anchor stays Eli Lilly: he argues LLY could become the largest US company by decade-end, “larger than Nvidia,” with peptides as “this decade’s API keys” and the Lily Pod (1,000+ Blackwells trained on Lilly’s own data) as the most important AI company in the world. His framing: hardware is now the risk side; the application layer is where the next leg compounds.`,
         tickers: ['LLY', 'AMZN'],
         bucket: 'AI Application',
         wholeBucket: true,
       },
       {
         name: 'Tokenization',
-        editorial: `Building toward Stage 4. He's telling listeners to "start listening to everything I'm talking about in crypto," arguing tokenization will unleash two-thirds of dormant real-world assets — real estate, private credit, PE, VC — as the next leg on-chain. He bought Ethereum for the tokenization reality he expects to set in over the summer, watching the BTC/ETH 50-day as the trigger.`,
+        editorial: `His build toward Stage 4 got a concrete frame on 7/12: a 40-name crypto index across 8 verticals (34 tokens, 6 public names like Circle), equal-weighted and overlaid with Bitcoin — “Bitcoin is the S&P 500 of the future of tokenization.” He’s leaning on Scott Bessent’s crypto remarks that “the capital structure of the world is changing,” and says his next framework video starts not from the AI side but from “where AI meets stablecoins, tokenization and the new financial guardrails.” The thesis is unchanged — tokenization unleashes the dormant real-world-asset base (real estate, private credit, PE, VC) as the next leg on-chain; he still watches the BTC/ETH 50-day as the trigger.`,
         tickers: ['HOOD', 'ETHA'],
         bucket: 'Tokenization',
         wholeBucket: true,
       },
       {
         name: 'Monetary Scarcity',
-        editorial: `The scarcity trade, now being actively accumulated into weakness. On 7/5 he said he'd "moved into a bunch of silver and Bitcoin names," buying the debasement selloff that Fed-hike repositioning drove — a move he thinks is wrong, since the dollar is crowded long and its unwind is "good for gold, good for silver, good for Bitcoin." Bitcoin is bottoming below its 200-day, echoing Micron's long base, with a clean trigger: "if we get above the 200-day, Bitcoin will probably lead." Silver stays the standout on a sixth-year industrial deficit. He still reads inflation as nearer a peak than an acceleration (expectations at a year-low), so this is conviction in structural debasement, not an inflation chase.`,
+        editorial: `The scarcity trade he’s been accumulating into weakness — and on 7/12 he was candid it’s early: the silver and Bitcoin adds “haven’t worked out as well.” Bitcoin is “still a bear market” technically, with “the 50-day … the next line in the sand” before the 200-day matters again. He read Saylor’s ~3,500-coin sale as a tell, not a top — Bitcoin closed higher on the news, “a positive response to bad news.” The macro setup: July is the one month he thinks the Fed might hike, but if it does it’s “one and done … 25,” with long rates falling on restored Fed credibility — a net tailwind for Bitcoin. He still frames this as structural debasement, not an inflation chase, with silver the standout on its sixth-year industrial deficit.`,
         tickers: ['SLV', 'GLDM', 'IBIT'],
         bucket: 'Monetary Scarcity',
         wholeBucket: true,
@@ -114,7 +114,7 @@ const VOICES: VoiceSection[] = [
     name: 'ZaStocks',
     headline: 'THINK BIGGER ON THE LEADERS',
     subtitle: 'ZaStocks (@ZaStocks) — technical setups and the AI market broadening beyond core semis',
-    asOf: 'wk of Jun 29 – Jul 6 · via Grok',
+    asOf: 'wk of Jul 6 – Jul 13 · via Grok',
     active: true,
     themes: [
       {
@@ -125,8 +125,8 @@ const VOICES: VoiceSection[] = [
       },
       {
         name: 'AI Compute — pre-consensus holds',
-        editorial: `His held AI-Compute names, owned before they were consensus: Arm (ARM), Marvell (MRVL), and Dell (DELL) — "positions I've owned for months… they weren't consensus leaders when I bought," now choppier as leaders but he's not selling. The counterweight this week was a caution, not a buy: on SanDisk (SNDK) he warned against chasing a name already up hundreds of percent — "picking up crumbs after the feast," contrasting a $500 cost basis with buying in at $2,000+.`,
-        tickers: ['ARM', 'MRVL', 'DELL', 'SNDK'],
+        editorial: `His pre-consensus AI-Compute holds, reiterated: Arm (ARM), Marvell (MRVL), and Dell (DELL) — “still holding a few names I bought in late March-early April … they’re not doing anything wrong besides basing. Lots of energy builds during these long consolidations.” The week’s fresh catalyst was Micron (MU): citing the SK Hynix CEO that “the memory shortage may persist past 2030 … next year is expected to be the worst year,” he called the pullback “nothing more than a pullback after a monster run” — corroborating our own memory sleeve. NVDA also flagged a textbook resistance-to-support flip (“hard to get too negative … when the king looks like this”).`,
+        tickers: ['ARM', 'MRVL', 'DELL', 'MU'],
         curated: true,
       },
       {
