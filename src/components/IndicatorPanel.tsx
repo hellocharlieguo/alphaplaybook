@@ -37,19 +37,20 @@ export default function IndicatorPanel({ entries, onToggle, theme }: Props) {
     background: 'rgba(30,29,27,0.38)', backdropFilter: 'blur(32px) saturate(132%)',
     WebkitBackdropFilter: 'blur(32px) saturate(132%)', border: '1px solid rgba(255,255,255,0.11)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', borderRadius: 16, padding: 14,
-    display: 'flex', flexDirection: 'column', maxHeight: 780, overflowY: 'auto',
+    display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: 8, alignItems: 'start',
   }
 
   return (
     <div style={glass}>
-      <div style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: theme.textTertiary, marginBottom: 10, fontWeight: 600 }}>
+      <div style={{ gridColumn: '1 / -1', fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: theme.textTertiary, marginBottom: 2, fontWeight: 600 }}>
         Indicators · toggle on chart, tap to explain
       </div>
       {entries.map((e) => {
         const open = openKeys.has(e.key)
         const disabled = !!e.unavailable
         return (
-          <div key={e.key} style={{ border: `1px solid ${theme.border}`, borderRadius: 12, marginBottom: 8, overflow: 'hidden', background: theme.surfaceSubtle, flexShrink: 0, opacity: disabled ? 0.55 : 1 }}>
+          <div key={e.key} style={{ border: `1px solid ${theme.border}`, borderRadius: 12, overflow: 'hidden', background: theme.surfaceSubtle, alignSelf: 'start', opacity: disabled ? 0.55 : 1 }}>
             <div onClick={() => toggleOpen(e.key)} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '10px 11px', cursor: 'pointer', userSelect: 'none' }}>
               <input
                 type="checkbox"

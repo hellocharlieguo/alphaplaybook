@@ -174,10 +174,10 @@ export default function TradingTab({ theme }: { theme: Theme }) {
   )
 
   const stat = (label: string, value: ReactNode, sub: ReactNode, color?: string) => (
-    <div style={{ ...glass, padding: '11px 18px' }}>
-      <div style={{ fontSize: 10.5, letterSpacing: 1, textTransform: 'uppercase', color: theme.textTertiary, fontWeight: 600, marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 19, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: color ?? theme.textPrimary, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
-      <div style={{ fontSize: 11.5, color: theme.textSecondary, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>{sub}</div>
+    <div style={{ ...glass, padding: '16px 18px' }}>
+      <div style={{ fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase', color: theme.textTertiary, fontWeight: 400, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: color ?? theme.textPrimary, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
+      <div style={{ fontSize: 11, color: theme.textTertiary, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>{sub}</div>
     </div>
   )
 
@@ -205,9 +205,8 @@ export default function TradingTab({ theme }: { theme: Theme }) {
           <>{bears} bear / {bulls} bull of {votes.length} enabled · RSI {rsiVal !== null ? rsiVal.toFixed(1) : '—'}</>)}
       </div>
 
-      {/* Landscape main: wide chart + right rail */}
-      <div className="ap-trading-main" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: 12, alignItems: 'stretch' }}>
-        <style>{`@media (max-width: 1200px) { .ap-trading-main { grid-template-columns: 1fr !important; } }`}</style>
+      {/* Chart (full width) then indicators below — Option C */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ ...glass, borderRadius: 16, padding: '16px 18px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
             <div>
