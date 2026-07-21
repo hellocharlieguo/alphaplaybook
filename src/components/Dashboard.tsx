@@ -171,7 +171,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div style={{ maxWidth: activeTab === 'trading' ? 2320 : 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
           {/* Stat Cards */}
           <div className="ap-stats">
             <StatCard label="Cumulative return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />

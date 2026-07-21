@@ -102,7 +102,7 @@ export default function TradingTab({ theme }: { theme: Theme }) {
   if (on.ma && vs200 !== null) votes.push(aboveBoth ? 'bull' : belowBoth ? 'bear' : 'neut')
   if (on.vwap && vsVwap !== null) votes.push(vsVwap >= 0 ? 'bull' : 'bear')
   if (on.vp && vp) votes.push(last >= vp.pocPrice ? 'bull' : 'bear')
-  if (on.ew) votes.push(ew.phase === 'Wave A' || ew.phase === 'Wave C' ? 'bear' : ew.phase.startsWith('New impulse') ? 'bull' : 'neut')
+  if (on.ew) votes.push(ew.bias)
   if (on.rsi && rsiNow !== null && rsiNow !== undefined) votes.push(rsiNow > 70 ? 'bear' : rsiNow < 30 ? 'bull' : 'neut')
   const bears = votes.filter((v) => v === 'bear').length
   const bulls = votes.filter((v) => v === 'bull').length
@@ -121,7 +121,7 @@ export default function TradingTab({ theme }: { theme: Theme }) {
   const entries: IndicatorEntry[] = [
     {
       key: 'ew', name: INDICATOR_DOCS.ew.name, general: INDICATOR_DOCS.ew.general,
-      reading: pill(ew.phase.toUpperCase(), ew.phase === 'Wave A' || ew.phase === 'Wave C'),
+      reading: pill(ew.phase.toUpperCase(), ew.bias === 'bear'),
       currentRead: `Best-fit count: ${ew.phase} (confidence ${ew.confidence}). ${targetsStr ? `Targets: ${targetsStr}. ` : ''}${ew.invalidation ? `Invalidation at ${fmtPrice(ew.invalidation.price)} — ${ew.invalidation.note}.` : 'No invalidation level (count indeterminate).'}`,
       enabled: on.ew,
     },
