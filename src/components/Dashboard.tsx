@@ -3,9 +3,10 @@ import { supabase } from '../supabase'
 import SignalRecap from './SignalRecap'
 import Portfolio from './Portfolio'
 import PnLTracker from './PnLTracker'
+import TradingTab from './TradingTab'
 import basaltBg from '../assets/Basalt.jpg'
 
-type Tab = 'signals' | 'portfolio' | 'pnl'
+type Tab = 'signals' | 'portfolio' | 'pnl' | 'trading'
 
 interface DailySnapshot {
   snapshot_date: string
@@ -109,6 +110,7 @@ export default function Dashboard() {
     { key: 'signals', label: 'Signals' },
     { key: 'portfolio', label: 'Portfolio' },
     { key: 'pnl', label: 'Performance' },
+    { key: 'trading', label: 'Trading' },
   ]
 
   const cumulativeReturn = latestSnapshot?.cumulative_return_pct ?? 0
@@ -169,7 +171,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
+        <div style={{ maxWidth: activeTab === 'trading' ? 2320 : 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
           {/* Stat Cards */}
           <div className="ap-stats">
             <StatCard label="Cumulative return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
@@ -204,6 +206,7 @@ export default function Dashboard() {
                 {activeTab === 'signals' && <SignalRecap snapshot={latestSnapshot} theme={t} activeVoices={activeVoices} />}
                 {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} portfolioValue={portfolioValue} />}
                 {activeTab === 'pnl' && <PnLTracker theme={t} />}
+                {activeTab === 'trading' && <TradingTab theme={t} />}
               </>
             )}
           </div>

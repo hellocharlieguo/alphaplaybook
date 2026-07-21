@@ -1615,6 +1615,64 @@ async function calculateMomentumPnL(portfolio, prices, technicals, today) {
   return { momentum_value: value, momentum_cumulative_return_pct: cum, momentum_daily_return_pct: dailyRet, momentum_members: todayMembers }
 }
 
+// ============================================================
+// TRADING TAB CANDLES (Step 5d) — daily OHLCV per Trading-tab ticker, upserted
+// to trading_candles (one row per ticker, full array in jsonb). DISPLAY-ONLY:
+// nothing here feeds the engine, the book, the P&L, or the rebalance trigger.
+// +1 Twelve Data call per ticker per night; 8s pacing keeps the free tier's
+// 8/min limit safe after computeTechnicals' burst. Skip-safe: any failure logs
+// and leaves the existing trading_candles row untouched. Phase 1 = BTC/USD.
+// ============================================================
+const TRADING_TAB_TICKERS = ['BTC/USD']
+
+async function fetchTwelveDataOHLCV(symbol, outputsize = 400) {
+  if (!TWELVE_DATA_KEY) { console.warn(`  No TWELVE_DATA_KEY — cannot fetch ${symbol} OHLCV`); return null }
+  try {
+    const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(symbol)}&interval=1day&outputsize=${outputsize}&apikey=${TWELVE_DATA_KEY}`
+    let res = await fetch(url)
+    if (res.status === 429) {
+      console.warn(`  Twelve Data ${symbol} OHLCV: rate limited (429) — backing off 60s once`)
+      await new Promise((r) => setTimeout(r, 60000))
+      res = await fetch(url)
+    }
+    if (!res.ok) { console.warn(`  Twelve Data ${symbol} OHLCV: HTTP ${res.status} — skipping`); return null }
+    const data = await res.json()
+    if (data?.status && data.status !== 'ok') {
+      console.warn(`  Twelve Data ${symbol} OHLCV: status=${data.status} (${data.message || 'no message'}) — skipping`)
+      return null
+    }
+    const rows = (data?.values || [])
+      .map((v) => ({
+        d: v.datetime,
+        o: parseFloat(v.open), h: parseFloat(v.high), l: parseFloat(v.low), c: parseFloat(v.close),
+        v: v.volume != null ? parseFloat(v.volume) : 0,
+      }))
+      .filter((r) => r.d && [r.o, r.h, r.l, r.c].every(Number.isFinite))
+      .reverse() // newest-first from TD -> ascending
+    if (rows.length < 220) { console.warn(`  Twelve Data ${symbol} OHLCV: only ${rows.length} rows (<220 for a 200-DMA window) — skipping`); return null }
+    return rows
+  } catch (e) {
+    console.warn(`  Twelve Data ${symbol} OHLCV: fetch error — ${e.message} — skipping`); return null
+  }
+}
+
+async function updateTradingCandles() {
+  console.log('\n========================================')
+  console.log('STEP 5d: TRADING TAB CANDLES (Twelve Data OHLCV)')
+  console.log('========================================')
+  for (const sym of TRADING_TAB_TICKERS) {
+    await new Promise((r) => setTimeout(r, 8000)) // pace after computeTechnicals' TD burst
+    const candles = await fetchTwelveDataOHLCV(sym, 400)
+    if (!candles) { console.warn(`  ${sym}: no candles — trading_candles row left as-is`); continue }
+    const { error } = await supabase.from('trading_candles').upsert(
+      { ticker: sym, candles, updated_at: new Date().toISOString() },
+      { onConflict: 'ticker', ignoreDuplicates: false }
+    )
+    if (error) console.error(`  ${sym}: upsert error — ${error.message}`)
+    else console.log(`  ${sym}: ${candles.length} candles upserted (latest ${candles[candles.length - 1].d})`)
+  }
+}
+
 async function writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals, technicals, momentum) {
   console.log('\n========================================')
   console.log('WRITING DAILY SNAPSHOT')
@@ -1783,6 +1841,9 @@ async function main() {
       // Step 5c: Momentum sleeve P&L (above-200-DMA subset of Thematic)
       const momentum = await calculateMomentumPnL(portfolio, prices, technicals, TODAY)
 
+      // Step 5d: Trading tab candle cache (display-only; never feeds engine/P&L)
+      await updateTradingCandles()
+
       // Step 6: Write complete daily snapshot
       await writeDailySnapshot(narrativeSignals, crowdSignals, quantResult, bullishAssets, portfolio, pnl, macroSignals, technicals, momentum)
     }
@@ -1821,4 +1882,5 @@ module.exports = {
   computeTechnicals,
   fetchClevelandNowcast,
   fetchKalshiCPI,
+  updateTradingCandles,
 }
