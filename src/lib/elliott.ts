@@ -63,7 +63,7 @@ interface ImpulseHit { i: number; fib: number; score: number; endPivotIdx: numbe
 // All three hard rules mirror via the sign: signed wave lengths d*(delta) must be
 // positive; W2 not a full retrace: d*(p2-p0) > 0; W4 no overlap: d*(p4-p1) > 0;
 // progression: d*(p3-p1) > 0 and d*(p5-p3) > 0. Fib retraces use the same signs.
-function findImpulse(piv: Pivot[], d: 1 | -1): ImpulseHit | null {
+function findImpulse(piv: Pivot[], d: 1 | -1, nCandles: number): ImpulseHit | null {
   const startKind = d === 1 ? 'L' : 'H'
   const altKind = d === 1 ? 'H' : 'L'
   let best: ImpulseHit | null = null
@@ -85,8 +85,14 @@ function findImpulse(piv: Pivot[], d: 1 | -1): ImpulseHit | null {
     if (x3 >= 1.382 && x3 <= 2.618) fib++
     const r4 = (d * (p[3].price - p[4].price)) / w3
     if (r4 >= 0.236 && r4 <= 0.5) fib++
+    // RECENCY-DOMINANT score (fix 7/21): an old clean impulse used to beat the
+    // recent structure because the tiebreaker was tiny. Now recency is the primary
+    // term — how close the wave-5 pivot's CANDLE index is to the right edge, 0..40 —
+    // with fib conformance (0..6) and span (0..5) as secondary. This anchors the
+    // count on where price IS, not a months-old completed wave.
+    const recency = (p[5].idx / Math.max(1, nCandles - 1)) * 40
     const span = d * (p[5].price - p[0].price)
-    const score = fib * 10 + i + (span / p[5].price) * 5
+    const score = recency + fib * 2 + (span / p[5].price) * 5
     if (!best || score > best.score) best = { i, fib, score, endPivotIdx: p[5].idx, d }
   }
   return best
@@ -100,9 +106,9 @@ export function elliottCount(candles: Candle[]): ElliottResult {
   for (const pct of [0.06, 0.045, 0.03]) {
     piv = zigzag(candles, pct)
     if (piv.length < 6) continue
-    const up = findImpulse(piv, 1)
-    const dn = findImpulse(piv, -1)
-    // Prefer the more RECENT structure (later wave-5 pivot); tie-break on score.
+    const up = findImpulse(piv, 1, candles.length)
+    const dn = findImpulse(piv, -1, candles.length)
+    // Prefer the more RECENT structure (later wave-5 candle); tie-break on score.
     hit = up && dn
       ? (up.endPivotIdx !== dn.endPivotIdx ? (up.endPivotIdx > dn.endPivotIdx ? up : dn) : (up.score >= dn.score ? up : dn))
       : (up || dn)

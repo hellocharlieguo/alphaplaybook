@@ -143,7 +143,7 @@ const VOICES: VoiceSection[] = [
 
 export default function SignalRecap({ snapshot, theme: t, activeVoices }: SignalRecapProps) {
   if (!snapshot) {
-    return <div style={{ textAlign: 'center', padding: '64px 0', color: t.textTertiary, fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>Awaiting first signal...</div>
+    return <div style={{ textAlign: 'center', padding: '64px 0', color: t.textTertiary, fontFamily: "'Inter', sans-serif", fontStyle: 'italic' }}>Awaiting first signal...</div>
   }
 
   const crowdSignals = snapshot.polymarket_signals || []
@@ -167,10 +167,10 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
     <div key={voice.name} style={{ ...glass, borderRadius: 14, padding: '24px 28px', flexGrow: 1 }}>
       {/* Voice headline — newspaper style */}
       <div style={{ borderBottom: `2px solid ${t.ruleLine}`, paddingBottom: 16, marginBottom: 20 }}>
-        <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 900, margin: 0, lineHeight: 1.15, color: t.textPrimary, letterSpacing: 0.5 }}>
+        <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: 26, fontWeight: 900, margin: 0, lineHeight: 1.15, color: t.textPrimary, letterSpacing: 0.5 }}>
           {voice.headline}
         </h2>
-        <p style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 13, color: t.textSecondary, margin: '8px 0 0', fontStyle: 'italic' }}>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: t.textSecondary, margin: '8px 0 0', fontStyle: 'italic' }}>
           {voice.subtitle}
         </p>
         <span style={{ display: 'inline-block', marginTop: 8, fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
@@ -184,12 +184,12 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
       {voice.themes.map((theme, i) => (
         <div key={i} style={{ marginBottom: i < voice.themes.length - 1 ? 20 : 0 }}>
           {/* Theme name as section header */}
-          <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 17, fontWeight: 700, margin: '0 0 8px', color: t.textPrimary }}>
+          <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: 17, fontWeight: 700, margin: '0 0 8px', color: t.textPrimary }}>
             {theme.name}
           </h3>
 
           {/* Editorial paragraph */}
-          <p style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 13, lineHeight: 1.7, color: t.textSecondary, margin: 0, textAlign: 'justify' }}>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, lineHeight: 1.7, color: t.textSecondary, margin: 0, textAlign: 'justify' }}>
             {theme.editorial}
           </p>
 
@@ -220,7 +220,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
       )}
 
       {visibleVoices.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: t.textTertiary, fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic', marginBottom: 24 }}>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: t.textTertiary, fontFamily: "'Inter', sans-serif", fontStyle: 'italic', marginBottom: 24 }}>
           Select a voice above to see their investment thesis.
         </div>
       )}
@@ -232,24 +232,24 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: ACCENT }} />
-              <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, fontFamily: "'Playfair Display', Georgia, serif" }}>Crowd Signals</span>
-              <span style={{ fontSize: 10, color: t.textTertiary, fontStyle: 'italic', fontFamily: "'Libre Baskerville', Georgia, serif" }}>via Kalshi</span>
+              <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, fontFamily: "'Inter', sans-serif" }}>Crowd Signals</span>
+              <span style={{ fontSize: 10, color: t.textTertiary, fontStyle: 'italic', fontFamily: "'Inter', sans-serif" }}>via Kalshi</span>
             </div>
             <span style={{ fontSize: 11, color: t.textTertiary }}>{crowdSignals.length} markets{(crowdSignals[0] as any)?.as_of ? ' · as of ' + new Date((crowdSignals[0] as any).as_of).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) : ''}</span>
           </div>
           {crowdSignals.length === 0 ? (
-            <div style={{ fontSize: 13, color: t.textTertiary, padding: '16px 0', fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>No crowd signals today.</div>
+            <div style={{ fontSize: 13, color: t.textTertiary, padding: '16px 0', fontFamily: "'Inter', sans-serif", fontStyle: 'italic' }}>No crowd signals today.</div>
           ) : (
             <div>
               {stdCrowd.slice(0, 6).map((s: any, i: number) => (
                 <div key={i} style={{ padding: '10px 0', borderBottom: i < Math.min(stdCrowd.length, 6) - 1 ? `1px solid ${t.border}` : 'none' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
-                    <span style={{ fontSize: 12, color: t.textSecondary, flex: 1, lineHeight: 1.3, fontFamily: "'Libre Baskerville', Georgia, serif" }}>{s.market}</span>
+                    <span style={{ fontSize: 12, color: t.textSecondary, flex: 1, lineHeight: 1.3, fontFamily: "'Inter', sans-serif" }}>{s.market}</span>
                     <span style={{ fontSize: 13, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary, flexShrink: 0 }}>{(s.probability * 100).toFixed(0)}%</span>
                   </div>
                   {(s.read || s.close_time) && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginTop: 2 }}>
-                    <span style={{ fontSize: 11, color: t.textTertiary, fontStyle: 'italic', fontFamily: "'Libre Baskerville', Georgia, serif" }}>{s.read}</span>
+                    <span style={{ fontSize: 11, color: t.textTertiary, fontStyle: 'italic', fontFamily: "'Inter', sans-serif" }}>{s.read}</span>
                     {s.close_time && <span style={{ fontSize: 10, color: t.textTertiary, flexShrink: 0, opacity: 0.9, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>resolves {new Date(s.close_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</span>}
                   </div>
                 )}
@@ -258,18 +258,18 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
               {spAddSignal && spAddSignal.sp500_add && (
                 <div style={{ padding: '12px 0 2px', borderTop: `1px solid ${t.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
-                    <span style={{ fontSize: 12, color: t.textSecondary, lineHeight: 1.3, fontFamily: "'Libre Baskerville', Georgia, serif" }}>
+                    <span style={{ fontSize: 12, color: t.textSecondary, lineHeight: 1.3, fontFamily: "'Inter', sans-serif" }}>
                       Next S&amp;P 500 additions
                       {spAddSignal.sp500_add.quarter && <span style={{ fontSize: 9, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: ACCENT, border: `1px solid ${ACCENT}66`, borderRadius: 4, padding: '1px 5px', marginLeft: 6, verticalAlign: 1 }}>{spAddSignal.sp500_add.quarter}</span>}
                     </span>
                     {spAddSignal.close_time && <span style={{ fontSize: 10, color: t.textTertiary, flexShrink: 0, opacity: 0.9, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>resolves {new Date(spAddSignal.close_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</span>}
                   </div>
-                  <div style={{ fontSize: 11, color: t.textTertiary, fontStyle: 'italic', fontFamily: "'Libre Baskerville', Georgia, serif", margin: '2px 0 8px' }}>{spAddSignal.read || 'index-inclusion odds, top 5'}</div>
+                  <div style={{ fontSize: 11, color: t.textTertiary, fontStyle: 'italic', fontFamily: "'Inter', sans-serif", margin: '2px 0 8px' }}>{spAddSignal.read || 'index-inclusion odds, top 5'}</div>
                   {(spAddSignal.sp500_add.top || []).map((n: any, j: number) => (
                     <div key={j} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '2.5px 0' }}>
                       <span style={{ fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>
                         {n.ticker}
-                        <span style={{ fontSize: 11, color: t.textTertiary, marginLeft: 8, fontFamily: "'Libre Baskerville', Georgia, serif" }}>{n.company}</span>
+                        <span style={{ fontSize: 11, color: t.textTertiary, marginLeft: 8, fontFamily: "'Inter', sans-serif" }}>{n.company}</span>
                         {SP_ADD_TAGS[n.ticker] && <span style={{ fontSize: 9.5, marginLeft: 8, color: SP_ADD_TAGS[n.ticker].color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{SP_ADD_TAGS[n.ticker].label}</span>}
                       </span>
                       <span style={{ fontSize: 13, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary, flexShrink: 0 }}>{Math.round(n.prob * 100)}%</span>
@@ -286,10 +286,10 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
         <div style={{ ...glass, borderRadius: 14, padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#5ba3c9' }} />
-            <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, fontFamily: "'Playfair Display', Georgia, serif" }}>Quant Signal</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: t.textSecondary, fontFamily: "'Inter', sans-serif" }}>Quant Signal</span>
           </div>
           {!hasQuant ? (
-            <div style={{ fontSize: 13, color: t.textTertiary, padding: '16px 0', fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>No quant data today.</div>
+            <div style={{ fontSize: 13, color: t.textTertiary, padding: '16px 0', fontFamily: "'Inter', sans-serif", fontStyle: 'italic' }}>No quant data today.</div>
           ) : (
             <>
               {macro?.spy && (
@@ -333,7 +333,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <span style={{ fontSize: 13, color: t.textTertiary }}>CPI</span>
-                      <span style={{ fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', background: t.badgeBg, color: t.badgeText, padding: '2px 6px', borderRadius: 3, fontFamily: "'Playfair Display', Georgia, serif" }}>official</span>
+                      <span style={{ fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', background: t.badgeBg, color: t.badgeText, padding: '2px 6px', borderRadius: 3, fontFamily: "'Inter', sans-serif" }}>official</span>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <span style={{ fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary }}>{macro.cpi?.yoy != null ? `${macro.cpi.yoy.toFixed(1)}%` : '—'}</span>
@@ -349,7 +349,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <span style={{ fontSize: 13, color: t.textTertiary }}>Cleveland Fed nowcast</span>
-                      <span style={{ fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', background: 'rgba(91,163,201,0.16)', color: '#5ba3c9', padding: '2px 6px', borderRadius: 3, fontFamily: "'Playfair Display', Georgia, serif" }}>forecast</span>
+                      <span style={{ fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', background: 'rgba(91,163,201,0.16)', color: '#5ba3c9', padding: '2px 6px', borderRadius: 3, fontFamily: "'Inter', sans-serif" }}>forecast</span>
                     </div>
                     <span style={{ fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: macro.nowcast?.yoy != null ? (macro.nowcast.yoy >= 4 ? t.negative : t.textPrimary) : t.textTertiary }}>{macro.nowcast?.yoy != null ? `${macro.nowcast.yoy.toFixed(1)}%` : '—'}</span>
                   </div>
@@ -364,7 +364,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                           <span style={{ fontSize: 13, color: t.textTertiary }}>Kalshi</span>
-                          <span style={{ fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', background: 'rgba(224,145,92,0.16)', color: '#e0915c', padding: '2px 6px', borderRadius: 3, fontFamily: "'Playfair Display', Georgia, serif" }}>market</span>
+                          <span style={{ fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', background: 'rgba(224,145,92,0.16)', color: '#e0915c', padding: '2px 6px', borderRadius: 3, fontFamily: "'Inter', sans-serif" }}>market</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                           <span style={{ fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: macro.kalshi.point_estimate >= 4 ? t.negative : t.textPrimary }}>{macro.kalshi.point_estimate.toFixed(1)}%</span>
@@ -384,13 +384,13 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
                   {macro.regime && (
                     <div style={{ background: macro.regime.above ? 'rgba(201,112,90,0.13)' : 'rgba(125,186,106,0.12)', border: `1px solid ${macro.regime.above ? 'rgba(201,112,90,0.3)' : 'rgba(125,186,106,0.3)'}`, borderRadius: 7, padding: '12px 14px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
-                        <span style={{ fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase', color: macro.regime.above ? t.negative : t.positive, fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 700 }}>{macro.regime.above ? 'Above 4% regime' : 'Below 4% regime'}</span>
+                        <span style={{ fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase', color: macro.regime.above ? t.negative : t.positive, fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>{macro.regime.above ? 'Above 4% regime' : 'Below 4% regime'}</span>
                         <span style={{ fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: macro.regime.above ? t.negative : t.positive }}>{macro.regime.value?.toFixed(1)}% {macro.regime.above ? '>' : '<'} {macro.regime.threshold?.toFixed(1)}%</span>
                       </div>
                       {macro.regime.votes_above != null && macro.regime.legs_total != null && (
                         <div style={{ fontSize: 10, color: macro.regime.above ? t.negative : t.positive, fontFamily: 'ui-monospace, SFMono-Regular, monospace', opacity: 0.85, marginBottom: 6 }}>{macro.regime.votes_above} of {macro.regime.legs_total} legs ≥ {macro.regime.threshold?.toFixed(1)}%</div>
                       )}
-                      <p style={{ margin: 0, fontSize: 12, color: t.textSecondary, fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic', lineHeight: 1.6 }}>{macro.regime.note}.</p>
+                      <p style={{ margin: 0, fontSize: 12, color: t.textSecondary, fontFamily: "'Inter', sans-serif", fontStyle: 'italic', lineHeight: 1.6 }}>{macro.regime.note}.</p>
                     </div>
                   )}
                 </div>

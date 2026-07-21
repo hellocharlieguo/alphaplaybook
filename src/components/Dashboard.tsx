@@ -126,8 +126,12 @@ export default function Dashboard() {
       <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, background: 'linear-gradient(180deg, rgba(14,14,16,0.52) 0%, rgba(14,14,16,0.30) 26%, rgba(14,14,16,0.34) 70%, rgba(14,14,16,0.42) 100%)' }} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
         <style>{`
+          * { font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif; }
+          body, input, button { font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif; }
           input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: ${t.sliderTrack}; outline: none; cursor: pointer; }
           input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
           input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
@@ -158,7 +162,7 @@ export default function Dashboard() {
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', position: 'relative', marginBottom: 8 }}>
               <div style={{ textAlign: 'center' }}>
-                <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 900, margin: 0, letterSpacing: 2, lineHeight: 1, color: t.textPrimary, textShadow: '0 2px 18px rgba(0,0,0,0.5)' }}>
+                <h1 style={{ fontFamily: "'Inter', sans-serif", fontSize: 40, fontWeight: 900, margin: 0, letterSpacing: 2, lineHeight: 1, color: t.textPrimary, textShadow: '0 2px 18px rgba(0,0,0,0.5)' }}>
                   ALPHA PLAYBOOK
                 </h1>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 8 }}>
@@ -211,7 +215,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          <footer style={{ marginTop: 48, paddingTop: 24, borderTop: `1px solid ${t.border}`, textAlign: 'center', fontSize: 11, color: t.textTertiary, paddingBottom: 32, fontFamily: "'Libre Baskerville', Georgia, serif", fontStyle: 'italic' }}>
+          <footer style={{ marginTop: 48, paddingTop: 24, borderTop: `1px solid ${t.border}`, textAlign: 'center', fontSize: 11, color: t.textTertiary, paddingBottom: 32, fontFamily: "'Inter', sans-serif", fontStyle: 'italic' }}>
             Not financial advice. For educational and portfolio demonstration purposes only.
           </footer>
         </div>
@@ -224,7 +228,7 @@ function StatCard({ label, value, color, sub, t }: { label: string; value: strin
   return (
     <div style={{ background: 'rgba(30,29,27,0.38)', backdropFilter: 'blur(32px) saturate(132%)', WebkitBackdropFilter: 'blur(32px) saturate(132%)', border: '1px solid rgba(255,255,255,0.11)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
+      <div style={{ fontSize: 22, fontWeight: 600, color, fontFamily: "'Inter', sans-serif", fontVariantNumeric: 'tabular-nums' }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2, textTransform: 'capitalize' }}>{sub}</div>}
     </div>
   )
@@ -235,9 +239,9 @@ function PortfolioValueCard({ input, onInput, onCommit, t }: { input: string; on
     <div style={{ background: 'rgba(30,29,27,0.38)', backdropFilter: 'blur(32px) saturate(132%)', WebkitBackdropFilter: 'blur(32px) saturate(132%)', border: '1px solid rgba(255,255,255,0.11)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Portfolio value</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 20, fontWeight: 500, color: t.textTertiary, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>$</span>
+        <span style={{ fontSize: 20, fontWeight: 600, color: t.textTertiary, fontFamily: "'Inter', sans-serif" }}>$</span>
         <input type="text" inputMode="numeric" value={input} onChange={(e) => onInput(e.target.value)} onBlur={onCommit} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
-          style={{ flex: 1, minWidth: 0, fontSize: 20, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '2px 8px', color: t.textPrimary, outline: 'none' }} />
+          style={{ flex: 1, minWidth: 0, fontSize: 20, fontWeight: 600, fontFamily: "'Inter', sans-serif", fontVariantNumeric: 'tabular-nums', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '2px 8px', color: t.textPrimary, outline: 'none' }} />
       </div>
       <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 4, fontStyle: 'italic' }}>Sizing only — live engine weights</div>
     </div>
@@ -259,7 +263,7 @@ function InflationRegimeCard({ regime, t }: { regime: any; t: Theme }) {
     <div style={{ background: 'rgba(30,29,27,0.38)', backdropFilter: 'blur(32px) saturate(132%)', WebkitBackdropFilter: 'blur(32px) saturate(132%)', border: '1px solid rgba(255,255,255,0.11)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Inflation regime</div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <span style={{ fontSize: 22, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</span>
+        <span style={{ fontSize: 22, fontWeight: 600, color, fontFamily: "'Inter', sans-serif", fontVariantNumeric: 'tabular-nums' }}>{value}</span>
         {has && (
           <span style={{ alignSelf: 'center', fontSize: 9.5, letterSpacing: 0.5, color: pillColors.text, background: pillColors.bg, border: `1px solid ${pillColors.border}`, padding: '2px 7px', borderRadius: 5 }}>{pill}</span>
         )}

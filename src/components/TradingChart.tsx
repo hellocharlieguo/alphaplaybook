@@ -54,15 +54,19 @@ export default function TradingChart({ candles, theme, on, sma50, sma200, vwap, 
       const showVWAP = on.vwap && vwap.some((x) => x !== null)
 
       const rsiH = on.rsi ? Math.round(h * 0.15) : 0
-      const mainH = h - rsiH - (rsiH ? 14 : 0)
-      const padR = showVP ? Math.min(150, Math.max(90, w * 0.07)) : 14
       const padL = 62
       const padT = 14
-      const padB = 20
+      const padB = 34 // room for the date axis row
+      const mainH = h - rsiH - (rsiH ? 14 : 0)
+      const padR = showVP ? Math.min(150, Math.max(90, w * 0.07)) : 14
 
-      // Domains: include projection extension and target levels.
-      const projMax = ew.projection.length ? Math.max(...ew.projection.map((p) => p.idx)) + 8 : N + 6
-      const xMax = Math.max(N + 6, on.ew ? projMax : N + 6)
+      // Domains: reserve forward space so the projection + C target render IN-VIEW.
+      // Always keep >=40 candles of forward room on the right (the projection zone),
+      // even when EW is off, so toggling it doesn't reflow the x-axis.
+      const FWD = 44
+      const projMax = ew.projection.length ? Math.max(...ew.projection.map((p) => p.idx)) + 6 : N + FWD
+      const labelMax = ew.labels.length ? Math.max(...ew.labels.map((l) => l.idx)) + 4 : N
+      const xMax = Math.max(N + FWD, on.ew ? Math.max(projMax, labelMax) : N + FWD)
       const X = (i: number) => padL + (i / xMax) * (w - padL - padR)
       const priceCandidates = [
         ...candles.map((c) => c.l), ...candles.map((c) => c.h),
@@ -75,6 +79,22 @@ export default function TradingChart({ candles, theme, on, sma50, sma200, vwap, 
       const Y = (p: number) => padT + (1 - (p - pLo) / (pHi - pLo)) * (mainH - padT - padB)
 
       ctx.clearRect(0, 0, w, h)
+
+      // Forward-projection zone: faint shading to the right of the last actual
+      // candle, so "where we're going" is visually distinct from actual history.
+      const xNow = X(N - 1)
+      if (on.ew && ew.projection.length > 1) {
+        ctx.fillStyle = 'rgba(224,145,92,0.04)'
+        ctx.fillRect(xNow, padT, (w - padR) - xNow, mainH - padT - padB)
+        ctx.strokeStyle = 'rgba(224,145,92,0.25)'
+        ctx.setLineDash([2, 3])
+        ctx.beginPath(); ctx.moveTo(xNow, padT); ctx.lineTo(xNow, mainH - padB); ctx.stroke()
+        ctx.setLineDash([])
+        ctx.fillStyle = 'rgba(224,145,92,0.5)'
+        ctx.font = '9.5px -apple-system, sans-serif'
+        ctx.fillText('projected \u2192', xNow + 5, padT + 11)
+        ctx.font = '10.5px -apple-system, sans-serif'
+      }
 
       // Grid + y labels
       const step = niceStep((pHi - pLo) / 6)
@@ -197,7 +217,38 @@ export default function TradingChart({ candles, theme, on, sma50, sma200, vwap, 
       ctx.fillRect(w - padR - 66, Y(last) - 9, 62, 17)
       ctx.fillStyle = theme.bg
       ctx.font = 'bold 10.5px -apple-system, sans-serif'
-      ctx.fillText(fmtPrice(last), w - padR - 61, Y(last) + 4)
+      ctx.font = '10.5px -apple-system, sans-serif'
+
+      // Date axis along the bottom of the main pane. ~6 evenly spaced ticks reading
+      // the candle's date; a final tick marks the projection horizon if EW is on.
+      const axisY = mainH - padB + 14
+      ctx.fillStyle = 'rgba(255,255,255,0.4)'
+      ctx.textAlign = 'center'
+      ctx.font = '10px -apple-system, sans-serif'
+      const fmtDate = (s: string) => {
+        // 'YYYY-MM-DD' -> 'Mon 'YY' style short label, robust to odd strings.
+        const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s))
+        if (!m) return String(s).slice(0, 6)
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        return `${months[Math.max(0, Math.min(11, parseInt(m[2], 10) - 1))]} ${m[3]}`
+      }
+      const TICKS = 6
+      for (let k = 0; k <= TICKS; k++) {
+        const i = Math.round((k / TICKS) * (N - 1))
+        const x = X(i)
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)'
+        ctx.beginPath(); ctx.moveTo(x, mainH - padB); ctx.lineTo(x, mainH - padB + 4); ctx.stroke()
+        ctx.fillStyle = 'rgba(255,255,255,0.4)'
+        ctx.fillText(fmtDate(candles[i].d), x, axisY)
+      }
+      // Projection-horizon tick (dashed accent), if a forward path exists.
+      if (on.ew && ew.projection.length > 1) {
+        const horizonIdx = Math.max(...ew.projection.map((p) => p.idx))
+        const x = X(horizonIdx)
+        ctx.fillStyle = 'rgba(224,145,92,0.6)'
+        ctx.fillText('proj.', x, axisY)
+      }
+      ctx.textAlign = 'left'
       ctx.font = '10.5px -apple-system, sans-serif'
 
       // RSI sub-pane
