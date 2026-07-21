@@ -1623,12 +1623,15 @@ async function calculateMomentumPnL(portfolio, prices, technicals, today) {
 // 8/min limit safe after computeTechnicals' burst. Skip-safe: any failure logs
 // and leaves the existing trading_candles row untouched. Phase 1 = BTC/USD.
 // ============================================================
-const TRADING_TAB_TICKERS = ['BTC/USD']
+// Each ticker may name a preferred exchange so the crypto feed returns real volume
+// (the aggregate BTC/USD symbol reports volume=0, which disables Volume Profile/VWAP).
+const TRADING_TAB_TICKERS = [{ symbol: 'BTC/USD', exchange: 'Coinbase Pro' }]
 
-async function fetchTwelveDataOHLCV(symbol, outputsize = 400) {
+async function fetchTwelveDataOHLCV(symbol, outputsize = 400, exchange = null) {
   if (!TWELVE_DATA_KEY) { console.warn(`  No TWELVE_DATA_KEY — cannot fetch ${symbol} OHLCV`); return null }
   try {
-    const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(symbol)}&interval=1day&outputsize=${outputsize}&apikey=${TWELVE_DATA_KEY}`
+    const exParam = exchange ? `&exchange=${encodeURIComponent(exchange)}` : ''
+    const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(symbol)}&interval=1day&outputsize=${outputsize}${exParam}&apikey=${TWELVE_DATA_KEY}`
     let res = await fetch(url)
     if (res.status === 429) {
       console.warn(`  Twelve Data ${symbol} OHLCV: rate limited (429) — backing off 60s once`)
@@ -1660,16 +1663,28 @@ async function updateTradingCandles() {
   console.log('\n========================================')
   console.log('STEP 5d: TRADING TAB CANDLES (Twelve Data OHLCV)')
   console.log('========================================')
-  for (const sym of TRADING_TAB_TICKERS) {
+  for (const t of TRADING_TAB_TICKERS) {
+    const sym = typeof t === 'string' ? t : t.symbol
+    const exchange = typeof t === 'string' ? null : t.exchange
     await new Promise((r) => setTimeout(r, 8000)) // pace after computeTechnicals' TD burst
-    const candles = await fetchTwelveDataOHLCV(sym, 400)
+    // Exchange feed first (real volume); fall back to the aggregate on empty/zero-volume.
+    let candles = exchange ? await fetchTwelveDataOHLCV(sym, 400, exchange) : null
+    const hasVol = candles && candles.some((c) => c.v > 0)
+    if (!candles || !hasVol) {
+      if (exchange) {
+        await new Promise((r) => setTimeout(r, 8000))
+        console.warn(`  ${sym}: ${exchange} feed ${candles ? 'had no volume' : 'failed'} — falling back to aggregate`)
+      }
+      candles = await fetchTwelveDataOHLCV(sym, 400) || candles
+    }
     if (!candles) { console.warn(`  ${sym}: no candles — trading_candles row left as-is`); continue }
+    const volNote = candles.some((c) => c.v > 0) ? 'with volume' : 'NO volume (VP/VWAP will be hidden)'
     const { error } = await supabase.from('trading_candles').upsert(
       { ticker: sym, candles, updated_at: new Date().toISOString() },
       { onConflict: 'ticker', ignoreDuplicates: false }
     )
     if (error) console.error(`  ${sym}: upsert error — ${error.message}`)
-    else console.log(`  ${sym}: ${candles.length} candles upserted (latest ${candles[candles.length - 1].d})`)
+    else console.log(`  ${sym}: ${candles.length} candles upserted, ${volNote} (latest ${candles[candles.length - 1].d})`)
   }
 }
 
