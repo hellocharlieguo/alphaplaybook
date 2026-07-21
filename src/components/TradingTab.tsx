@@ -176,7 +176,7 @@ export default function TradingTab({ theme }: { theme: Theme }) {
   const stat = (label: string, value: ReactNode, sub: ReactNode, color?: string) => (
     <div style={{ ...glass, padding: '16px 18px' }}>
       <div style={{ fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase', color: theme.textTertiary, fontWeight: 400, marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: color ?? theme.textPrimary, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
+     <div style={{ fontSize: 22, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: color ?? theme.textPrimary, fontFamily: "'Manrope', sans-serif" }}>{value}</div>
       <div style={{ fontSize: 11, color: theme.textTertiary, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>{sub}</div>
     </div>
   )
@@ -199,7 +199,7 @@ export default function TradingTab({ theme }: { theme: Theme }) {
         {stat('vs 200-DMA', vs200 !== null ? `${vs200 >= 0 ? '+' : ''}${vs200.toFixed(1)}%` : '—',
           <>200: {sma200Now !== null ? fmtPrice(sma200Now) : '—'} · 50: {sma50Now !== null ? fmtPrice(sma50Now) : '—'}{belowBoth ? ' · below both → monetary sleeve capped' : aboveBoth ? ' · above both → uncap trigger zone' : ''}</>,
           vs200 !== null ? (vs200 >= 0 ? theme.positive : theme.negative) : undefined)}
-        {stat('EW Phase', <span style={{ color: theme.accent }}>{ew.phase}</span>,
+        {stat('EW Phase', <span style={{ color: theme.accent, fontSize: 15, fontWeight: 700, lineHeight: 1.2, display: 'inline-block' }}>{ew.phase}</span>,
           <>{targetsStr || 'no active targets'}{ew.invalidation ? ` · invalid > ${fmtPrice(ew.invalidation.price)}` : ''} · conf {ew.confidence}</>)}
         {stat('Composite', pill(composite, compositeBear),
           <>{bears} bear / {bulls} bull of {votes.length} enabled · RSI {rsiVal !== null ? rsiVal.toFixed(1) : '—'}</>)}
