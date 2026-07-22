@@ -143,20 +143,34 @@ export function elliottCount(candles: Candle[]): ElliottResult {
   if (d * (lastClose - p5.price) > 0) {
     const L = Math.abs(p5.price - imp[0].price)   // prior impulse length
     const anchor = A ? A.price : p5.price          // new impulse starts at the correction extreme
+    // Targets must be AHEAD of price and at least 2% away — a level sitting on top of
+    // spot is noise, not a target.
     const ladder = [0.382, 0.618, 1.0, 1.618, 2.618]
     const ahead = ladder
-      .map((m) => ({ label: `${m}\u00d7 impulse`, price: anchor + d * m * L }))
-      .filter((t) => d * (t.price - lastClose) > 0)
-    const targets = ahead.slice(0, 2)
-    const t1 = targets[0] ? targets[0].price : lastClose + d * 0.35 * L
-    const t2raw = targets[1] ? targets[1].price : t1 + d * 0.6 * L
+      .map((m) => ({ mult: m, price: anchor + d * m * L }))
+      .filter((t) => d * (t.price - lastClose) > 0 && Math.abs(t.price - lastClose) / Math.abs(lastClose) > 0.02)
+    const picked = ahead.slice(0, 2)
+    const t1 = picked[0] ? picked[0].price : lastClose + d * 0.35 * L
+    const t2raw = picked[1] ? picked[1].price : t1 + d * 0.6 * L
     // Clamp the DRAWN path to <=22% beyond spot. A full measured move can be far away;
     // letting it into the chart's price domain would squash the real candles. The
     // numeric target list still reports the true level.
     const cap = lastClose + d * 0.22 * Math.abs(lastClose)
     const t2 = d * (t2raw - cap) > 0 ? cap : t2raw
     const retrace = t1 - d * 0.28 * Math.abs(t1 - lastClose) // counter-trend pause between legs
-    labels.push({ idx: lastIdx + 34, price: t2, label: '\u2192', dir: d === 1 ? 1 : -1 })
+    // Name targets by the wave they'd complete, keeping the fib basis visible.
+    const targets = picked.map((t, k) => ({
+      label: k === 0 ? `W1 target (${t.mult}\u00d7)` : `W3 target (${t.mult}\u00d7)`,
+      price: t.price,
+    }))
+    // The A high/low is the invalidation reference — label it so the note makes sense.
+    if (A) labels.push({ idx: A.idx, price: A.price, label: 'A', dir: A.kind === 'H' ? 1 : -1 })
+    // PROJECTED wave numbers for the impulse now running (marked with ' to signal
+    // "projected, not confirmed"). This is what gives the current impulse its count.
+    const pdir: 1 | -1 = d === 1 ? 1 : -1
+    labels.push({ idx: lastIdx + 13, price: t1, label: "1'", dir: pdir })
+    labels.push({ idx: lastIdx + 21, price: retrace, label: "2'", dir: d === 1 ? -1 : 1 })
+    labels.push({ idx: lastIdx + 34, price: t2, label: "3'", dir: pdir })
     return {
       phase: d === 1 ? 'New impulse (post-correction)' : 'New impulse (downtrend resuming)',
       trend, bias: d === 1 ? 'bull' : 'bear', labels,

@@ -217,6 +217,8 @@ export default function TradingChart({ candles, theme, on, sma50, sma200, vwap, 
       ctx.fillRect(w - padR - 66, Y(last) - 9, 62, 17)
       ctx.fillStyle = theme.bg
       ctx.font = 'bold 10.5px -apple-system, sans-serif'
+      ctx.textAlign = 'left'
+      ctx.fillText(fmtPrice(last), w - padR - 61, Y(last) + 4)
       ctx.font = '10.5px -apple-system, sans-serif'
 
       // Date axis along the bottom of the main pane. ~6 evenly spaced ticks reading
