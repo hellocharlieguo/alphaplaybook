@@ -137,10 +137,36 @@ export function elliottCount(candles: Candle[]): ElliottResult {
   const B = A && rest[1] && rest[1].kind === p5.kind && d * (p5.price - rest[1].price) > 0 ? rest[1] : null
 
   // Beyond the impulse extreme in the trend direction: correction over / resuming.
+  // A NEW impulse is running — project it forward off the correction's extreme using
+  // measured-move extensions of the prior impulse (0.618 / 1.0 / 1.618 / 2.618 x L).
+  // Only levels still AHEAD of price are shown; already-passed levels are useless.
   if (d * (lastClose - p5.price) > 0) {
+    const L = Math.abs(p5.price - imp[0].price)   // prior impulse length
+    const anchor = A ? A.price : p5.price          // new impulse starts at the correction extreme
+    const ladder = [0.382, 0.618, 1.0, 1.618, 2.618]
+    const ahead = ladder
+      .map((m) => ({ label: `${m}\u00d7 impulse`, price: anchor + d * m * L }))
+      .filter((t) => d * (t.price - lastClose) > 0)
+    const targets = ahead.slice(0, 2)
+    const t1 = targets[0] ? targets[0].price : lastClose + d * 0.35 * L
+    const t2raw = targets[1] ? targets[1].price : t1 + d * 0.6 * L
+    // Clamp the DRAWN path to <=22% beyond spot. A full measured move can be far away;
+    // letting it into the chart's price domain would squash the real candles. The
+    // numeric target list still reports the true level.
+    const cap = lastClose + d * 0.22 * Math.abs(lastClose)
+    const t2 = d * (t2raw - cap) > 0 ? cap : t2raw
+    const retrace = t1 - d * 0.28 * Math.abs(t1 - lastClose) // counter-trend pause between legs
+    labels.push({ idx: lastIdx + 34, price: t2, label: '\u2192', dir: d === 1 ? 1 : -1 })
     return {
       phase: d === 1 ? 'New impulse (post-correction)' : 'New impulse (downtrend resuming)',
-      trend, bias: d === 1 ? 'bull' : 'bear', labels, projection: [], targets: [],
+      trend, bias: d === 1 ? 'bull' : 'bear', labels,
+      projection: [
+        { idx: lastIdx, price: lastClose },
+        { idx: lastIdx + 13, price: t1 },
+        { idx: lastIdx + 21, price: retrace },
+        { idx: lastIdx + 34, price: t2 },
+      ],
+      targets,
       invalidation: A ? { price: A.price, note: d === 1 ? 'Advance invalid on close below the wave-A low' : 'Breakdown invalid on close above the wave-A high' } : null,
       confidence,
     }
@@ -179,11 +205,21 @@ export function elliottCount(candles: Candle[]): ElliottResult {
   if (A && d * (lastClose - A.price) > 0) {
     // Price back on the impulse side of A without a confirmed B pivot -> Wave B.
     labels.push({ idx: A.idx, price: A.price, label: 'A', dir: A.kind === 'H' ? 1 : -1 })
+    const b50 = A.price + 0.5 * (p5.price - A.price)
+    const b618 = A.price + 0.618 * (p5.price - A.price)
+    // B completes, then C runs back against it toward the A extreme.
+    const cTarget = A.price - d * 0.15 * Math.abs(p5.price - A.price)
+    labels.push({ idx: lastIdx + 12, price: b618, label: 'B?', dir: d === 1 ? 1 : -1 })
     return {
-      phase: `Wave B${bounceTag}`, trend, bias: 'neut', labels, projection: [],
+      phase: `Wave B${bounceTag}`, trend, bias: 'neut', labels,
+      projection: [
+        { idx: lastIdx, price: lastClose },
+        { idx: lastIdx + 12, price: b618 },
+        { idx: lastIdx + 34, price: cTarget },
+      ],
       targets: [
-        { label: 'B = 0.5 retr', price: A.price + 0.5 * (p5.price - A.price) },
-        { label: 'B = 0.618 retr', price: A.price + 0.618 * (p5.price - A.price) },
+        { label: 'B = 0.5 retr', price: b50 },
+        { label: 'B = 0.618 retr', price: b618 },
       ],
       invalidation: {
         price: p5.price,
@@ -194,9 +230,23 @@ export function elliottCount(candles: Candle[]): ElliottResult {
   }
 
   // Moving off the wave-5 extreme with no confirmed A pivot yet -> Wave A.
+  // Wave A typically retraces 0.382-0.618 of the impulse; project toward that band.
+  const impLen = Math.abs(p5.price - imp[0].price)
+  const aLadder = [0.382, 0.5, 0.618]
+    .map((m) => ({ label: `A = ${m} retr`, price: p5.price - d * m * impLen }))
+    .filter((t) => d * (t.price - lastClose) < 0) // ahead = counter-trend of the impulse
+  const aTargets = aLadder.length ? aLadder.slice(0, 2) : [{ label: 'A = 0.618 retr', price: p5.price - d * 0.618 * impLen }]
+  const aEnd = aTargets[aTargets.length - 1].price
+  labels.push({ idx: lastIdx + 18, price: aEnd, label: 'A?', dir: d === 1 ? -1 : 1 })
   return {
     phase: `Wave A${bounceTag}`, trend, bias: d === 1 ? 'bear' : 'neut',
-    labels, projection: [], targets: [],
+    labels,
+    projection: [
+      { idx: lastIdx, price: lastClose },
+      { idx: lastIdx + 18, price: aEnd },
+      { idx: lastIdx + 30, price: aEnd + d * 0.2 * Math.abs(aEnd - p5.price) },
+    ],
+    targets: aTargets,
     invalidation: {
       price: p5.price,
       note: d === 1 ? 'Close above the wave-5 high = correction complete' : 'Close below the wave-5 low = bounce over, downtrend resumes',
