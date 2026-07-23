@@ -71,17 +71,17 @@ export default function HistoryLog({ theme: t }: HistoryLogProps) {
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <span style={{ fontSize: 13, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary, minWidth: 80 }}>
+                  <span style={{ fontSize: 13, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: t.textPrimary, minWidth: 80 }}>
                     {new Date(s.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
-                  <span style={{ fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: daily >= 0 ? t.positive : t.negative, minWidth: 60, textAlign: 'right' }}>
+                  <span style={{ fontSize: 12, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: daily >= 0 ? t.positive : t.negative, minWidth: 60, textAlign: 'right' }}>
                     {daily >= 0 ? '+' : ''}{daily.toFixed(2)}%
                   </span>
                   <span style={{ fontSize: 11, color: t.textTertiary }}>
                     {totalSignals} signals
                   </span>
                   {rsi !== null && (
-                    <span style={{ fontSize: 11, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textTertiary }}>
+                    <span style={{ fontSize: 11, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textTertiary }}>
                       RSI {rsi.toFixed(1)}
                     </span>
                   )}
@@ -106,7 +106,7 @@ export default function HistoryLog({ theme: t }: HistoryLogProps) {
                           {s.narrative_signals!.map((sig: any, i: number) => (
                             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textPrimary }}>{sig.ticker}</span>
+                                <span style={{ fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', fontWeight: 500, color: t.textPrimary }}>{sig.ticker}</span>
                                 <span style={{ color: t.textTertiary, fontSize: 11 }}>{sig.asset}</span>
                               </div>
                               <span style={{ fontSize: 10, background: sig.direction === 'bullish' ? 'rgba(52,211,153,0.15)' : sig.direction === 'bearish' ? 'rgba(248,113,113,0.15)' : t.badgeBg, color: sig.direction === 'bullish' ? t.positive : sig.direction === 'bearish' ? t.negative : t.badgeText, padding: '1px 6px', borderRadius: 3 }}>{sig.direction}</span>
@@ -129,7 +129,7 @@ export default function HistoryLog({ theme: t }: HistoryLogProps) {
                           {s.polymarket_signals!.slice(0, 5).map((sig: any, i: number) => (
                             <div key={i} style={{ fontSize: 11, color: t.textSecondary, lineHeight: 1.3 }}>
                               <span>{sig.market}</span>
-                              <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textPrimary, marginLeft: 6 }}>{(sig.probability * 100).toFixed(0)}%</span>
+                              <span style={{ fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: t.textPrimary, marginLeft: 6 }}>{(sig.probability * 100).toFixed(0)}%</span>
                             </div>
                           ))}
                           {crowdCount > 5 && <div style={{ fontSize: 10, color: t.textTertiary }}>+{crowdCount - 5} more</div>}
@@ -147,7 +147,7 @@ export default function HistoryLog({ theme: t }: HistoryLogProps) {
                         <div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
                             <span style={{ fontSize: 11, color: t.textTertiary }}>SPY RSI</span>
-                            <span style={{ fontSize: 18, fontWeight: 500, fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textPrimary }}>{rsi.toFixed(1)}</span>
+                            <span style={{ fontSize: 18, fontWeight: 500, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: rsi > 70 ? t.negative : rsi < 25 ? t.positive : t.textPrimary }}>{rsi.toFixed(1)}</span>
                           </div>
                           <span style={{ fontSize: 10, background: t.badgeBg, color: t.badgeText, padding: '1px 6px', borderRadius: 3 }}>{s.rsi_signal}</span>
                         </div>
@@ -161,7 +161,7 @@ export default function HistoryLog({ theme: t }: HistoryLogProps) {
                           <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Bullish convergence</div>
                           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                             {s.bullish_assets!.map((a: any, i: number) => (
-                              <span key={i} style={{ fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, monospace', background: t.tickerBg, color: t.tickerText, padding: '2px 6px', borderRadius: 3 }}>
+                              <span key={i} style={{ fontSize: 10, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', background: t.tickerBg, color: t.tickerText, padding: '2px 6px', borderRadius: 3 }}>
                                 {a.ticker} {a.convergence}
                               </span>
                             ))}
@@ -172,11 +172,11 @@ export default function HistoryLog({ theme: t }: HistoryLogProps) {
                       {/* Day summary */}
                       <div style={{ marginTop: 12 }}>
                         <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Day summary</div>
-                        <div style={{ fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>
+                        <div style={{ fontSize: 12, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums' }}>
                           <span style={{ color: t.textTertiary }}>Daily: </span>
                           <span style={{ color: daily >= 0 ? t.positive : t.negative }}>{daily >= 0 ? '+' : ''}{daily.toFixed(2)}%</span>
                         </div>
-                        <div style={{ fontSize: 12, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>
+                        <div style={{ fontSize: 12, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums' }}>
                           <span style={{ color: t.textTertiary }}>Cumul: </span>
                           <span style={{ color: cum >= 0 ? t.positive : t.negative }}>{cum >= 0 ? '+' : ''}{cum.toFixed(2)}%</span>
                         </div>

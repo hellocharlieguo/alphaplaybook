@@ -227,7 +227,7 @@ export default function Portfolio({ snapshot, theme: t, portfolioValue }: Portfo
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 8, height: 8, borderRadius: 2, background: tickerColor(a.symbol) }} />
                         <div>
-                          <div style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textPrimary }}>{a.symbol}</div>
+                          <div style={{ fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', fontWeight: 500, color: t.textPrimary }}>{a.symbol}</div>
                           <div style={{ fontSize: 10, color: t.textTertiary }}>{a.name}</div>
                         </div>
                       </div>
@@ -242,22 +242,22 @@ export default function Portfolio({ snapshot, theme: t, portfolioValue }: Portfo
                     </td>
                     <td style={{ padding: '8px 12px', textAlign: 'right' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                        <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, color: t.textSecondary }}>{a.weight.toFixed(1)}%</span>
+                        <span style={{ fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', fontSize: 12, color: t.textSecondary }}>{a.weight.toFixed(1)}%</span>
                         {a.symbol === 'SGOV'
                           ? <span style={{ fontSize: 9, color: t.textTertiary }}>cash</span>
                           : Math.abs(drift) >= 0.05
-                            ? <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 9, color: drift >= 0 ? t.positive : t.negative }}>{drift >= 0 ? '+' : ''}{drift.toFixed(1)} vs {a.target.toFixed(1)}</span>
+                            ? <span style={{ fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', fontSize: 9, color: drift >= 0 ? t.positive : t.negative }}>{drift >= 0 ? '+' : ''}{drift.toFixed(1)} vs {a.target.toFixed(1)}</span>
                             : <span style={{ fontSize: 9, color: t.textTertiary }}>at target</span>}
                       </div>
                     </td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>{a.price !== null ? `$${a.price.toFixed(2)}` : '—'}</td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textTertiary }}>{tech?.dma50 != null ? `$${tech.dma50.toFixed(2)}` : '—'}</td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textTertiary }}>{tech?.dma200 != null ? `$${tech.dma200.toFixed(2)}` : '—'}</td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: rsiColor }}>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: t.textSecondary }}>{a.price !== null ? `$${a.price.toFixed(2)}` : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: t.textTertiary }}>{tech?.dma50 != null ? `$${tech.dma50.toFixed(2)}` : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: t.textTertiary }}>{tech?.dma200 != null ? `$${tech.dma200.toFixed(2)}` : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: rsiColor }}>
                       {rsi == null ? '—' : rsi.toFixed(1)}
                     </td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>${fmt(a.dollarAlloc)}</td>
-                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textPrimary }}>{a.price !== null ? a.shares : '—'}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: t.textSecondary }}>${fmt(a.dollarAlloc)}</td>
+                    <td style={{ padding: '8px 16px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', fontWeight: 500, color: t.textPrimary }}>{a.price !== null ? a.shares : '—'}</td>
                     <td style={{ padding: '8px 16px' }}>
                       <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: a.theme === 'Cash' ? t.badgeBg : `${themeColor(a.theme)}20`, color: a.theme === 'Cash' ? t.badgeText : themeColor(a.theme) }}>{a.theme}</span>
                     </td>
@@ -270,13 +270,13 @@ export default function Portfolio({ snapshot, theme: t, portfolioValue }: Portfo
                 <td style={{ padding: '10px 16px', fontWeight: 500, color: t.textSecondary }}>Total</td>
                 <td style={{ padding: '10px 16px' }} />
                 <td style={{ padding: '10px 12px', textAlign: 'right' }}>
-                  <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, fontWeight: 500, color: totalWeight > 100.5 ? t.negative : t.textSecondary }}>{totalWeight.toFixed(1)}%</span>
+                  <span style={{ fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', fontSize: 12, fontWeight: 500, color: totalWeight > 100.5 ? t.negative : t.textSecondary }}>{totalWeight.toFixed(1)}%</span>
                 </td>
                 <td style={{ padding: '10px 16px' }} />
                 <td style={{ padding: '10px 16px' }} />
                 <td style={{ padding: '10px 16px' }} />
                 <td style={{ padding: '10px 16px' }} />
-                <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: t.textSecondary }}>${fmt(portfolioValue)}</td>
+                <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', fontWeight: 500, color: t.textSecondary }}>${fmt(portfolioValue)}</td>
                 <td style={{ padding: '10px 16px' }} />
                 <td style={{ padding: '10px 16px' }} />
               </tr>

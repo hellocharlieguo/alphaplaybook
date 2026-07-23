@@ -21,7 +21,7 @@ const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean 
 interface Holding { ticker?: string; category?: string }
 
 export default function SignalRadar({ theme: t, portfolio }: { theme: Theme; portfolio?: Holding[] | null }) {
-  const display = "'Playfair Display', Georgia, serif"
+  const display = "'Manrope', sans-serif"
 
   const holdings: Holding[] = Array.isArray(portfolio) ? portfolio : []
   const tickersFor = (name: string): string[] => {
@@ -35,7 +35,7 @@ export default function SignalRadar({ theme: t, portfolio }: { theme: Theme; por
   }
 
   const Chip = ({ sym }: { sym: string }) => (
-    <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 9.5, color: ACCENT, background: 'rgba(224,145,92,0.15)', padding: '1px 5px', borderRadius: 3 }}>{sym}</span>
+    <span style={{ fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', fontSize: 9.5, color: ACCENT, background: 'rgba(224,145,92,0.15)', padding: '1px 5px', borderRadius: 3 }}>{sym}</span>
   )
 
   return (

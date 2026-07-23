@@ -105,8 +105,8 @@ export default function Methodology({ snapshot, theme: t }: { snapshot: Decision
   const stage = STAGES[stageNum] ?? STAGES[3]
   const toneColor = (tone: string) => (tone === 'pos' ? t.positive : tone === 'neg' ? t.negative : t.accent)
 
-  const serif = "'Libre Baskerville', Georgia, serif"
-  const display = "'Playfair Display', Georgia, serif"
+  const serif = "'Manrope', sans-serif"
+  const display = "'Manrope', sans-serif"
   const mono = 'ui-monospace, SFMono-Regular, monospace'
 
   const card = (extra: React.CSSProperties = {}): React.CSSProperties => ({
@@ -137,7 +137,7 @@ export default function Methodology({ snapshot, theme: t }: { snapshot: Decision
 
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: t.accent, fontFamily: serif, fontWeight: 700 }}>Methodology</div>
-        <h1 style={{ fontFamily: display, fontSize: 38, fontWeight: 900, margin: '6px 0 10px', letterSpacing: -0.5, color: t.textPrimary }}>The Decision Engine</h1>
+        <h1 style={{ fontFamily: display, fontSize: 38, fontWeight: 800, margin: '6px 0 10px', letterSpacing: -0.5, color: t.textPrimary }}>The Decision Engine</h1>
         <p style={{ color: t.textSecondary, fontSize: 14, lineHeight: 1.6, maxWidth: 680, margin: 0, fontFamily: serif }}>
           Every ticker runs through the same six questions, scored and weighted into a single conviction number, then converted into exact target weights. Decision-support, not autopilot: you approve every trade.
         </p>

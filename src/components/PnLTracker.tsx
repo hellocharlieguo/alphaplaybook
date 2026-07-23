@@ -133,22 +133,22 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
                 const spyDaily = prevSpyCum == null ? null : spyCum - prevSpyCum
                 return (
                   <tr key={i} style={{ borderBottom: `1px solid ${t.border}` }}>
-                    <td style={{ padding: '8px 20px', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: t.textSecondary }}>
+                    <td style={{ padding: '8px 20px', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: t.textSecondary }}>
                       {new Date(s.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </td>
-                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: spyDaily === null ? t.textTertiary : spyDaily >= 0 ? t.positive : t.negative }}>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: spyDaily === null ? t.textTertiary : spyDaily >= 0 ? t.positive : t.negative }}>
                       {spyDaily === null ? '—' : `${spyDaily >= 0 ? '+' : ''}${spyDaily.toFixed(2)}%`}
                     </td>
-                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: daily >= 0 ? t.positive : t.negative }}>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: daily >= 0 ? t.positive : t.negative }}>
                       {daily >= 0 ? '+' : ''}{daily.toFixed(2)}%
                     </td>
-                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: spyCum >= 0 ? t.positive : t.negative }}>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: spyCum >= 0 ? t.positive : t.negative }}>
                       {spyCum >= 0 ? '+' : ''}{spyCum.toFixed(2)}%
                     </td>
-                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: cum >= 0 ? t.positive : t.negative }}>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: cum >= 0 ? t.positive : t.negative }}>
                       {cum >= 0 ? '+' : ''}{cum.toFixed(2)}%
                     </td>
-                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontWeight: 500, color: a >= 0 ? t.positive : t.negative }}>
+                    <td style={{ padding: '8px 20px', textAlign: 'right', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', fontWeight: 500, color: a >= 0 ? t.positive : t.negative }}>
                       {a >= 0 ? '+' : ''}{a.toFixed(2)}%
                     </td>
                   </tr>
@@ -164,12 +164,12 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
         <div className="ap-bestworst">
           <div style={{ ...glass, borderRadius: 12, padding: 16 }}>
             <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Best day</div>
-            <div style={{ fontSize: 18, fontWeight: 500, color: t.positive, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>+{bestDay.ret.toFixed(2)}%</div>
+            <div style={{ fontSize: 18, fontWeight: 500, color: t.positive, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums' }}>+{bestDay.ret.toFixed(2)}%</div>
             <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{new Date(bestDay.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
           </div>
           <div style={{ ...glass, borderRadius: 12, padding: 16 }}>
             <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Worst day</div>
-            <div style={{ fontSize: 18, fontWeight: 500, color: t.negative, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{worstDay.ret.toFixed(2)}%</div>
+            <div style={{ fontSize: 18, fontWeight: 500, color: t.negative, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums' }}>{worstDay.ret.toFixed(2)}%</div>
             <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{new Date(worstDay.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
           </div>
         </div>
@@ -182,7 +182,7 @@ function PnLStatCard({ label, value, color, t }: { label: string; value: string;
   return (
     <div style={{ ...glass, borderRadius: 10, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 500, color, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{value}</div>
+      <div style={{ fontSize: 18, fontWeight: 500, color, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums' }}>{value}</div>
     </div>
   )
 }
