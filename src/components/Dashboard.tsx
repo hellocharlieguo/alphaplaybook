@@ -110,7 +110,7 @@ export default function Dashboard() {
     { key: 'signals', label: 'Signals' },
     { key: 'portfolio', label: 'Portfolio' },
     { key: 'pnl', label: 'Performance' },
-    { key: 'trading', label: 'Trading' },
+    // { key: 'trading', label: 'Trading' }, // hidden 7/23 — uncomment to restore
   ]
 
   const cumulativeReturn = latestSnapshot?.cumulative_return_pct ?? 0
