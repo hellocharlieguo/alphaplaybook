@@ -61,28 +61,28 @@ const VOICES: VoiceSection[] = [
     themes: [
       {
         name: 'AI Compute',
-        editorial: `Power is still the binding bottleneck, but the compute call has flipped from defense to re-engagement: on 7/12 he said “the midcycle slowdown is ending.” He’d already cut the concentrated basket hard — “I reduced my position in a bunch of these things down significantly with Micron being the biggest one” — and rotated the proceeds into silver and Bitcoin (adds that “haven’t worked out as well”). Now, with the basket back at its 50-day and RSI reset, he’s looking to add semis back: “probably going to be buying some back at some point soon, especially after the SK Hynix deal.” The thesis anchor is unchanged — there’s no compute glut (“there is no excess capacity because Meta is selling some off”), and on 7/11 he cited Goldman’s estimate that consumer agents will burn ~30× the compute of coding agents: “if you think there is excess capacity of compute, you are absolutely wrong.”`,
+        editorial: `Power is still the binding bottleneck, and the 7/12 intention became a 7/19 action: he bought Micron back, above his own average exit — “I even bought Micron at higher levels than the average price of where I got out” — having been fully out since early June. The reframe is sharper than a re-entry, though. Memory is now the center of the thesis: “I think memory is the most important part of the AI trade,” with DRAM pricing rising across DDR3/4/5 and customers signing long-term contracts. The new selection filter is the step-up function — he is hunting names that have not yet repriced their earnings inflection, because once a company beats by only a little (his example: Nvidia post-2024) you still compound ~25% a year but you never get back to 60–70%. The regime warning is the other half: Micron, Samsung and ASML all blew away numbers and traded lower, so “it is now equally possible for companies to underwhelm as it is for them to overwhelm.” He maps the correction at a 30–60% retracement, would not be surprised by a tag of the 50-day and a turn, and explicitly does not expect a V-bounce.`,
         tickers: ['SOXX', 'AIPO', 'COPX', 'GLW', 'ASML'],
         bucket: 'AI Compute',
         wholeBucket: true,
       },
       {
         name: 'AI Application',
-        editorial: `Still his loudest conviction — money rotating up the stack — and on 7/12 he sharpened the forward call to consumer AI agents: “I’m spending a lot of my time on consumer AI agents which I think is the next theme,” pointing at agentic commerce (Stripe’s June sessions) as the tell. The anchor stays Eli Lilly: he argues LLY could become the largest US company by decade-end, “larger than Nvidia,” with peptides as “this decade’s API keys” and the Lily Pod (1,000+ Blackwells trained on Lilly’s own data) as the most important AI company in the world. His framing: hardware is now the risk side; the application layer is where the next leg compounds.`,
+        editorial: `The rotation up the stack still holds, but 7/19 added a hazard he had not voiced before: the application layer is about to be the disruption target, not just the beneficiary. Consumer agents arrive “within the next 6 months,” and he expects the next stretch to be “more idiosyncratic with names — but that’s going to be very dangerous,” with “a lot of names that are disrupted by AI with AI agents” over the coming month. He is acting on it inside his own book, flagging removals from the 100-name thematic portfolio: names that genuinely benefit from AI but “will be disrupted sooner than what people think.” The Eli Lilly anchor is untouched by any of this — the caution is aimed at the software-and-services middle, not at pharma.`,
         tickers: ['LLY', 'AMZN'],
         bucket: 'AI Application',
         wholeBucket: true,
       },
       {
         name: 'Tokenization',
-        editorial: `His build toward Stage 4 got a concrete frame on 7/12: a 40-name crypto index across 8 verticals (34 tokens, 6 public names like Circle), equal-weighted and overlaid with Bitcoin — “Bitcoin is the S&P 500 of the future of tokenization.” He’s leaning on Scott Bessent’s crypto remarks that “the capital structure of the world is changing,” and says his next framework video starts not from the AI side but from “where AI meets stablecoins, tokenization and the new financial guardrails.” The thesis is unchanged — tokenization unleashes the dormant real-world-asset base (real estate, private credit, PE, VC) as the next leg on-chain; he still watches the BTC/ETH 50-day as the trigger.`,
+        editorial: `The strongest tokenization statement he has made. On 7/19 he put crypto ahead of the infrastructure trade on a 12-month view: “this is going to be where the beta is over the next 12 months — it’s not going to be joining back into the infrastructure trade,” even while granting infrastructure still outperforms. The mechanism is the agent thesis closing the loop — “the rise of agents leads to more crypto,” and “Bitcoin is the collateral of the future,” which he says he will build his next writing and YouTube work around. His warning to the unprepared was blunt: those who have not done their homework on crypto “will be paying a price, in my opinion, very very soon.”`,
         tickers: ['HOOD', 'ETHA'],
         bucket: 'Tokenization',
         wholeBucket: true,
       },
       {
         name: 'Monetary Scarcity',
-        editorial: `The scarcity trade he’s been accumulating into weakness — and on 7/12 he was candid it’s early: the silver and Bitcoin adds “haven’t worked out as well.” Bitcoin is “still a bear market” technically, with “the 50-day … the next line in the sand” before the 200-day matters again. He read Saylor’s ~3,500-coin sale as a tell, not a top — Bitcoin closed higher on the news, “a positive response to bad news.” The macro setup: July is the one month he thinks the Fed might hike, but if it does it’s “one and done … 25,” with long rates falling on restored Fed credibility — a net tailwind for Bitcoin. He still frames this as structural debasement, not an inflation chase, with silver the standout on its sixth-year industrial deficit.`,
+        editorial: `He spent 7/19 on the volatility rather than the direction, and the numbers are the point: gold’s three-day move earlier this year was the biggest in 35 years, silver fell 40% in five days, and Bitcoin takes 40% drawdowns in 18 days. His read is that this is what everything looks like as it gets tokenized and momentum capital compresses the timescale — not a thesis break. The structural debasement case is unchanged; the trade is still one to accumulate into weakness rather than chase, and the 200-day remains the line he will not front-run.`,
         tickers: ['SLV', 'GLDM', 'IBIT'],
         bucket: 'Monetary Scarcity',
         wholeBucket: true,
@@ -114,7 +114,7 @@ const VOICES: VoiceSection[] = [
     name: 'ZaStocks',
     headline: 'THINK BIGGER ON THE LEADERS',
     subtitle: 'ZaStocks (@ZaStocks) — technical setups and the AI market broadening beyond core semis',
-    asOf: 'wk of Jul 6 – Jul 13 · via Grok',
+    asOf: 'wk of Jul 13 – Jul 20 · via Grok',
     active: true,
     themes: [
       {
@@ -125,7 +125,7 @@ const VOICES: VoiceSection[] = [
       },
       {
         name: 'AI Compute — pre-consensus holds',
-        editorial: `His pre-consensus AI-Compute holds, reiterated: Arm (ARM), Marvell (MRVL), and Dell (DELL) — “still holding a few names I bought in late March-early April … they’re not doing anything wrong besides basing. Lots of energy builds during these long consolidations.” The week’s fresh catalyst was Micron (MU): citing the SK Hynix CEO that “the memory shortage may persist past 2030 … next year is expected to be the worst year,” he called the pullback “nothing more than a pullback after a monster run” — corroborating our own memory sleeve. NVDA also flagged a textbook resistance-to-support flip (“hard to get too negative … when the king looks like this”).`,
+        editorial: `A deliberately quiet week — roughly 25–30 posts against a Nasdaq that “hasn’t moved in more than two months,” with the emphasis on capital preservation and entry discipline: “you can’t just buy any stock at any price… price matters, entry matters.” Dell (DELL) separated from the pack and got its own chart: “nobody knows where the AI trade goes from here, but if it’s higher, this is one of your leaders — major relative strength,” followed by the flat statement “I’d agree, I only own DELL.” The ARM/MRVL basing thesis carries but drew no fresh posts. The one new setup outside compute was Zeta Global (ZETA), a multi-year base tightening against its trendline — Watching, unconfirmed, no level given. Palantir drew a valuation aside only (“PLTR was expensive all the way from $20 to $200”), and ASML a passing mention alongside TSM with no chart. Net: no new corroboration legs — nothing he named this week is independently pointed at by Visser or Camillo.`,
         tickers: ['ARM', 'MRVL', 'DELL', 'MU'],
         curated: true,
       },
