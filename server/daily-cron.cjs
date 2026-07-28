@@ -963,7 +963,78 @@ function computeRegime(cpi, nowcast, kalshi, priorAbove) {
   }
 }
 
-function buildMacroSignals(quantResult, cpi, nowcast, kalshi, priorAbove) {
+// Market sentiment — KXFEAR, the market-implied CNN Fear & Greed band at Friday's
+// 4pm ET settle. Five mutually-exclusive bands per weekly event; AUTO-ROLLS on the
+// nearest close_time exactly like KXSP500ADDQ. Bid/ask MIDPOINTS ONLY: last trades
+// across the five bands are asynchronous and incoherent (Extreme Greed last printed
+// 0.08 against a 0.02/0.05 book; five lasts summed 0.96 vs five mids 1.000).
+// Guards: all five bands present, and mids summing to ~1.00 (a mutually-exclusive
+// event that does not price a complete distribution is not being made).
+// Display-only — feeds no score. Skip-safe -> null.
+const KALSHI_FEAR_SERIES = 'KXFEAR'
+const FG_BANDS = ['Extreme Fear', 'Fear', 'Neutral', 'Greed', 'Extreme Greed']
+const FG_MIDPOINTS = { 'Extreme Fear': 12.5, Fear: 35, Neutral: 50, Greed: 65, 'Extreme Greed': 87.5 }
+async function fetchFearGreed() {
+  for (const host of KALSHI_HOSTS) {
+    try {
+      const res = await fetch(`${host}/markets?series_ticker=${KALSHI_FEAR_SERIES}&status=open&limit=60`,
+        { headers: { 'User-Agent': 'Mozilla/5.0 (AlphaPlaybook cron)' } })
+      if (!res.ok) continue
+      const ms = ((await res.json()).markets) || []
+      if (!ms.length) return null
+      const events = {}
+      for (const m of ms) {
+        const ev = String(m.ticker || '').split('-').slice(0, -1).join('-')
+        if (!ev) continue
+        ;(events[ev] = events[ev] || []).push(m)
+      }
+      const nearest = Object.entries(events)
+        .map(([ev, list]) => ({ ev, list, close: String(list[0].close_time || '') }))
+        .sort((a, b) => a.close.localeCompare(b.close))[0]
+      if (!nearest) return null
+      const mids = {}
+      for (const m of nearest.list) {
+        const name = String(m.yes_sub_title || m.subtitle || '').trim()
+        if (FG_BANDS.indexOf(name) < 0) continue
+        const b = parseFloat(m.yes_bid_dollars), a = parseFloat(m.yes_ask_dollars)
+        if (isNaN(b) || isNaN(a) || a <= 0) continue
+        mids[name] = (b + a) / 2
+      }
+      if (Object.keys(mids).length !== 5) {
+        console.warn(`  Fear & Greed: incomplete ladder (${Object.keys(mids).length}/5 bands) — skipping`)
+        return null
+      }
+      const sum = FG_BANDS.reduce((s, k) => s + mids[k], 0)
+      if (sum < 0.97 || sum > 1.03) {
+        console.warn(`  Fear & Greed: mids sum ${sum.toFixed(3)}, outside 0.97-1.03 — skipping`)
+        return null
+      }
+      const norm = {}
+      for (const k of FG_BANDS) norm[k] = mids[k] / sum
+      let band = FG_BANDS[0]
+      for (const k of FG_BANDS) if (norm[k] > norm[band]) band = k
+      const sideProb =
+        (band === 'Fear' || band === 'Extreme Fear') ? norm['Extreme Fear'] + norm['Fear']
+        : (band === 'Greed' || band === 'Extreme Greed') ? norm['Greed'] + norm['Extreme Greed']
+        : null
+      const implied = FG_BANDS.reduce((s, k) => s + norm[k] * FG_MIDPOINTS[k], 0)
+      const out = {
+        band,
+        prob: Math.round(norm[band] * 1000) / 1000,
+        side_prob: sideProb === null ? null : Math.round(sideProb * 1000) / 1000,
+        implied: Math.round(implied * 10) / 10,
+        bands: FG_BANDS.reduce((o, k) => { o[k] = Math.round(norm[k] * 1000) / 1000; return o }, {}),
+        close_time: nearest.list[0].close_time || null,
+        as_of: new Date().toISOString(),
+      }
+      console.log(`  Fear & Greed (${nearest.ev}): ${band} ${Math.round(norm[band] * 100)}% · implied ${out.implied} · sum ${sum.toFixed(3)}`)
+      return out
+    } catch (e) { /* next host */ }
+  }
+  return null
+}
+
+function buildMacroSignals(quantResult, cpi, nowcast, kalshi, priorAbove, fearGreed) {
   const regime = computeRegime(cpi, nowcast, kalshi, priorAbove)
   return {
     spy: quantResult.spyPrice === null ? null : {
@@ -974,6 +1045,7 @@ function buildMacroSignals(quantResult, cpi, nowcast, kalshi, priorAbove) {
     nowcast: nowcast || null,
     regime,
     kalshi: kalshi || null, // Kalshi CPI YoY leg (point estimate + P>4%); 2-of-3 vote wired with gate
+    fear_greed: fearGreed || null, // Kalshi KXFEAR band distribution; display-only, feeds no score
   }
 }
 
@@ -1826,7 +1898,8 @@ async function main() {
       .order('snapshot_date', { ascending: false })
       .limit(1)
     const priorAbove = priorRows?.[0]?.macro_signals?.regime?.above ?? false
-    const macroSignals = buildMacroSignals(quantResult, cpi, nowcast, kalshi, priorAbove)
+    const fearGreed = await fetchFearGreed()
+    const macroSignals = buildMacroSignals(quantResult, cpi, nowcast, kalshi, priorAbove, fearGreed)
 
     // Step 2: Aggregate bullish assets across all sources
     const bullishAssets = aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult)
