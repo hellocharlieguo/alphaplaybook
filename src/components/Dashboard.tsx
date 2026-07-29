@@ -117,6 +117,15 @@ export default function Dashboard() {
   const alpha = (latestSnapshot?.cumulative_return_pct ?? 0) - (latestSnapshot?.spy_cumulative_return_pct ?? 0)
   const spyRsi = latestSnapshot?.spy_rsi ?? null
   const signalCount = (latestSnapshot?.narrative_signals?.length ?? 0) + (latestSnapshot?.polymarket_signals?.length ?? 0) + (spyRsi !== null ? 1 : 0)
+
+  // Market sentiment — Kalshi KXFEAR, market-implied CNN Fear & Greed band at the
+  // nearest Friday settle. Display-only; feeds no score. Null-safe: the cron skips
+  // on an incomplete ladder, in which case card 4 falls back to Active signals.
+  const fg = latestSnapshot?.macro_signals?.fear_greed ?? null
+  const fgSide = fg && fg.side_prob != null
+    ? `${String(fg.band).includes('Fear') ? 'Fear' : 'Greed'}-side ${Math.round(fg.side_prob * 100)}% · `
+    : ''
+  const fgSub = fg ? `${fgSide}implied ${fg.implied} · via Kalshi` : ''
   const dateStr = latestSnapshot?.snapshot_date ? new Date(latestSnapshot.snapshot_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : ''
 
   return (
@@ -183,6 +192,16 @@ export default function Dashboard() {
             <InflationRegimeCard regime={latestSnapshot?.macro_signals?.regime ?? null} t={t} />
             {activeTab === 'portfolio' ? (
               <PortfolioValueCard input={portfolioInput} onInput={setPortfolioInput} onCommit={handlePortfolioSubmit} t={t} />
+            ) : fg ? (
+              <StatCard
+                label="Market sentiment"
+                value={`${Math.round((fg.prob ?? 0) * 100)}% ${fg.band}`}
+                color={String(fg.band).includes('Fear') ? t.negative
+                     : String(fg.band).includes('Greed') ? t.positive
+                     : t.textPrimary}
+                sub={fgSub}
+                t={t}
+              />
             ) : (
               <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
             )}
