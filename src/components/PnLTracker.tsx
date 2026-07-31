@@ -130,7 +130,7 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
                 const spyCum = s.spy_cumulative_return_pct ?? 0
                 const a = cum - spyCum
                 const prevSpyCum = arr[i + 1]?.spy_cumulative_return_pct
-                const spyDaily = prevSpyCum == null ? null : spyCum - prevSpyCum
+                const spyDaily = prevSpyCum == null ? null : ((1 + spyCum / 100) / (1 + prevSpyCum / 100) - 1) * 100
                 return (
                   <tr key={i} style={{ borderBottom: `1px solid ${t.border}` }}>
                     <td style={{ padding: '8px 20px', fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', color: t.textSecondary }}>
