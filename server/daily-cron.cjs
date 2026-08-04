@@ -1005,8 +1005,14 @@ async function fetchFearGreed() {
         return null
       }
       const sum = FG_BANDS.reduce((s, k) => s + mids[k], 0)
-      if (sum < 0.97 || sum > 1.03) {
-        console.warn(`  Fear & Greed: mids sum ${sum.toFixed(3)}, outside 0.97-1.03 — skipping`)
+      // Band widened 0.97-1.03 -> 0.95-1.06 on 2026-08-03. The old ceiling was
+      // rejecting the nearest and MOST liquid event (AUG07: sum 1.045, 3797 OI)
+      // over an ordinary 4.5% overround that the normalization below divides out,
+      // while admitting a near-empty book (AUG14: 895 OI, 9 contracts on Extreme
+      // Fear). 1.06 still rejects a genuinely unmade ladder (AUG21: sum 1.385,
+      // identical mids across unrelated bands).
+      if (sum < 0.95 || sum > 1.06) {
+        console.warn(`  Fear & Greed: mids sum ${sum.toFixed(3)}, outside 0.95-1.06 — skipping`)
         return null
       }
       const norm = {}
