@@ -48,7 +48,12 @@ const CONV = {
   zastocksCorroborationOnly: true,
 }
 
-const TICKERS = ["LITE", "FN", "MRVL", "AAOI", "CEG", "GEV", "VST", "BE", "VRT", "ETN", "FCX", "SCCO", "ASML", "TSM", "KLAC", "LRCX", "TEM", "SDGR", "RXRX", "HIMS", "NVO", "AMZN", "SHOP", "CRM", "PLTR", "MSTR", "COIN", "CRCL", "FIGR", "TSLA", "SYM", "ISRG", "NVDA", "SERV"]
+const TICKERS = [
+  // --- held book (15) ---
+  'AIPO','SOXX','MU','GLW','SNDK', 'SKHY', 'WDC', 'STX', 'MRVL','ASML','LLY','AMZN','HOOD','IBIT','GLDM','ETHA','COPX','SLV','SGOV',
+  // --- standing watch / graduation candidates ---
+  'FLNC','MSTR','TEM','PLTR','VST','COIN','CRCL','DELL','INTC','RDDT','LITE','COHR','SOFI','AAOI'
+];
 // full funnel book + CRCL (Tokenization 2nd-seat candidate), pulled same-date so the
 // deploy weights are all computed on consistent technicals. Ledger names (Camillo /
 // ZaStocks / Visser mentions) are merged in below at runtime.
