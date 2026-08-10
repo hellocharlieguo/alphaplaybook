@@ -50,7 +50,7 @@ const CONV = {
 
 const TICKERS = [
   // --- held book (15) ---
-  'AIPO','SOXX','MU','GLW','SNDK', 'SKHY', 'WDC', 'STX', 'MRVL','ASML','LLY','AMZN','HOOD','IBIT','GLDM','ETHA','COPX','SLV','SGOV',
+  'AIPO','SOXX','MU','GLW','SNDK', 'SKHY', 'WDC', 'NVDA', 'MRVL','ASML','LLY','AMZN','HOOD','IBIT','GLDM','ETHA','COPX','SLV','SGOV',
   // --- standing watch / graduation candidates ---
   'FLNC','MSTR','TEM','PLTR','VST','COIN','CRCL','DELL','INTC','RDDT','LITE','COHR','SOFI','AAOI'
 ];
@@ -180,7 +180,8 @@ function computeLenses(ticker, ledger, book) {
                   : (c.lenses >= 2 ? '  <- CONVERGENCE' : '')
         convStr = `  lenses=${c.lenses}${c.voices.length ? ' (' + c.voices.join('+') + ')' : ''}${tag}`
       }
-      console.log(`${d.sym.padEnd(5)} px=${d.price.toFixed(2).padStart(8)} d50=${d.d50.toFixed(2).padStart(8)} d200=${d.d200.toFixed(2).padStart(8)} rsi=${d.rsi.toFixed(1).padStart(5)} stretch=${d.stretch.toFixed(1).padStart(6)}%  s5~${d.s5.toFixed(0).padStart(2)}${gate}${convStr}`)
+      const g = (v, n = 2) => (v == null ? 'n/a' : v.toFixed(n))
+      console.log(`${d.sym.padEnd(5)} px=${g(d.price).padStart(8)} d50=${g(d.d50).padStart(8)} d200=${g(d.d200).padStart(8)} rsi=${g(d.rsi, 1).padStart(5)} stretch=${g(d.stretch, 1).padStart(6)}%  s5~${g(d.s5, 0).padStart(2)}${gate}${convStr}`)
     } catch (e) { console.error(`${t}: ${e.message}`) }
     await new Promise(r => setTimeout(r, 8000))   // ~8s spacing under free-tier 8/min
   }
@@ -192,6 +193,7 @@ function computeLenses(ticker, ledger, book) {
       const c = computeLenses(d.sym, ledger, book)
       convFields = `, lenses_pointing=${c.lenses}, voice_conviction=${c.voiceConviction ? 'True' : 'False'}`
     }
-    console.log(`# ${d.sym}: price=${d.price.toFixed(2)}, d50=${d.d50.toFixed(2)}, d200=${d.d200.toFixed(2)}, rsi=${d.rsi.toFixed(2)}, ret1y=${d.ret1y.toFixed(2)}${convFields}  -> s5~${d.s5.toFixed(0)} (working theme)`)
+    const f = (v, n = 2) => (v == null ? 'null' : v.toFixed(n))
+    console.log(`# ${d.sym}: price=${f(d.price)}, d50=${f(d.d50)}, d200=${f(d.d200)}, rsi=${f(d.rsi)}, ret1y=${f(d.ret1y)}${convFields}  -> s5~${f(d.s5, 0)} (working theme)`)
   }
 })()
