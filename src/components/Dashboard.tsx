@@ -4,9 +4,10 @@ import SignalRecap from './SignalRecap'
 import Portfolio from './Portfolio'
 import PnLTracker from './PnLTracker'
 import TradingTab from './TradingTab'
+import SystemTab from './SystemTab'
 import basaltBg from '../assets/Basalt.jpg'
 
-type Tab = 'signals' | 'portfolio' | 'pnl' | 'trading'
+type Tab = 'signals' | 'portfolio' | 'pnl' | 'trading' | 'system'
 
 interface DailySnapshot {
   snapshot_date: string
@@ -110,6 +111,7 @@ export default function Dashboard() {
     { key: 'signals', label: 'Signals' },
     { key: 'portfolio', label: 'Portfolio' },
     { key: 'pnl', label: 'Performance' },
+    { key: 'system', label: 'System' },
     // { key: 'trading', label: 'Trading' }, // hidden 7/23 — uncomment to restore
   ]
 
@@ -230,6 +232,7 @@ export default function Dashboard() {
                 {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} portfolioValue={portfolioValue} />}
                 {activeTab === 'pnl' && <PnLTracker theme={t} />}
                 {activeTab === 'trading' && <TradingTab theme={t} />}
+                {activeTab === 'system' && <SystemTab theme={t} />}
               </>
             )}
           </div>
