@@ -1,11 +1,11 @@
-// System tab data — node graph geometry + per-node history payloads.
+// System tab data — blueprint/callout layout.
 //
-// PHASE 1: all content is authored here as constants. When podcast_log and
-// system_changelog land in Supabase, swap SYS_DETAILS for a query and keep the
-// Block[] shape — SystemTab.tsx renders blocks and knows nothing about sources.
+// PHASE 1: content is authored here. When podcast_log and system_changelog
+// land in Supabase, swap SYS_DETAILS for a query and keep the Block[] shape —
+// SystemTab.tsx renders blocks and knows nothing about sources.
 //
-// Stage coordinate space is 1800 x 560 (matches the SVG viewBox). Node box is
-// 150 wide; connector y = node.y + 43.
+// Stage coordinate space is 1400 x 430 and matches the SVG viewBox exactly.
+// Node box is 152 wide. Connector y = node.y + 34.
 
 export type NodeKind = 'input' | 'engine' | 'human' | 'write'
 
@@ -14,19 +14,33 @@ export interface SysNode {
   x: number
   y: number
   kind: NodeKind
-  eyebrow: string
+  ref: string          // drawing reference, e.g. "A1 · INPUT L1"
   title: string
   sub: string
   history?: boolean
 }
 
-export type Tone = 'engine' | 'book' | 'data' | 'open'
+export interface SysCell {
+  id: string
+  x: number
+  y: number
+  w: number
+  ref: string
+  title: string
+  value: string
+  gate?: boolean       // human decision inside the engine assembly
+  output?: boolean     // terminal cell, not clickable
+}
+
+export interface SysZone { x: number; y: number; w: number; h: number; label: string }
+export interface SysEdge { d: string; tone: 'wire' | 'feedback' | 'leader'; arrow?: boolean }
+export interface SysLabel { x: number; y: number; text: string }
 
 export type Block =
   | { t: 'sec'; label: string }
   | { t: 'kv'; k: string; v: string; pending?: boolean }
   | { t: 'bar'; k: string; v: string; pct: number }
-  | { t: 'row'; date?: string; pill?: { label: string; tone?: Tone }; title: string; quote?: string; pending?: boolean }
+  | { t: 'row'; date?: string; pill?: string; tone?: 'engine' | 'book' | 'data' | 'open'; title: string; quote?: string; pending?: boolean }
   | { t: 'note'; text: string }
 
 export interface SysDetail {
@@ -36,96 +50,87 @@ export interface SysDetail {
   blocks: Block[]
 }
 
-export interface SysEdge {
-  d: string
-  tone?: 'default' | 'copper' | 'green'
-  flow?: boolean
-  arrow?: boolean
-}
-
-export interface SysLabel { x: number; y: number; text: string }
-
 // ---------------------------------------------------------------- geometry
 
-export const STAGE_W = 1800
-export const STAGE_H = 560
+export const STAGE_W = 1400
+export const STAGE_H = 430
 
-export const SYS_LANES = [
-  { x: 0, y: 0, w: 1790, h: 320, label: 'Weekly · you + Claude chat' },
-  { x: 0, y: 356, w: 1080, h: 180, label: 'Daily · cron 7pm ET' },
+export const ENGINE_BOX = { x: 200, y: 76, w: 300, h: 132 }
+export const BUBBLE = { x: 392, y: 120, d: 48 }
+export const DETAIL_PANEL = { x: 560, y: 26, w: 560, h: 236 }
+
+export const SYS_ZONES: SysZone[] = [
+  { x: 0, y: 8, w: 1180, h: 256, label: 'Weekly · you + Claude' },
+  { x: 0, y: 296, w: 940, h: 122, label: 'Daily · cron 7pm ET' },
 ]
 
 export const SYS_NODES: SysNode[] = [
-  { id: 'visser',   x: 10,   y: 30,  kind: 'input',  eyebrow: 'Input · L1', title: 'Visser',            sub: '2×/wk · Pomp + solo', history: true },
-  { id: 'camillo',  x: 10,   y: 130, kind: 'input',  eyebrow: 'Input · L2', title: 'Camillo',           sub: 'social arbitrage',    history: true },
-  { id: 'zastocks', x: 10,   y: 230, kind: 'input',  eyebrow: 'Input · L2', title: 'ZaStocks',          sub: 'Grok task',           history: true },
+  { id: 'visser',   x: 10,  y: 18,  kind: 'input',  ref: 'A1 · INPUT L1', title: 'Visser',         sub: '2×/wk · moves themes', history: true },
+  { id: 'camillo',  x: 10,  y: 106, kind: 'input',  ref: 'A2 · INPUT L2', title: 'Camillo',        sub: 'names only',           history: true },
+  { id: 'zastocks', x: 10,  y: 194, kind: 'input',  ref: 'A3 · INPUT L2', title: 'ZaStocks',       sub: 'verify only',          history: true },
 
-  { id: 'tagging',  x: 190,  y: 130, kind: 'engine', eyebrow: 'Engine',        title: 'Conviction tagging', sub: 'quote → theme' },
-  { id: 'themes',   x: 370,  y: 130, kind: 'engine', eyebrow: 'Engine · L1',   title: 'Theme weights',      sub: 'sleeve history', history: true },
-  { id: 'pillars',  x: 550,  y: 130, kind: 'engine', eyebrow: 'Engine · L2',   title: 'Pillar sizing',      sub: 'composite score' },
-  { id: 'seats',    x: 730,  y: 130, kind: 'human',  eyebrow: 'Human · L3',    title: 'Seat count',         sub: 'contestedness' },
-  { id: 'names',    x: 910,  y: 130, kind: 'engine', eyebrow: 'Engine · L4',   title: 'Name split',         sub: 'Rule B · decay' },
-  { id: 'approval', x: 1090, y: 130, kind: 'human',  eyebrow: 'Human gate',    title: 'Approval',           sub: 'nothing auto-builds' },
-  { id: 'freeze',   x: 1270, y: 130, kind: 'write',  eyebrow: 'Write',         title: 'Freeze',             sub: 'v3.3-coresat', history: true },
-  { id: 'push',     x: 1450, y: 130, kind: 'write',  eyebrow: 'Deploy',        title: 'git push → Vercel',  sub: 'build then ship' },
+  { id: 'approval', x: 536, y: 106, kind: 'human',  ref: 'C1 · GATE',     title: 'Approval',       sub: 'no auto-build' },
+  { id: 'freeze',   x: 732, y: 106, kind: 'write',  ref: 'C2 · WRITE',    title: 'Freeze',         sub: 'v3.3-coresat',         history: true },
+  { id: 'push',     x: 928, y: 106, kind: 'write',  ref: 'C3 · DEPLOY',   title: 'git push',       sub: '→ Vercel' },
 
-  { id: 'cron',     x: 10,  y: 400, kind: 'input',  eyebrow: 'Trigger', title: 'GitHub Actions', sub: '7pm ET' },
-  { id: 'apis',     x: 190, y: 400, kind: 'input',  eyebrow: 'Data',    title: 'Price + macro',  sub: '5 sources' },
-  { id: 'croncjs',  x: 370, y: 400, kind: 'engine', eyebrow: 'Engine',  title: 'daily-cron.cjs', sub: 'RSI · DMA · CPI' },
-  { id: 'pnl',      x: 550, y: 400, kind: 'engine', eyebrow: 'Engine',  title: 'P&L drift',      sub: 'drift vs rebal' },
-  { id: 'supabase', x: 730, y: 400, kind: 'write',  eyebrow: 'Write',   title: 'Supabase',       sub: '3 tables', history: true },
-  { id: 'render',   x: 910, y: 400, kind: 'input',  eyebrow: 'Render',  title: 'Site reads',     sub: 'display-only' },
+  { id: 'cron',     x: 10,  y: 344, kind: 'input',  ref: 'D1 · TRIGGER',  title: 'GitHub Actions', sub: '7pm ET' },
+  { id: 'apis',     x: 204, y: 344, kind: 'input',  ref: 'D2 · DATA',     title: 'Price + macro',  sub: '5 sources' },
+  { id: 'croncjs',  x: 402, y: 344, kind: 'engine', ref: 'D3 · ENGINE',   title: 'daily-cron.cjs', sub: 'RSI · DMA · CPI' },
+  { id: 'pnl',      x: 600, y: 344, kind: 'engine', ref: 'D4 · ENGINE',   title: 'P&L drift',      sub: 'drift vs rebal' },
+  { id: 'supabase', x: 798, y: 344, kind: 'write',  ref: 'D5 · WRITE',    title: 'Supabase',       sub: '3 tables',             history: true },
 ]
 
-const SPINE = [
-  'M160,73 C178,73 176,173 190,173',
-  'M160,173 L190,173',
-  'M160,273 C178,273 176,177 190,177',
-  'M340,173 L370,173',
-  'M520,173 L550,173',
-  'M700,173 L730,173',
-  'M880,173 L910,173',
-  'M1060,173 L1090,173',
-  'M1240,173 L1270,173',
-  'M1420,173 L1450,173',
+export const SYS_CELLS: SysCell[] = [
+  { id: 'tagging', x: 18,  y: 24,  w: 164, ref: 'B1',        title: 'Conviction tagging', value: '5-part rubric' },
+  { id: 'themes',  x: 198, y: 24,  w: 164, ref: 'B2 · L1',   title: 'Theme weights',      value: '±4% / wk limiter' },
+  { id: 'pillars', x: 378, y: 24,  w: 164, ref: 'B3 · L2',   title: 'Pillar sizing',      value: '.30/.30/.20/.10/.10' },
+  { id: 'seats',   x: 18,  y: 128, w: 164, ref: 'B4 · HUMAN', title: 'Seat count',        value: 'contestedness → seats', gate: true },
+  { id: 'names',   x: 198, y: 128, w: 164, ref: 'B5 · L4',   title: 'Name split',         value: 'Rule B λ 0.814' },
+  { id: 'output',  x: 378, y: 128, w: 164, ref: 'OUTPUT',    title: '14 positions',       value: '→ C1 approval', output: true },
 ]
-
-const DAILY = [
-  'M160,443 L190,443',
-  'M340,443 L370,443',
-  'M520,443 L550,443',
-  'M700,443 L730,443',
-  'M880,443 L910,443',
-]
-
-const FREEZE_TO_CRON = 'M1345,216 C1345,320 520,300 445,398'
-const SUPABASE_TO_TAB = 'M805,398 C805,320 1500,318 1525,218'
 
 export const SYS_EDGES: SysEdge[] = [
-  ...SPINE.map((d) => ({ d, tone: 'copper' as const, flow: true, arrow: true })),
-  ...DAILY.map((d) => ({ d, tone: 'copper' as const, flow: true, arrow: true })),
-  { d: FREEZE_TO_CRON, tone: 'default', flow: true },
-  { d: SUPABASE_TO_TAB, tone: 'green', flow: true },
+  { d: 'M162,54 C178,54 178,138 192,138',   tone: 'wire', arrow: true },
+  { d: 'M162,140 L192,140',                 tone: 'wire', arrow: true },
+  { d: 'M162,226 C178,226 178,144 192,144', tone: 'wire', arrow: true },
+  { d: 'M502,142 L536,142',                 tone: 'wire', arrow: true },
+  { d: 'M698,142 L732,142',                 tone: 'wire', arrow: true },
+  { d: 'M894,142 L928,142',                 tone: 'wire', arrow: true },
+  { d: 'M162,378 L192,378',                 tone: 'wire', arrow: true },
+  { d: 'M354,378 L388,378',                 tone: 'wire', arrow: true },
+  { d: 'M552,378 L586,378',                 tone: 'wire', arrow: true },
+  { d: 'M750,378 L784,378',                 tone: 'wire', arrow: true },
+  { d: 'M812,190 C812,272 470,268 420,360', tone: 'feedback' },
+  { d: 'M440,144 L560,112',                 tone: 'leader' },
 ]
-
-// drawn first, unanimated, at low opacity — gives every wire a static spine
-export const SYS_EDGE_TRACKS: string[] = [...SPINE, ...DAILY, FREEZE_TO_CRON, SUPABASE_TO_TAB]
 
 export const SYS_LABELS: SysLabel[] = [
-  { x: 380,  y: 166, text: '±4%/wk' },
-  { x: 920,  y: 166, text: 'seats' },
-  { x: 1100, y: 166, text: 'Rule B λ' },
-  { x: 700,  y: 330, text: 'BASE_PORTFOLIO' },
-  { x: 1120, y: 316, text: 'history → System tab' },
+  { x: 26,  y: 34,  text: 'A · INPUTS' },
+  { x: 200, y: 34,  text: 'B · ENGINE' },
+  { x: 600, y: 34,  text: 'DETAIL B · 2:1' },
+  { x: 740, y: 34,  text: 'C · GATE + WRITE' },
+  { x: 26,  y: 344, text: 'D · NIGHTLY' },
+  { x: 596, y: 274, text: 'BASE_PORTFOLIO' },
 ]
-
-export const RETICLE = { cx: 900, cy: 215, radii: [96, 150, 200, 255] }
 
 // ---------------------------------------------------------------- content
 
 export const SYS_DETAILS: Record<string, SysDetail> = {
+  engine: {
+    eyebrow: 'B · Sealed assembly',
+    title: 'Engine',
+    source: 'voices in → 14 weighted positions out',
+    blocks: [
+      { t: 'sec', label: 'Assembly' },
+      { t: 'kv', k: 'Parts', v: '5' },
+      { t: 'kv', k: 'Human calls', v: '1 — B4 seat count' },
+      { t: 'kv', k: 'Layers', v: 'L1 → L4' },
+      { t: 'note', text: 'Seat count sits inside the assembly but the engine does not perform it. Contestedness is a human call; the engine only sizes what you seat.' },
+    ],
+  },
+
   visser: {
-    eyebrow: 'Input · Layer 1',
+    eyebrow: 'A1 · Input, Layer 1',
     title: 'Visser',
     source: 'phase 2: podcast_log where source = visser',
     blocks: [
@@ -136,8 +141,6 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
       { t: 'sec', label: 'Episode log' },
       { t: 'row', date: '8/09 · solo', title: 'Memory re-entry thesis', quote: 'bought MU back above his own exit; called memory the most important part of the AI trade' },
       { t: 'row', date: '8/08 · Pomp', title: 'S3 power intact, silver working' },
-      { t: 'row', date: '8/02 · solo', title: 'no theme change' },
-      { t: 'row', date: '8/01 · Pomp', title: 'no theme change' },
       { t: 'row', date: '7/27 · Mark Moss', title: 'debasement framing → axis 2 confirm' },
       { t: 'row', date: '7/20 · Substack', title: 'AI × crypto guardrails → tokenization' },
       { t: 'row', date: '7/06 · Substack', title: 'Bitcoin and the Fed → monetary axis' },
@@ -151,13 +154,10 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
   },
 
   camillo: {
-    eyebrow: 'Input · Layer 2',
+    eyebrow: 'A2 · Input, Layer 2',
     title: 'Camillo',
     source: 'name nomination only — cannot move themes',
     blocks: [
-      { t: 'sec', label: 'Gating' },
-      { t: 'kv', k: 'Status', v: 'display-only as deployed' },
-      { t: 'kv', k: 'Target state', v: 'L2 wiring + convergence' },
       { t: 'sec', label: 'Named picks' },
       { t: 'kv', k: 'AMZN', v: 'anchor · deployed 10%' },
       { t: 'kv', k: 'HOOD', v: 'deployed 6%' },
@@ -170,43 +170,45 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
   },
 
   zastocks: {
-    eyebrow: 'Input · Layer 2',
+    eyebrow: 'A3 · Input, Layer 2',
     title: 'ZaStocks',
     source: 'candidates-to-verify — never auto-seat',
     blocks: [
       { t: 'sec', label: 'Sourcing' },
       { t: 'kv', k: 'Method', v: 'scheduled Grok task' },
-      { t: 'kv', k: 'Why not API', v: 'X killed free reads 2/26' },
       { t: 'kv', k: 'Inference risk', v: 'high — chart images' },
       { t: 'sec', label: 'Windows logged' },
       { t: 'row', date: '8/03 – 8/10', title: 'latest ingested' },
       { t: 'row', date: '7/27 – 8/03', title: '' },
       { t: 'row', date: '7/20 – 7/27', title: '' },
-      { t: 'row', date: '7/13 – 7/20', title: '' },
       { t: 'note', text: 'Gated tighter than Camillo. A ZaStocks name never seats alone and never trips the voice floor independently.' },
     ],
   },
 
   tagging: {
-    eyebrow: 'Engine',
+    eyebrow: 'B1 · Engine',
     title: 'Conviction tagging',
     source: 'quote → theme + score',
     blocks: [
+      { t: 'sec', label: 'Rubric' },
+      { t: 'kv', k: 'position_disclosure', v: '.35' },
+      { t: 'kv', k: 'certainty', v: '.25' },
+      { t: 'kv', k: 'causal', v: '.20' },
+      { t: 'kv', k: 'persistence', v: '.10' },
+      { t: 'kv', k: 'contrarian', v: '.10' },
       { t: 'sec', label: 'Rule' },
       { t: 'note', text: 'Exact transcript quotes only. No paraphrase, no inferred stance. A claim without a quote does not tag.' },
       { t: 'sec', label: 'Backfill finding' },
-      { t: 'row', title: '8-week backfill proved airtime alone fails', quote: 'chips scored 0 airtime for 8 straight weeks — airtime-only weighting would have deleted ASML. Settled convictions produce ~0 airtime, so a structural backbone is mandatory.' },
-      { t: 'sec', label: 'Beneficiary rule' },
-      { t: 'note', text: 'Agent / humanoid DEMAND credits Compute, not App.' },
+      { t: 'row', title: 'Airtime alone fails', quote: 'chips scored 0 airtime for 8 straight weeks — airtime-only weighting would have deleted ASML. Settled convictions produce almost no airtime, so a structural backbone is mandatory.' },
     ],
   },
 
   themes: {
-    eyebrow: 'Engine · Layer 1',
+    eyebrow: 'B2 · Engine, Layer 1',
     title: 'Theme weights',
     source: 'theme_engine.py · phase 2: daily_snapshots.portfolio_version',
     blocks: [
-      { t: 'sec', label: 'Sleeve history' },
+      { t: 'sec', label: 'Sleeve mix' },
       { t: 'bar', k: 'AI Compute', v: '50.5%', pct: 50.5 },
       { t: 'bar', k: 'Application', v: '20.0%', pct: 20 },
       { t: 'bar', k: 'Monetary', v: '15.0%', pct: 15 },
@@ -236,7 +238,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
   },
 
   pillars: {
-    eyebrow: 'Engine · Layer 2',
+    eyebrow: 'B3 · Engine, Layer 2',
     title: 'Pillar sizing',
     source: 'signal_engine.py + signal_model_config.json',
     blocks: [
@@ -256,21 +258,21 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
   },
 
   seats: {
-    eyebrow: 'Human gate · Layer 3',
+    eyebrow: 'B4 · Human call',
     title: 'Seat count',
-    source: 'the one judgment call the engine does not make',
+    source: 'the one step in the assembly the engine does not perform',
     blocks: [
       { t: 'sec', label: 'Principle' },
       { t: 'note', text: 'Concentration scales with winner-certainty, not cycle stage. Contestedness sets seat count — a human call. Size stays engine output.' },
       { t: 'sec', label: 'Standing rule' },
       { t: 'row', title: 'Fix scores, not weights', quote: 'a discretionary weight override undermines the system. If a weight looks wrong, the score is wrong.' },
-      { t: 'sec', label: 'Open seat decision' },
-      { t: 'row', pill: { label: 'open', tone: 'open' }, title: 'WDC — cold storage / nearline HDD', quote: 'only uncovered axis in v3.3. WDC+STX >80% share, 2026 output sold out, LTAs through 2027–28. SNDK is watch-not-seat: +570% YTD triggers the full −12 velocity penalty and it rents rather than owns the bottleneck.' },
+      { t: 'sec', label: 'Open decision' },
+      { t: 'row', pill: 'open', tone: 'open', title: 'WDC — cold storage / nearline HDD', quote: 'only uncovered axis in v3.3. WDC+STX above 80% share, 2026 output sold out, LTAs through 2027–28. SNDK is watch-not-seat: +570% YTD triggers the full velocity penalty and it rents rather than owns the bottleneck.' },
     ],
   },
 
   names: {
-    eyebrow: 'Engine · Layer 4',
+    eyebrow: 'B5 · Engine, Layer 4',
     title: 'Name split',
     source: 'coverage discount and stage decay',
     blocks: [
@@ -289,7 +291,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
   },
 
   approval: {
-    eyebrow: 'Human gate',
+    eyebrow: 'C1 · Human gate',
     title: 'Approval',
     source: 'nothing is built without it',
     blocks: [
@@ -301,7 +303,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
   },
 
   freeze: {
-    eyebrow: 'Write',
+    eyebrow: 'C2 · Write',
     title: 'Freeze',
     source: 'phase 2: system_changelog · PORTFOLIO_VERSION drives P&L drift',
     blocks: [
@@ -309,20 +311,20 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
       { t: 'kv', k: 'Version string', v: '2026-07-15-v3.3-coresat' },
       { t: 'kv', k: 'Names', v: '14' },
       { t: 'sec', label: 'Changelog' },
-      { t: 'row', pending: true, pill: { label: 'open', tone: 'open' }, title: 'Memory stage exhausted → working', quote: '×0.60 → ×0.92. Provisionally approved 8/11. Refresh TrendForce contract prices before applying — contract is not spot, and feeding spot into the severity probe produces a false negative.' },
-      { t: 'row', date: '8/11', pill: { label: 'data', tone: 'data' }, title: 'Null-DMA coercion patched', quote: 'JS null coerced to 0 produced a fabricated S5 of 52 for SKHY. Three of four patches applied.' },
-      { t: 'row', date: '8/11', pill: { label: 'book', tone: 'book' }, title: 'GLDM conviction-proximity carve-out fired', quote: '−2.12% from the 200-DMA, inside the ±3% band' },
-      { t: 'row', date: '8/08', pill: { label: 'engine', tone: 'engine' }, title: 'S5 humanoid timeline moved to 2028' },
-      { t: 'row', date: '7/15', pill: { label: 'book', tone: 'book' }, title: 'v3.3 core-satellite freeze' },
-      { t: 'row', date: '7/13', pill: { label: 'engine', tone: 'engine' }, title: 'AIPO reclassified as power infrastructure', quote: 'roughly 85% power, grid and nuclear — no double-count against ASML, SOXX or GLW' },
-      { t: 'row', date: '7/09', pill: { label: 'engine', tone: 'engine' }, title: 'S4 catalyst removed permanently', quote: 'every liquid Kalshi market that could drive S4 is already an axis-2 input; feeding it to S4 double-counts debasement' },
-      { t: 'row', date: '7/07', pill: { label: 'engine', tone: 'engine' }, title: 'S1 four-axis architecture deployed' },
-      { t: 'row', date: '6/01', pill: { label: 'engine', tone: 'engine' }, title: 'Rule B introduced, lambda 0.814' },
+      { t: 'row', pending: true, pill: 'open', tone: 'open', title: 'Memory stage exhausted → working', quote: '×0.60 → ×0.92. Provisionally approved 8/11. Refresh TrendForce contract prices before applying — contract is not spot, and feeding spot into the severity probe produces a false negative.' },
+      { t: 'row', date: '8/11', pill: 'data', tone: 'data', title: 'Null-DMA coercion patched', quote: 'JS null coerced to 0 produced a fabricated S5 of 52 for SKHY. Three of four patches applied.' },
+      { t: 'row', date: '8/11', pill: 'book', tone: 'book', title: 'GLDM conviction-proximity carve-out fired', quote: '−2.12% from the 200-DMA, inside the ±3% band' },
+      { t: 'row', date: '8/08', pill: 'engine', tone: 'engine', title: 'S5 humanoid timeline moved to 2028' },
+      { t: 'row', date: '7/15', pill: 'book', tone: 'book', title: 'v3.3 core-satellite freeze' },
+      { t: 'row', date: '7/13', pill: 'engine', tone: 'engine', title: 'AIPO reclassified as power infrastructure', quote: 'roughly 85% power, grid and nuclear — no double-count against ASML, SOXX or GLW' },
+      { t: 'row', date: '7/09', pill: 'engine', tone: 'engine', title: 'S4 catalyst removed permanently', quote: 'every liquid Kalshi market that could drive S4 is already an axis-2 input; feeding it to S4 double-counts debasement' },
+      { t: 'row', date: '7/07', pill: 'engine', tone: 'engine', title: 'S1 four-axis architecture deployed' },
+      { t: 'row', date: '6/01', pill: 'engine', tone: 'engine', title: 'Rule B introduced, lambda 0.814' },
     ],
   },
 
   push: {
-    eyebrow: 'Deploy',
+    eyebrow: 'C3 · Deploy',
     title: 'git push → Vercel',
     source: 'auto-deploys on push to main',
     blocks: [
@@ -335,22 +337,22 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
   },
 
   cron: {
-    eyebrow: 'Trigger',
+    eyebrow: 'D1 · Trigger',
     title: 'GitHub Actions',
     source: 'server/daily-cron.cjs',
     blocks: [
-      { t: 'kv', k: 'Schedule', v: '7pm ET' },
+      { t: 'kv', k: 'Schedule', v: '7pm ET weekdays' },
       { t: 'kv', k: 'Writes', v: 'service-role key' },
       { t: 'note', text: 'The cron never writes podcast_log or system_changelog. Those stay weekly and human-authored.' },
     ],
   },
 
   apis: {
-    eyebrow: 'Data',
+    eyebrow: 'D2 · Data',
     title: 'Price + macro sources',
     source: 'five live, one manual',
     blocks: [
-      { t: 'kv', k: 'Twelve Data', v: 'primary price / technicals' },
+      { t: 'kv', k: 'Twelve Data', v: 'primary technicals' },
       { t: 'kv', k: 'Finnhub', v: 'price quotes' },
       { t: 'kv', k: 'Alpha Vantage', v: 'SPY RSI history only' },
       { t: 'kv', k: 'FRED', v: 'CPIAUCNS YoY' },
@@ -361,7 +363,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
   },
 
   croncjs: {
-    eyebrow: 'Engine',
+    eyebrow: 'D3 · Engine',
     title: 'daily-cron.cjs',
     source: 'the nightly orchestrator',
     blocks: [
@@ -375,7 +377,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
   },
 
   pnl: {
-    eyebrow: 'Engine',
+    eyebrow: 'D4 · Engine',
     title: 'P&L drift model',
     source: 'hold-and-drift, not daily rebalance',
     blocks: [
@@ -386,7 +388,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
   },
 
   supabase: {
-    eyebrow: 'Write',
+    eyebrow: 'D5 · Write',
     title: 'Supabase',
     source: 'single source of truth for display',
     blocks: [
@@ -398,19 +400,6 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
       { t: 'kv', k: 'podcast_log', v: 'not created', pending: true },
       { t: 'kv', k: 'system_changelog', v: 'not created', pending: true },
       { t: 'note', text: 'Two small tables plus a one-time backfill. Roughly 30 extra seconds in the weekly workflow.' },
-    ],
-  },
-
-  render: {
-    eyebrow: 'Render',
-    title: 'Site reads',
-    source: 'frontend never writes',
-    blocks: [
-      { t: 'note', text: 'Every tab is display-only. No component writes to Supabase and nothing in the UI touches engine weights.' },
-      { t: 'sec', label: 'Tabs' },
-      { t: 'kv', k: 'Signals · Portfolio · Performance', v: 'live' },
-      { t: 'kv', k: 'Trading', v: 'hidden 7/23', pending: true },
-      { t: 'kv', k: 'System', v: 'this tab' },
     ],
   },
 }
