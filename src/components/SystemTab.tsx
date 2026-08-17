@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import type { Theme } from './Dashboard'
 import {
-  STAGE_W, STAGE_H, ENGINE_BOX, BUBBLE, DETAIL_PANEL,
-  SYS_ZONES, SYS_NODES, SYS_CELLS, SYS_EDGES, SYS_LABELS, SYS_DETAILS,
+  STAGE_W, STAGE_H, ENGINE_BOX,
+  SYS_ZONES, SYS_NODES, SYS_EDGES, SYS_LABELS, SYS_DETAILS,
 } from '../data/systemMap'
-import type { Block } from '../data/systemMap'
+import type { Block, SysFile } from '../data/systemMap'
 
 // System tab — blueprint schematic on a frosted panel.
 // Display-only: reads nothing, writes nothing. Content in src/data/systemMap.ts.
@@ -19,7 +20,6 @@ const PANEL = 'rgba(26,26,29,0.88)'
 const PANEL_BLUR = 'blur(26px) saturate(120%)'
 const BOX = 'rgba(44,47,54,0.96)'
 const BOX_HOVER = 'rgba(54,58,67,0.98)'
-const CELL = 'rgba(52,55,63,0.96)'
 const INSET = 'inset 0 1px 0 rgba(255,255,255,0.09)'
 const HUMAN = '#d8c46a' // human-gate amber — System-tab semantics, no global token
 
@@ -27,12 +27,11 @@ const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace'
 
 export default function SystemTab({ theme }: { theme: Theme }) {
   const [selected, setSelected] = useState<string | null>(null)
-  const [detailOpen, setDetailOpen] = useState(false)
   const stageRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setSelected(null); setDetailOpen(false) }
+      if (e.key === 'Escape') setSelected(null)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -110,29 +109,6 @@ export default function SystemTab({ theme }: { theme: Theme }) {
 .sys-engine:focus-visible{outline:2px solid ${theme.accent};outline-offset:3px;}
 .sys-engine.is-sel{transform:translateZ(44px);box-shadow:0 0 40px ${rgba(theme.accent,.35)};}
 
-.sys-bubble{position:absolute;border-radius:50%;border:1.5px dashed ${theme.accent};
-  background:rgba(38,28,20,.96);color:${theme.accent};font-family:${MONO};font-size:8.5px;letter-spacing:.08em;
-  cursor:pointer;transform-style:preserve-3d;z-index:6;
-  transition:transform .25s,background .25s,border-color .25s,box-shadow .25s;
-  box-shadow:0 6px 18px rgba(0,0,0,.5);}
-.sys-bubble:hover{transform:translateZ(30px);background:rgba(60,42,26,.98);}
-.sys-bubble:focus-visible{outline:2px solid ${theme.accent};outline-offset:3px;}
-.sys-bubble.is-open{border-style:solid;background:${theme.accent};color:#1a1410;
-  transform:translateZ(40px);box-shadow:0 0 26px ${rgba(theme.accent,.5)};}
-
-.sys-detail{position:absolute;border-radius:12px;border:1px solid ${rgba(theme.accent,.6)};
-  background:rgba(34,34,39,.97);box-shadow:${INSET},0 18px 44px rgba(0,0,0,.6);
-  transform-style:preserve-3d;opacity:0;pointer-events:none;transform:translateZ(0) scale(.94);
-  transition:opacity .35s,transform .4s cubic-bezier(.2,.7,.3,1);}
-.sys-detail.is-open{opacity:1;pointer-events:auto;transform:translateZ(60px) scale(1);}
-
-.sys-cell{position:absolute;padding:9px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.16);
-  background:${CELL};box-shadow:${INSET};text-align:left;font-family:inherit;color:inherit;
-  cursor:pointer;transition:border-color .2s,background .2s;}
-.sys-cell:hover{border-color:rgba(255,255,255,.42);background:rgba(62,66,75,.98);}
-.sys-cell:focus-visible{outline:2px solid ${theme.accent};outline-offset:2px;}
-.sys-cell.is-sel{border-color:${theme.accent};background:rgba(62,50,38,.98);}
-.sys-cell.is-out{border-style:dashed;background:rgba(255,255,255,.03);cursor:default;}
 
 .sys-ring{position:absolute;top:9px;right:10px;width:7px;height:7px;border-radius:50%;
   border:1.5px solid ${theme.positive};box-shadow:0 0 8px ${rgba(theme.positive,.6)};}
@@ -143,8 +119,20 @@ export default function SystemTab({ theme }: { theme: Theme }) {
   overflow-y:auto;padding:26px 24px 60px;}
 .sys-insp.is-open{transform:translateX(0);}
 
+.sys-part{display:block;width:100%;text-align:left;background:rgba(52,55,63,.5);
+  border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 11px;margin-bottom:7px;
+  cursor:pointer;font-family:inherit;color:inherit;transition:border-color .2s,background .2s;}
+.sys-part:hover{border-color:${rgba(theme.accent,.6)};background:rgba(62,66,75,.7);}
+.sys-part:focus-visible{outline:2px solid ${theme.accent};outline-offset:2px;}
+.sys-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;padding:0 0 12px;
+  cursor:pointer;font-family:${MONO};font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:${theme.accent};}
+.sys-back:hover{color:${theme.textPrimary};}
+.sys-file{display:block;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.sys-file:last-child{border-bottom:none;}
+
 @media (prefers-reduced-motion:reduce){
-  .sys-stage,.sys-box,.sys-engine,.sys-bubble,.sys-detail,.sys-insp,.sys-cell{transition:none !important;}
+  .sys-stage,.sys-box,.sys-engine,.sys-insp,.sys-part,.sys-file{transition:none !important;}
 }
 @media (max-width:1100px){
   .sys-persp{perspective:none;}
@@ -165,7 +153,7 @@ export default function SystemTab({ theme }: { theme: Theme }) {
               System — how the book gets made
             </div>
             <div style={{ fontFamily: MONO, fontSize: 10, color: theme.textSecondary, letterSpacing: '0.09em', textTransform: 'uppercase', marginTop: 5 }}>
-              click the callout bubble for engine internals
+              click any box for detail, history and the files it touches
             </div>
           </div>
           <div style={{ fontFamily: MONO, fontSize: 9.5, color: theme.textTertiary, letterSpacing: '0.1em', lineHeight: 1.85, textAlign: 'right', textTransform: 'uppercase' }}>
@@ -212,9 +200,9 @@ export default function SystemTab({ theme }: { theme: Theme }) {
                     key={i}
                     d={e.d}
                     fill="none"
-                    stroke={e.tone === 'feedback' ? theme.negative : e.tone === 'leader' ? theme.accent : 'rgba(255,255,255,0.30)'}
+                    stroke={e.tone === 'feedback' ? theme.negative : 'rgba(255,255,255,0.30)'}
                     strokeWidth={1.2}
-                    strokeDasharray={e.tone === 'feedback' ? '5 4' : e.tone === 'leader' ? '3 4' : undefined}
+                    strokeDasharray={e.tone === 'feedback' ? '5 4' : undefined}
                     opacity={e.tone === 'wire' ? 1 : 0.8}
                     markerEnd={e.arrow ? 'url(#sysArrow)' : undefined}
                   />
@@ -262,54 +250,10 @@ export default function SystemTab({ theme }: { theme: Theme }) {
                   voices in → 14 weighted positions out
                 </div>
                 <div style={{ position: 'absolute', left: 17, bottom: 13, fontFamily: MONO, fontSize: 8.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: theme.textTertiary, whiteSpace: 'nowrap' }}>
-                  5 parts · 1 human call
+                  5 parts · 1 human call · click to open
                 </div>
               </button>
 
-              {/* callout bubble */}
-              <button
-                className={`sys-bubble${detailOpen ? ' is-open' : ''}`}
-                aria-label={detailOpen ? 'Hide engine internals' : 'Show engine internals'}
-                aria-pressed={detailOpen}
-                title={detailOpen ? 'Hide detail B' : 'Show detail B'}
-                onClick={() => setDetailOpen((o) => !o)}
-                style={{ left: BUBBLE.x, top: BUBBLE.y, width: BUBBLE.d, height: BUBBLE.d }}
-              >
-                <b style={{ display: 'block', fontSize: 14, fontWeight: 600, lineHeight: 1 }}>B</b>{detailOpen ? 'hide' : 'open'}
-              </button>
-
-              {/* detail B */}
-              <div
-                className={`sys-detail${detailOpen ? ' is-open' : ''}`}
-                style={{ left: DETAIL_PANEL.x, top: DETAIL_PANEL.y, width: DETAIL_PANEL.w, height: DETAIL_PANEL.h }}
-              >
-                <span style={{ position: 'absolute', top: -9, left: 16, background: '#20201f', padding: '0 9px', borderRadius: 3, fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.18em', color: theme.accent, textTransform: 'uppercase' }}>
-                  Detail B · engine internals
-                </span>
-                <span style={{ position: 'absolute', bottom: -9, right: 16, background: '#20201f', padding: '0 9px', borderRadius: 3, fontFamily: MONO, fontSize: 8.5, letterSpacing: '0.14em', color: theme.textTertiary, textTransform: 'uppercase' }}>
-                  scale 2:1
-                </span>
-                {SYS_CELLS.map((c) => {
-                  const style = { left: c.x, top: c.y, width: c.w, borderLeft: c.gate ? `3px solid ${HUMAN}` : undefined }
-                  const inner = (
-                    <>
-                      <div style={{ fontFamily: MONO, fontSize: 8, letterSpacing: '0.16em', color: c.gate ? HUMAN : theme.textTertiary }}>{c.ref}</div>
-                      <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2, lineHeight: 1.18, color: theme.textPrimary }}>{c.title}</div>
-                      <div style={{ fontFamily: MONO, fontSize: 9, color: theme.textSecondary, marginTop: 4 }}>{c.value}</div>
-                    </>
-                  )
-                  return c.output ? (
-                    <div key={c.id} className="sys-cell is-out" style={style}>{inner}</div>
-                  ) : (
-                    <button
-                      key={c.id}
-                      className={`sys-cell${selected === c.id ? ' is-sel' : ''}`}
-                      onClick={() => toggle(c.id)}
-                      style={style}
-                    >{inner}</button>
-                  )
-                })}
-              </div>
 
             </div>
           </div>
@@ -332,7 +276,49 @@ export default function SystemTab({ theme }: { theme: Theme }) {
             <div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: theme.accent }}>{detail.eyebrow}</div>
             <div style={{ fontSize: 19, fontWeight: 500, margin: '6px 0 3px', color: theme.textPrimary }}>{detail.title}</div>
             <div style={{ fontFamily: MONO, fontSize: 10, color: theme.textTertiary, marginBottom: 16 }}>{detail.source}</div>
+
+            {detail.parent && (
+              <button className="sys-back" onClick={() => setSelected(detail.parent!)}>
+                ← back to {SYS_DETAILS[detail.parent].title}
+              </button>
+            )}
+
             {detail.blocks.map((b, i) => <BlockView key={i} block={b} theme={theme} />)}
+
+            {detail.parts && detail.parts.length > 0 && (
+              <>
+                <div style={SEC(theme)}>Internals · {detail.parts.length} parts</div>
+                {detail.parts.map((pid) => {
+                  const p = SYS_DETAILS[pid]
+                  if (!p) return null
+                  const isGate = pid === 'seats'
+                  return (
+                    <button
+                      key={pid}
+                      className="sys-part"
+                      onClick={() => setSelected(pid)}
+                      style={isGate ? { borderLeft: `3px solid ${HUMAN}` } : undefined}
+                    >
+                      <div style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: '0.16em', color: isGate ? HUMAN : theme.accent }}>
+                        {p.eyebrow}
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2, color: theme.textPrimary }}>{p.title}</div>
+                      <div style={{ fontFamily: MONO, fontSize: 9.5, color: theme.textSecondary, marginTop: 3 }}>{p.source}</div>
+                    </button>
+                  )
+                })}
+              </>
+            )}
+
+            {detail.files && detail.files.length > 0 && (
+              <>
+                <div style={SEC(theme)}>Files touched · {detail.files.length}</div>
+                {detail.files.map((f) => <FileRow key={f.path} file={f} theme={theme} />)}
+                <div style={{ fontFamily: MONO, fontSize: 9.5, color: theme.textTertiary, marginTop: 12, lineHeight: 1.6 }}>
+                  Hand-authored. Tier C will generate this from repo imports and git metadata.
+                </div>
+              </>
+            )}
           </>
         )}
       </aside>
@@ -341,6 +327,44 @@ export default function SystemTab({ theme }: { theme: Theme }) {
 }
 
 // ---------------------------------------------------------------- blocks
+
+function SEC(theme: Theme): CSSProperties {
+  return {
+    fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase',
+    color: theme.textSecondary, margin: '20px 0 9px', paddingBottom: 6,
+    borderBottom: '1px solid rgba(255,255,255,0.12)',
+  }
+}
+
+const FILE_TONE: Record<SysFile['status'], { label: string; key: 'ok' | 'warn' | 'bad' | 'info' }> = {
+  live:       { label: 'live',       key: 'ok' },
+  stale:      { label: 'stale',      key: 'warn' },
+  orphan:     { label: 'orphan',     key: 'bad' },
+  untracked:  { label: 'untracked',  key: 'warn' },
+  unverified: { label: 'unverified', key: 'info' },
+  proposed:   { label: 'proposed',   key: 'info' },
+}
+
+function FileRow({ file, theme }: { file: SysFile; theme: Theme }) {
+  const t = FILE_TONE[file.status]
+  const color =
+    t.key === 'ok' ? theme.positive :
+    t.key === 'bad' ? theme.negative :
+    t.key === 'warn' ? theme.accent :
+    theme.textTertiary
+  return (
+    <div className="sys-file" style={{ opacity: t.key === 'info' ? 0.72 : 1 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
+        <span style={{ fontFamily: MONO, fontSize: 11, color: theme.textPrimary, wordBreak: 'break-all' }}>{file.path}</span>
+        <span style={{
+          flexShrink: 0, fontFamily: MONO, fontSize: 8, letterSpacing: '0.12em', textTransform: 'uppercase',
+          padding: '1px 5px', borderRadius: 3, border: `1px solid ${hexToRgba(color, 0.5)}`, color,
+        }}>{t.label}</span>
+      </div>
+      <div style={{ fontSize: 11.5, color: theme.textSecondary, marginTop: 3, lineHeight: 1.5 }}>{file.role}</div>
+    </div>
+  )
+}
 
 function BlockView({ block, theme }: { block: Block; theme: Theme }) {
   const hair = '1px solid rgba(255,255,255,0.06)'
