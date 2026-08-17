@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { Theme } from './Dashboard'
 import SignalRadar from './SignalRadar'
+import { VOICES, type VoiceSection } from '../data/voiceCards'
 
 const ACCENT = '#e0915c'
 
@@ -34,112 +35,6 @@ interface SignalRecapProps {
   theme: Theme
   activeVoices: Set<string>
 }
-
-interface VoiceSection {
-  name: string
-  headline: string
-  subtitle: string
-  asOf: string          // freshness stamp — when this voice last produced signal
-  active: boolean        // true = feeds radar/engine; false = frozen reference card
-  themes: {
-    name: string
-    editorial: string
-    tickers: string[]      // curated list; ALSO the fallback when no live portfolio is in the snapshot
-    curated?: boolean       // true: always show these tickers verbatim (social-arb picks not in the book)
-    bucket?: string         // which engine portfolio bucket these tickers map to
-    wholeBucket?: boolean    // true: chips = ALL live holdings in `bucket` (auto add/drop). false/undefined: chips = `tickers` pruned to what's actually held.
-  }[]
-}
-
-const VOICES: VoiceSection[] = [
-  {
-    name: 'Visser',
-    headline: 'LONG SCARCITY, SHORT ABUNDANCE',
-    subtitle: 'Jordi Visser — macro framework for the physical AI upgrade',
-    asOf: 'August 9, 2026',
-    active: true,
-    themes: [
-      {
-        name: 'AI Compute',
-        editorial: `He called it: “The bottom is in as far as I’m concerned on a probability basis.” The four-day rally off the Situational Awareness low ran close to 10% on the Nasdaq — larger than the entire May-to-July pennant it broke out of — and the follow-through landed exactly where his day-4-to-10 test wanted it. On the week the S&P added 3.6%, the Nasdaq 5%, and his own 100-name thematic portfolio 6.5%, its second-best week of the year. Confirmation is broad rather than narrow: the S&P is up 13% year to date with every sector green, and the equal-weight S&P, IWM and the NYSE Composite all printed new all-time highs alongside the DAX and the FTSE. Korea, the market people kept telling him was the problem, is up 61% year to date with its technology sector up 116%. Factor volatility collapsed, the VIX sits at its lowest since January, and CDX never moved — there was no credit event underneath any of it. He expects new all-time highs in many AI names by year-end. The seat-level news is where he has shifted: “the area I’m probably most focused on at this point is the optical names,” and the reason is Vera Rubin, with Eaton and Schneider both reporting this week as electrical participants in it. He carries a good-sized Nvidia position added over the prior three weeks, on Gavin Baker’s point that it now trades at its lowest forward P/E in a decade. The scarcity number that matters: the same B200 cluster that rented near $2 per GPU-hour seven months ago is now expected to rent just under $4. The structural caution is unchanged and sharper — he is calling peak gross leverage, which keeps factor volatility structurally higher and means index puts no longer hedge this book; his replacement tool is the 50-day rate of change on the thematic index, which topped near +50% in May and bottomed near −10%. He also re-upped the memory thesis without acting on it: on the SpaceX call Elon put memory supply growth near 20% a year against demand growth near 200%, which is the June AI = Memory argument restated by the person building the constraint, and Visser’s own framing is that more compute does not solve the bottleneck without more memory. But he holds Micron and is not adding — “I’ve got the optical names which I like more” — so read this as a live shortage he is currently expressing somewhere other than memory, not a memory re-entry.`,
-        tickers: ['SOXX', 'AIPO', 'COPX', 'GLW', 'ASML', 'SKHY'],
-        bucket: 'AI Compute',
-        wholeBucket: true,
-      },
-      {
-        name: 'AI Application',
-        editorial: `Palantir is the proof-of-adoption print, and it is both the only software name he owns personally and a seat in the thematic portfolio: commercial revenue of $764M against $306M a year ago, with 220 deals of at least $1M, 98 of at least $5M and 78 of at least $10M closed in the quarter. He also flagged Cadence and Synopsys, the software-design pair inside his index, as names he expects to be talking about soon. The framing underneath is unchanged and still hostile to most of this sleeve: adoption is accelerating because agents are tireless, which compresses economic time, makes terminal value unknowable, and takes companies from a 30 multiple to a 20 in a very short amount of time. Google is the live example — Jeff Dean gone after 27 years, Demis moved into another role, another $25B of debt issued this week — and his read is simply that if you don’t know, the multiple should compress. He extends it into a class call: negative on public equities by 2030, with bureaucracy the killer and AI-native single-employee companies the competition, and new business formations already going parabolic. The labour data is the same story from the other side — average hourly earnings down to 3.2% year over year, aggregate weekly payrolls at their weakest six-month rate of change since 2012 excluding COVID, and no job creation at all once healthcare is stripped out. Neither Lilly nor Amazon drew direct commentary this window, so both seats carry forward on prior conviction rather than fresh sponsorship.`,
-        tickers: ['LLY', 'AMZN'],
-        bucket: 'AI Application',
-        wholeBucket: true,
-      },
-      {
-        name: 'Tokenization',
-        editorial: `The gate has not opened and he is explicit about it — “Bitcoin is still in a bear market until we get above there,” meaning the 200-day, and anything below it is a trading vehicle rather than an investment. What changed is the quality of the tape underneath. Bitcoin absorbed a genuinely bad news week and held: the Clarity Act’s odds of being signed this year fell from roughly 50% three weeks ago to 40% and then to 17%, Strategy sold more Bitcoin, and a Coldcard exploit hit cold-storage confidence — and he reads that non-reaction as the setup rather than the warning. The larger call is that the last ten trading days will be looked back on as the inflection, with the yen intervention as proof the tool cupboard is bare. He is committing to the view structurally, not just in the book: a crypto vertical joins his paid research in late September into early October, timed to when traditional finance is both forced and intrigued into the space. The forward mechanism is unchanged — this year is AI agents, next year is consumer agents, which means transaction volume through stablecoins, and he argues that happens regardless of the Clarity Act, with the SEC and CFTC expected to supplement it. His 40-name token index ecosystem is behaving well. Discipline holds for our seats: both sit below their 200-day, so the thesis is binding while the entry gate stays shut, and paused is not sold.`,
-        tickers: ['HOOD', 'ETHA'],
-        bucket: 'Tokenization',
-        wholeBucket: true,
-      },
-      {
-        name: 'Monetary Scarcity',
-        editorial: `This is the week the debasement trade stopped being dormant. The trigger was the first coordinated US-BOJ intervention in the yen since 1998, financed in a way he calls unprecedented, with Bessent leaning on the Fed to lift the FIMA repo cap and the Treasury’s exchange stabilisation fund already out of ammunition — “we’re running hot into a scarcity of tools for the Fed.” The market answered immediately. Gold rose 7.2%, its third-biggest week in sixteen years, and closed back above its 50-day for the first time since March after the third-longest stretch below it on record. Platinum broke its 50-day. Silver closed above its 50-day on Friday. He bought silver again on Monday morning, and the framing is now explicitly dual-axis, which is exactly how this book carries it: “I have a good size position in silver because of the AI side, but I like it now because of the debasement side.” Positioning is fuel rather than resistance — dollar longs at their most crowded reading with the dollar already broken down. The cross-current is that the market still prices a 45% chance of a September Fed hike and 63% from the BOJ, which he thinks is badly wrong given average hourly earnings at 3.2% and Trueflation’s core reading collapsing over the last four weeks while CPI core has not caught up. Thirty-year yields sit near multi-decade highs in the US, UK, Japan and Germany at once, and the conclusion is Lyn Alden’s: nothing stops this train, because equity drawdowns cut corporate tax receipts into a 5-6% deficit and force the response every time.`,
-        tickers: ['SLV', 'GLDM', 'IBIT'],
-        bucket: 'Monetary Scarcity',
-        wholeBucket: true,
-      },
-    ],
-  },
-  {
-    name: 'Camillo',
-    headline: 'BET ON WHAT PEOPLE DO, NOT WHAT MARKETS THINK',
-    subtitle: 'Chris Camillo — social arbitrage and the companies AI will make dominant',
-    asOf: 'August 8, 2026',
-    active: true,
-    themes: [
-      {
-        name: 'AI Application',
-        editorial: `Amazon is still his anchor and the purest AI-efficiency bet — AWS, in-house Trainium silicon, robotics and logistics compounding into real-world margin — and the 8/8 robotics session reinforced the robotics leg specifically: Amazon is not chasing the humanoid form factor as aggressively as others, but has so much happening in robotics that “you cannot count out Amazon by any means.” Robinhood is the other high-conviction hold, sharpened on 7/15 around agentic trading as “the biggest gamechanger I’ve ever seen for brokers like Robin Hood,” one he thinks could 100x trading volume; still a top-30 name he has added on every dip into the 70s. The new material this window is humanoids, and the headline is a timeline extension rather than an acceleration. Tesla remains, in his words, the only meaningful public-market play; everything real is private — Figure, Apptronik, 1X, Skild, Physical Intelligence and Sunday — with Boston Dynamics folding further into Hyundai and Agility coming public via SPAC, which he does not love. His pragmatic schedule: very small deployments late this year, small deployments through 2027, first scale deployments in 2028, and an IPO window in 2028 — “it’s not now, it’s not 26.” Two structural points worth logging. The new ruling bans all non-US bots, requiring 65% of bill-of-materials cost to be made domestically and rising toward 80% by the early 2030s; Optimus’s supply chain is believed to be largely Chinese, which he suspects is a real part of Elon’s delay, and it makes in-house actuation design the moat skill. And early deployment will be wheeled rather than bipedal — cheaper, materially safer, good for roughly 80% of early use cases, and sharing an identical upper body so the learning carries across. Read against our own book, this is a hold-the-line confirmation for Stage 5, not a call to seat it.`,
-        tickers: ['AMZN', 'HOOD'],
-        curated: true,
-      },
-      {
-        name: 'AI Compute',
-        editorial: `Bloom Energy is still one of the biggest trades of his career and, in his framing, the fastest way to scale a data center — on-site power where turbines and grid hookups are the bottleneck. But it's now a held winner he's been trimming for concentration, and on 6/24 he openly flagged the eventual rotation from single-name power plays toward the mega-caps spending $100–200B a year in capex — direction clear, timing unknown.`,
-        tickers: ['BE'],
-        curated: true,
-      },
-    ],
-  },
-  {
-    name: 'ZaStocks',
-    headline: 'THINK BIGGER ON THE LEADERS',
-    subtitle: 'ZaStocks (@ZaStocks) — technical setups and the AI market broadening beyond core semis',
-    asOf: 'wk of Aug 3 – 10 · via Grok',
-    active: true,
-    themes: [
-      {
-        name: 'AI Healthcare & Genomics',
-        editorial: `Palantir is the fresh block and it is the one that converges. He frames it as “over one year of building a base after a big advance,” with the earnings candle reclaiming its moving averages and breaking the downtrend from the highs — around 172 against a 50-day SMA of 154.73 and a 20-day EMA of 138.39, with the prior high at 207 — and calls it one of the original leaders of this bull market for good reason, second only to Nvidia on execution. That gives PLTR two legs this window, since Visser owns it personally and carries it in his thematic portfolio; under the tiered model that is a genuine cross-voice convergence, though the wiring remains display-only. ServiceNow was a lighter mention on the Jensen endorsement angle, around 124.88 and still below its 50-day SMA of 132.67 — an observation, not a setup. The carried names have now aged out: Tempus AI and AbCellera were last affirmed in the June 26 to July 2 window and sit beyond the 45-day ZaStocks decay, so treat that conviction as expired rather than merely aging. Neither has been re-affirmed since, and TEM’s convergence with our own AI Application second-seat watch lapses with it.`,
-        tickers: ['PLTR', 'NOW'],
-        curated: true,
-      },
-      {
-        name: 'AI Compute — pre-consensus holds',
-        editorial: `A full week of charts after the silence, and the stance is constructive but deliberately unhurried — the Nasdaq is still a three-month range, and “overtrading in a choppy or sideways market can do more damage than trading infrequently during a downtrend.” Nvidia is the anchor: “hard to get bearish when the AI king looks like this,” a monster base consolidating near 223.96 above rising averages, with horizontal resistance near 220, a 20-day EMA of 202.61 and a 50-day SMA of 190.94 — plus his corollary that every major AI earnings call still routes back to it. Intel is the new name, built on a stated $100 level with the chart near 101.65 against a 50-day SMA of 95.24, and the catalyst is Terafab: “SpaceX choosing Intel as a key partner feels like a bigger deal than anyone thinks.” HPE is now a stated position rather than a wish — the framework name he has quoted all month, “stocks that don’t breakdown during weakness often lead during strength,” trading near 47.90 above a 20-day EMA of 44.26 and a 50-day SMA of 39.16. Dell stays as declared ownership with no level given. SPCX draws his most enthusiastic language on the Elon posting flow and the SpaceX-absorbs-Tesla narrative, and stays exactly where we put it — off-thesis, no pillar fit, no gateable technicals as a new listing. Oracle did not reappear this window.`,
-        tickers: ['NVDA', 'INTC', 'HPE', 'DELL'],
-        curated: true,
-      },
-      {
-        name: 'Broadening: energy storage & fintech',
-        editorial: `Uber is the only genuinely new name outside compute, and it is a long-horizon setup rather than a trigger: the 200-week moving average, with that line near 64.79 while price trades around 75.02 and still well below a 50-day SMA of 80.51 — a base reclaim in progress, with the Pelosi-bought framing attached as colour. Neither Fluence nor Upstart reappeared for a third straight window, so FLNC stays watch-not-seat with its own tape the binding constraint rather than the thesis. The ledger note that keeps mattering: this is the fifth consecutive window in which he has named zero of our book holdings — no AIPO, SOXX, GLW, ASML, SKHY, COPX, SLV, GLDM, IBIT, LLY, AMZN, HOOD or ETHA. The psychology he published is worth keeping directly next to the Visser bottom call, because it is the more cautious of the two: “the first signs of weakness after a rally off a low says more about the market than the rally itself,” and if that weakness isn’t bought, the move was a temporary bounce — which makes relative strength and standout performance the thing to track, not the index.`,
-        tickers: ['UBER', 'FLNC'],
-        curated: true,
-      },
-    ],
-  },
-]
-
-
 
 export default function SignalRecap({ snapshot, theme: t, activeVoices }: SignalRecapProps) {
   if (!snapshot) {
