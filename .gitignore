@@ -40,3 +40,16 @@ src/components/*.bak.*
 **/*.bak.*
 
 **/*.bak
+
+# macOS Finder artifacts
+Icon?
+*.textClipping
+
+# Local assets and vaults — not part of the app
+Wallpapers/
+alphaplaybook-favicons-v2/
+alphaplaybook-obsidian-vault/
+Situational Awareness*.pdf
+
+# Generated engine output
+severity_scores.json
