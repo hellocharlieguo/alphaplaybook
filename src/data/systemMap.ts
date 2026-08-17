@@ -56,7 +56,10 @@ export const STAGE_W = 1400
 export const STAGE_H = 430
 
 export const ENGINE_BOX = { x: 200, y: 76, w: 300, h: 132 }
-export const BUBBLE = { x: 392, y: 120, d: 48 }
+// Must stay clear of ENGINE_BOX (x 200-500, y 76-208): inside a preserve-3d
+// context the engine's hover translateZ occludes anything overlapping it,
+// regardless of z-index. Parked below the engine, inside the weekly zone.
+export const BUBBLE = { x: 228, y: 214, d: 44 }
 export const DETAIL_PANEL = { x: 560, y: 26, w: 560, h: 236 }
 
 export const SYS_ZONES: SysZone[] = [
@@ -101,7 +104,7 @@ export const SYS_EDGES: SysEdge[] = [
   { d: 'M552,378 L586,378',                 tone: 'wire', arrow: true },
   { d: 'M750,378 L784,378',                 tone: 'wire', arrow: true },
   { d: 'M812,190 C812,272 470,268 420,360', tone: 'feedback' },
-  { d: 'M440,144 L560,112',                 tone: 'leader' },
+  { d: 'M276,236 L554,250',                 tone: 'leader' },
 ]
 
 export const SYS_LABELS: SysLabel[] = [

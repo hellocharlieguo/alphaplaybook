@@ -261,8 +261,8 @@ export default function SystemTab({ theme }: { theme: Theme }) {
                 <div style={{ fontFamily: MONO, fontSize: 10, color: '#c9c4bd', marginTop: 6, lineHeight: 1.55 }}>
                   voices in → 14 weighted positions out
                 </div>
-                <div style={{ position: 'absolute', left: 17, bottom: 13, fontFamily: MONO, fontSize: 8.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: theme.textTertiary }}>
-                  5 parts · 1 human call · open B for internals
+                <div style={{ position: 'absolute', left: 17, bottom: 13, fontFamily: MONO, fontSize: 8.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: theme.textTertiary, whiteSpace: 'nowrap' }}>
+                  5 parts · 1 human call
                 </div>
               </button>
 
