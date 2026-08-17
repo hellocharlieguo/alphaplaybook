@@ -61,6 +61,9 @@ export default function SystemTab({ theme }: { theme: Theme }) {
 
   const detail = selected ? SYS_DETAILS[selected] : null
   const rgba = (hex: string, a: number) => hexToRgba(hex, a)
+
+  // Clicking the same element again closes the inspector — no trip to the ✕.
+  const toggle = (id: string) => setSelected((prev) => (prev === id ? null : id))
   const roleColor = (kind: string) =>
     kind === 'engine' ? theme.accent : kind === 'human' ? HUMAN : kind === 'write' ? theme.negative : null
 
@@ -74,7 +77,10 @@ export default function SystemTab({ theme }: { theme: Theme }) {
   padding:18px 24px 16px;border-bottom:1px solid ${theme.border};}
 .sys-legend{display:flex;gap:14px;flex-wrap:wrap;padding:11px 24px;
   border-bottom:1px solid ${theme.border};background:rgba(255,255,255,.018);}
-.sys-scroll{overflow-x:auto;overflow-y:hidden;padding:30px 24px 26px;}
+/* Generous side padding: the perspective tilt pushes the near edge of the
+   stage outward, and .sys-panel has overflow:hidden, so a tight pad clips the
+   A- and D-column cards. 56px covers the worst case at ry = 4deg. */
+.sys-scroll{overflow-x:auto;overflow-y:hidden;padding:30px 56px 26px;}
 .sys-persp{perspective:1900px;perspective-origin:50% 44%;}
 .sys-stage{position:relative;width:${STAGE_W}px;height:${STAGE_H}px;transform-style:preserve-3d;
   transform:rotateX(var(--rx,6deg)) rotateY(var(--ry,0deg));transition:transform .5s cubic-bezier(.2,.7,.3,1);}
@@ -105,11 +111,14 @@ export default function SystemTab({ theme }: { theme: Theme }) {
 .sys-engine.is-sel{transform:translateZ(44px);box-shadow:0 0 40px ${rgba(theme.accent,.35)};}
 
 .sys-bubble{position:absolute;border-radius:50%;border:1.5px dashed ${theme.accent};
-  background:rgba(38,28,20,.96);color:${theme.accent};font-family:${MONO};font-size:9px;letter-spacing:.1em;
-  cursor:pointer;transform-style:preserve-3d;transition:transform .25s,background .25s;z-index:5;
+  background:rgba(38,28,20,.96);color:${theme.accent};font-family:${MONO};font-size:8.5px;letter-spacing:.08em;
+  cursor:pointer;transform-style:preserve-3d;z-index:6;
+  transition:transform .25s,background .25s,border-color .25s,box-shadow .25s;
   box-shadow:0 6px 18px rgba(0,0,0,.5);}
 .sys-bubble:hover{transform:translateZ(30px);background:rgba(60,42,26,.98);}
 .sys-bubble:focus-visible{outline:2px solid ${theme.accent};outline-offset:3px;}
+.sys-bubble.is-open{border-style:solid;background:${theme.accent};color:#1a1410;
+  transform:translateZ(40px);box-shadow:0 0 26px ${rgba(theme.accent,.5)};}
 
 .sys-detail{position:absolute;border-radius:12px;border:1px solid ${rgba(theme.accent,.6)};
   background:rgba(34,34,39,.97);box-shadow:${INSET},0 18px 44px rgba(0,0,0,.6);
@@ -230,7 +239,7 @@ export default function SystemTab({ theme }: { theme: Theme }) {
                   <button
                     key={n.id}
                     className={`sys-box${selected === n.id ? ' is-sel' : ''}`}
-                    onClick={() => setSelected(n.id)}
+                    onClick={() => toggle(n.id)}
                     style={{ left: n.x, top: n.y, borderLeft: c ? `3px solid ${c}` : undefined }}
                   >
                     {n.history && <span className="sys-ring" />}
@@ -244,7 +253,7 @@ export default function SystemTab({ theme }: { theme: Theme }) {
               {/* sealed engine assembly */}
               <button
                 className={`sys-engine${selected === 'engine' ? ' is-sel' : ''}`}
-                onClick={() => { setSelected('engine'); setDetailOpen(true) }}
+                onClick={() => toggle('engine')}
                 style={{ left: ENGINE_BOX.x, top: ENGINE_BOX.y, width: ENGINE_BOX.w, height: ENGINE_BOX.h }}
               >
                 <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '0.16em', color: theme.accent }}>B · ENGINE</div>
@@ -253,18 +262,20 @@ export default function SystemTab({ theme }: { theme: Theme }) {
                   voices in → 14 weighted positions out
                 </div>
                 <div style={{ position: 'absolute', left: 17, bottom: 13, fontFamily: MONO, fontSize: 8.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: theme.textTertiary }}>
-                  5 parts · 1 human call · see detail B
+                  5 parts · 1 human call · open B for internals
                 </div>
               </button>
 
               {/* callout bubble */}
               <button
-                className="sys-bubble"
-                aria-label="Toggle detail B"
+                className={`sys-bubble${detailOpen ? ' is-open' : ''}`}
+                aria-label={detailOpen ? 'Hide engine internals' : 'Show engine internals'}
+                aria-pressed={detailOpen}
+                title={detailOpen ? 'Hide detail B' : 'Show detail B'}
                 onClick={() => setDetailOpen((o) => !o)}
                 style={{ left: BUBBLE.x, top: BUBBLE.y, width: BUBBLE.d, height: BUBBLE.d }}
               >
-                <b style={{ display: 'block', fontSize: 13, fontWeight: 600, lineHeight: 1 }}>B</b>2:1
+                <b style={{ display: 'block', fontSize: 14, fontWeight: 600, lineHeight: 1 }}>B</b>{detailOpen ? 'hide' : 'open'}
               </button>
 
               {/* detail B */}
@@ -293,7 +304,7 @@ export default function SystemTab({ theme }: { theme: Theme }) {
                     <button
                       key={c.id}
                       className={`sys-cell${selected === c.id ? ' is-sel' : ''}`}
-                      onClick={() => setSelected(c.id)}
+                      onClick={() => toggle(c.id)}
                       style={style}
                     >{inner}</button>
                   )
