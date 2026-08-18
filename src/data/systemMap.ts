@@ -24,7 +24,10 @@ export interface SysNode {
   history?: boolean
 }
 
-export type FileStatus = 'live' | 'stale' | 'orphan' | 'untracked' | 'unverified' | 'proposed'
+// 'stale'    = content is out of date versus reality (a spec still listing S4)
+// 'modified' = tracked, but has uncommitted local edits (M in git status)
+// 'untracked'= never git add-ed; no history, no recovery (?? in git status)
+export type FileStatus = 'live' | 'stale' | 'modified' | 'orphan' | 'untracked' | 'unverified' | 'proposed'
 
 export interface SysFile {
   path: string
@@ -113,7 +116,7 @@ const F_CRON: SysFile     = { path: 'server/daily-cron.cjs',     role: 'nightly 
 const F_RECAP: SysFile    = { path: 'src/components/SignalRecap.tsx', role: 'renders the three voice cards',         status: 'live' }
 const F_VOICES: SysFile   = { path: 'src/data/voiceCards.ts',    role: 'weekly card content — one-file edit',        status: 'live' }
 const F_WEEKLY: SysFile   = { path: 'Weekly_Workflow.md',        role: 'the §1–§8 weekly run order',                 status: 'live' }
-const F_PULL: SysFile     = { path: 'pull_candidates.cjs',       role: 'candidate technicals pull',                  status: 'stale' }
+const F_PULL: SysFile     = { path: 'pull_candidates.cjs',       role: 'candidate technicals pull — uncommitted edits, git diff first', status: 'modified' }
 
 export const SYS_DETAILS: Record<string, SysDetail> = {
   engine: {
@@ -148,7 +151,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
       { t: 'row', date: '7/27 · Mark Moss', title: 'debasement framing → axis 2 confirm' },
       { t: 'row', date: '7/06 · Substack', title: 'Bitcoin and the Fed → monetary axis' },
       { t: 'sec', label: '5-stage AI cycle' },
-      { t: 'kv', k: 'S1 Memory', v: 'under review' },
+      { t: 'kv', k: 'S1 Memory', v: 'working ×0.92' },
       { t: 'kv', k: 'S2 Optical / chem', v: 'working' },
       { t: 'kv', k: 'S3 Power + silver', v: 'binding — now' },
       { t: 'kv', k: 'S4 Tokenization', v: "Sept '26 — dated, not actioned" },
@@ -360,7 +363,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
       { t: 'kv', k: 'Version string', v: '2026-07-15-v3.3-coresat' },
       { t: 'kv', k: 'Names', v: '14' },
       { t: 'sec', label: 'Changelog' },
-      { t: 'row', pending: true, pill: 'open', tone: 'open', title: 'Memory stage exhausted → working', quote: '×0.60 → ×0.92. Provisionally approved 8/11. Refresh TrendForce contract prices before applying — contract is not spot, and feeding spot into the severity probe produces a false negative.' },
+      { t: 'row', date: '8/11', pill: 'engine', tone: 'engine', title: 'Memory stage exhausted → working', quote: '×0.60 → ×0.92. Applied by raising SKHY S2 into the 65–89 band — the engine derives stage from S2 thresholds computationally, there is no stage config field. Standing wiring trap: contract is not spot. SK Hynix sells bilateral contracts to hyperscalers, so feeding spot into severity_probe.cjs produces a false negative on SKHY.' },
       { t: 'row', date: '8/11', pill: 'data', tone: 'data', title: 'Null-DMA coercion patched', quote: 'JS null coerced to 0 produced a fabricated S5 of 52 for SKHY. Three of four patches applied.' },
       { t: 'row', date: '8/11', pill: 'book', tone: 'book', title: 'GLDM conviction-proximity carve-out fired', quote: '−2.12% from the 200-DMA, inside the ±3% band' },
       { t: 'row', date: '8/08', pill: 'engine', tone: 'engine', title: 'S5 humanoid timeline moved to 2028' },

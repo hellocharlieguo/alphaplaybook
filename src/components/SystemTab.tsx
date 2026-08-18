@@ -339,6 +339,7 @@ function SEC(theme: Theme): CSSProperties {
 const FILE_TONE: Record<SysFile['status'], { label: string; key: 'ok' | 'warn' | 'bad' | 'info' }> = {
   live:       { label: 'live',       key: 'ok' },
   stale:      { label: 'stale',      key: 'warn' },
+  modified:   { label: 'modified',   key: 'warn' },
   orphan:     { label: 'orphan',     key: 'bad' },
   untracked:  { label: 'untracked',  key: 'warn' },
   unverified: { label: 'unverified', key: 'info' },
