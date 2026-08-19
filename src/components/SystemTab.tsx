@@ -6,6 +6,7 @@ import {
   SYS_ZONES, SYS_NODES, SYS_EDGES, SYS_LABELS, SYS_DETAILS,
 } from '../data/systemMap'
 import type { Block, SysFile } from '../data/systemMap'
+import { FILE_STATUS, MAP_META } from '../data/fileStatus'
 
 // System tab — blueprint schematic on a frosted panel.
 // Display-only: reads nothing, writes nothing. Content in src/data/systemMap.ts.
@@ -315,7 +316,7 @@ export default function SystemTab({ theme }: { theme: Theme }) {
                 <div style={SEC(theme)}>Files touched · {detail.files.length}</div>
                 {detail.files.map((f) => <FileRow key={f.path} file={f} theme={theme} />)}
                 <div style={{ fontFamily: MONO, fontSize: 9.5, color: theme.textTertiary, marginTop: 12, lineHeight: 1.6 }}>
-                  Hand-authored. Tier C will generate this from repo imports and git metadata.
+                  Status derived from git at {MAP_META.generatedAt.slice(0, 10)} · commit {MAP_META.commit} · npm run map to refresh
                 </div>
               </>
             )}
@@ -340,14 +341,31 @@ const FILE_TONE: Record<SysFile['status'], { label: string; key: 'ok' | 'warn' |
   live:       { label: 'live',       key: 'ok' },
   stale:      { label: 'stale',      key: 'warn' },
   modified:   { label: 'modified',   key: 'warn' },
+  missing:    { label: 'missing',    key: 'bad' },
   orphan:     { label: 'orphan',     key: 'bad' },
   untracked:  { label: 'untracked',  key: 'warn' },
   unverified: { label: 'unverified', key: 'info' },
   proposed:   { label: 'proposed',   key: 'info' },
 }
 
+// Declared judgments win — the generator cannot know that a spec is out of
+// date or that a script should never be run. Everything else comes from git.
+function resolveStatus(file: SysFile): { status: SysFile['status']; state?: typeof FILE_STATUS[string] } {
+  const state = FILE_STATUS[file.path]
+  if (file.status === 'stale' || file.status === 'orphan' || file.status === 'proposed') {
+    return { status: file.status, state }
+  }
+  if (!state) return { status: 'unverified' }
+  if (state.kind === 'table') return { status: 'proposed', state }
+  if (!state.exists) return { status: 'missing', state }
+  if (!state.tracked) return { status: 'untracked', state }
+  if (state.dirty) return { status: 'modified', state }
+  return { status: 'live', state }
+}
+
 function FileRow({ file, theme }: { file: SysFile; theme: Theme }) {
-  const t = FILE_TONE[file.status]
+  const { status, state } = resolveStatus(file)
+  const t = FILE_TONE[status]
   const color =
     t.key === 'ok' ? theme.positive :
     t.key === 'bad' ? theme.negative :
@@ -363,6 +381,12 @@ function FileRow({ file, theme }: { file: SysFile; theme: Theme }) {
         }}>{t.label}</span>
       </div>
       <div style={{ fontSize: 11.5, color: theme.textSecondary, marginTop: 3, lineHeight: 1.5 }}>{file.role}</div>
+      {state && (state.lastCommit || state.childCount !== undefined) && (
+        <div style={{ fontFamily: MONO, fontSize: 9, color: theme.textTertiary, marginTop: 3, letterSpacing: '0.04em' }}>
+          {state.lastCommit ? `last commit ${state.lastCommit}` : ''}
+          {state.childCount !== undefined ? `${state.lastCommit ? ' · ' : ''}${state.childCount} files` : ''}
+        </div>
+      )}
     </div>
   )
 }

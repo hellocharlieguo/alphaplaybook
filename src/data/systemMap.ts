@@ -27,12 +27,17 @@ export interface SysNode {
 // 'stale'    = content is out of date versus reality (a spec still listing S4)
 // 'modified' = tracked, but has uncommitted local edits (M in git status)
 // 'untracked'= never git add-ed; no history, no recovery (?? in git status)
-export type FileStatus = 'live' | 'stale' | 'modified' | 'orphan' | 'untracked' | 'unverified' | 'proposed'
+export type FileStatus = 'live' | 'stale' | 'modified' | 'orphan' | 'untracked' | 'unverified' | 'proposed' | 'missing'
 
 export interface SysFile {
   path: string
   role: string
+  // DECLARED status. Only the judgment values survive the merge with
+  // fileStatus.ts — 'stale', 'orphan' and 'proposed' are human calls the
+  // generator cannot derive. 'live' / 'modified' / 'untracked' / 'unverified'
+  // are placeholders that generated state overrides.
   status: FileStatus
+  kind?: 'file' | 'dir' | 'table'
 }
 
 export interface SysZone { x: number; y: number; w: number; h: number; label: string }
@@ -383,7 +388,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     files: [
       { path: 'server/daily-cron.cjs', role: 'holds BASE_PORTFOLIO + PORTFOLIO_VERSION', status: 'live' },
       { path: 'src/data/systemMap.ts', role: 'this changelog, until system_changelog exists', status: 'live' },
-      { path: 'system_changelog', role: 'Supabase table — phase 2', status: 'proposed' },
+      { path: 'system_changelog', role: 'Supabase table — phase 2', status: 'proposed', kind: 'table' },
     ],
   },
 
@@ -414,7 +419,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
       { t: 'note', text: 'The cron never writes podcast_log or system_changelog. Those stay weekly and human-authored.' },
     ],
     files: [
-      { path: '.github/workflows/', role: 'the schedule definition — path not yet confirmed', status: 'unverified' },
+      { path: '.github/workflows/', role: 'the schedule definition', status: 'unverified', kind: 'dir' },
       F_CRON,
     ],
   },

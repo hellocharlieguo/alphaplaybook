@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "map": "node build_file_map.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.102.1",
