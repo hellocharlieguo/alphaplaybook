@@ -17,13 +17,13 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-08-19T02:10:16.392Z",
-  "commit": "3154422",
+  "generatedAt": "2026-08-19T13:18:55.284Z",
+  "commit": "c58c465",
   "declared": 34,
   "missing": 3,
   "untracked": 9,
   "modified": 2,
-  "undeclared": 7
+  "undeclared": 6
 } as const
 
 export const FILE_STATUS: Record<string, FileState> = {
@@ -238,10 +238,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "tracked": true,
     "dirty": true,
     "kind": "file",
-    "sizeBytes": 30202,
+    "sizeBytes": 31924,
     "mtime": "2026-08-19",
-    "lastCommit": "2026-08-17",
-    "lastMessage": "System tab: verified theme_engine.py file layer, flag silent-fallback risk"
+    "lastCommit": "2026-08-18",
+    "lastMessage": "Tier C: derive file status from git, merge into System tab with declared-judgment precedence"
   },
   "system_changelog": {
     "exists": false,
@@ -341,7 +341,6 @@ export const DECLARED_BUT_MISSING: string[] = [
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "build_file_map.cjs",
   "patch_asof_tz.py",
   "patch_freeze_v31.py",
   "patch_freeze_v32.py",
