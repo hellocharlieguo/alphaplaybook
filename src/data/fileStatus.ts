@@ -14,16 +14,24 @@ export interface FileState {
   childCount?: number
   lastCommit?: string
   lastMessage?: string
+  /** source files only — count of modules this one imports */
+  imports?: number
+  /** source files only — modules that import this one */
+  importedBy?: string[]
+  /** source files only — reachable from the Vite entry point */
+  reachable?: boolean
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-08-19T13:18:55.284Z",
-  "commit": "c58c465",
+  "generatedAt": "2026-08-19T14:05:49.794Z",
+  "commit": "dc95bf9",
   "declared": 34,
   "missing": 3,
   "untracked": 9,
-  "modified": 2,
-  "undeclared": 6
+  "modified": 1,
+  "undeclared": 6,
+  "orphanedSource": 2,
+  "undeclaredSource": 10
 } as const
 
 export const FILE_STATUS: Record<string, FileState> = {
@@ -52,10 +60,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "tracked": true,
     "dirty": false,
     "kind": "file",
-    "sizeBytes": 7568,
-    "mtime": "2026-08-05",
-    "lastCommit": "2026-08-17",
-    "lastMessage": "Track theme_engine.py: L1/L2 recommender, was living outside version control"
+    "sizeBytes": 9310,
+    "mtime": "2026-08-19",
+    "lastCommit": "2026-08-19",
+    "lastMessage": "L1: correct structural keys to real theme labels, re-anchor prior to v3.3"
   },
   "server/daily-cron.cjs": {
     "exists": true,
@@ -74,6 +82,11 @@ export const FILE_STATUS: Record<string, FileState> = {
     "kind": "file",
     "sizeBytes": 21360,
     "mtime": "2026-08-17",
+    "imports": 3,
+    "importedBy": [
+      "src/components/Dashboard.tsx"
+    ],
+    "reachable": true,
     "lastCommit": "2026-08-17",
     "lastMessage": "Voice cards 8/17: extract VOICES to src/data; Visser dates Stage 4 tokenization, Camillo BE drawdown re-rates entry, ZaS"
   },
@@ -84,6 +97,11 @@ export const FILE_STATUS: Record<string, FileState> = {
     "kind": "file",
     "sizeBytes": 19210,
     "mtime": "2026-08-17",
+    "imports": 0,
+    "importedBy": [
+      "src/components/SignalRecap.tsx"
+    ],
+    "reachable": true,
     "lastCommit": "2026-08-17",
     "lastMessage": "Voice cards 8/17: extract VOICES to src/data; Visser dates Stage 4 tokenization, Camillo BE drawdown re-rates entry, ZaS"
   },
@@ -156,6 +174,11 @@ export const FILE_STATUS: Record<string, FileState> = {
     "kind": "file",
     "sizeBytes": 3501,
     "mtime": "2026-07-23",
+    "imports": 1,
+    "importedBy": [
+      "src/components/SignalRecap.tsx"
+    ],
+    "reachable": true,
     "lastCommit": "2026-07-23",
     "lastMessage": "Sweep remaining serif/mono fonts to Manrope (SignalRadar themes + other components)"
   },
@@ -166,6 +189,11 @@ export const FILE_STATUS: Record<string, FileState> = {
     "kind": "file",
     "sizeBytes": 17409,
     "mtime": "2026-07-23",
+    "imports": 2,
+    "importedBy": [
+      "src/components/Dashboard.tsx"
+    ],
+    "reachable": true,
     "lastCommit": "2026-07-23",
     "lastMessage": "Sweep remaining serif/mono fonts to Manrope (SignalRadar themes + other components)"
   },
@@ -230,18 +258,26 @@ export const FILE_STATUS: Record<string, FileState> = {
     "kind": "file",
     "sizeBytes": 18660,
     "mtime": "2026-07-23",
+    "imports": 1,
+    "importedBy": [],
+    "reachable": false,
     "lastCommit": "2026-07-23",
     "lastMessage": "Sweep remaining serif/mono fonts to Manrope (SignalRadar themes + other components)"
   },
   "src/data/systemMap.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "kind": "file",
     "sizeBytes": 31924,
     "mtime": "2026-08-19",
-    "lastCommit": "2026-08-18",
-    "lastMessage": "Tier C: derive file status from git, merge into System tab with declared-judgment precedence"
+    "imports": 0,
+    "importedBy": [
+      "src/components/SystemTab.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-08-19",
+    "lastMessage": "Theme weights: record verified L1/L2 math, correct the fallback claim, flag missing structural backbone"
   },
   "system_changelog": {
     "exists": false,
@@ -256,6 +292,21 @@ export const FILE_STATUS: Record<string, FileState> = {
     "kind": "file",
     "sizeBytes": 16909,
     "mtime": "2026-08-15",
+    "imports": 7,
+    "importedBy": [
+      "src/App.tsx",
+      "src/components/HistoryLog.tsx",
+      "src/components/IndicatorPanel.tsx",
+      "src/components/Methodology.tsx",
+      "src/components/PnLTracker.tsx",
+      "src/components/Portfolio.tsx",
+      "src/components/SignalRadar.tsx",
+      "src/components/SignalRecap.tsx",
+      "src/components/SystemTab.tsx",
+      "src/components/TradingChart.tsx",
+      "src/components/TradingTab.tsx"
+    ],
+    "reachable": true,
     "lastCommit": "2026-08-14",
     "lastMessage": "Add System tab: 3D pipeline graph with per-node history inspector (phase 1, constants)"
   },
@@ -309,6 +360,11 @@ export const FILE_STATUS: Record<string, FileState> = {
     "kind": "file",
     "sizeBytes": 14325,
     "mtime": "2026-07-31",
+    "imports": 2,
+    "importedBy": [
+      "src/components/Dashboard.tsx"
+    ],
+    "reachable": true,
     "lastCommit": "2026-07-31",
     "lastMessage": "PnLTracker: SPY Daily geometric, matching stored Thematic daily"
   },
@@ -319,6 +375,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "kind": "file",
     "sizeBytes": 238,
     "mtime": "2026-04-08",
+    "imports": 0,
+    "importedBy": [
+      "src/components/Dashboard.tsx",
+      "src/components/HistoryLog.tsx",
+      "src/components/PnLTracker.tsx",
+      "src/components/Portfolio.tsx",
+      "src/components/TradingTab.tsx"
+    ],
+    "reachable": true,
     "lastCommit": "2026-04-08",
     "lastMessage": "add supabase"
   },
@@ -329,6 +394,9 @@ export const FILE_STATUS: Record<string, FileState> = {
     "kind": "file",
     "sizeBytes": 11480,
     "mtime": "2026-07-23",
+    "imports": 2,
+    "importedBy": [],
+    "reachable": false,
     "lastCommit": "2026-07-23",
     "lastMessage": "Sweep remaining serif/mono fonts to Manrope (SignalRadar themes + other components)"
   }
@@ -347,4 +415,24 @@ export const UNDECLARED_UNTRACKED: string[] = [
   "patch_freeze_v33.py",
   "patch_mobile_ui.py",
   "patch_s5_null_guard.py"
+]
+
+/** exists under src/ but nothing reaches it from the entry point — dead code */
+export const ORPHANED_SOURCE: string[] = [
+  "src/components/HistoryLog.tsx",
+  "src/components/Methodology.tsx"
+]
+
+/** reachable at runtime but absent from systemMap.ts — the map has a blind spot */
+export const UNDECLARED_SOURCE: string[] = [
+  "src/App.tsx",
+  "src/components/IndicatorPanel.tsx",
+  "src/components/SystemTab.tsx",
+  "src/components/TradingChart.tsx",
+  "src/components/TradingTab.tsx",
+  "src/data/fileStatus.ts",
+  "src/lib/elliott.ts",
+  "src/lib/indicator_docs.ts",
+  "src/lib/technicals.ts",
+  "src/main.tsx"
 ]

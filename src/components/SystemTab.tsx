@@ -359,6 +359,8 @@ function resolveStatus(file: SysFile): { status: SysFile['status']; state?: type
   if (state.kind === 'table') return { status: 'proposed', state }
   if (!state.exists) return { status: 'missing', state }
   if (!state.tracked) return { status: 'untracked', state }
+  // unreachable from the Vite entry point = dead code, whatever git says
+  if (state.reachable === false) return { status: 'orphan', state }
   if (state.dirty) return { status: 'modified', state }
   return { status: 'live', state }
 }
@@ -381,10 +383,15 @@ function FileRow({ file, theme }: { file: SysFile; theme: Theme }) {
         }}>{t.label}</span>
       </div>
       <div style={{ fontSize: 11.5, color: theme.textSecondary, marginTop: 3, lineHeight: 1.5 }}>{file.role}</div>
-      {state && (state.lastCommit || state.childCount !== undefined) && (
+      {state && (
         <div style={{ fontFamily: MONO, fontSize: 9, color: theme.textTertiary, marginTop: 3, letterSpacing: '0.04em' }}>
-          {state.lastCommit ? `last commit ${state.lastCommit}` : ''}
-          {state.childCount !== undefined ? `${state.lastCommit ? ' · ' : ''}${state.childCount} files` : ''}
+          {[
+            state.lastCommit ? `last commit ${state.lastCommit}` : null,
+            state.childCount !== undefined ? `${state.childCount} files` : null,
+            state.importedBy && state.importedBy.length
+              ? `imported by ${state.importedBy.length}`
+              : state.reachable === false ? 'imported by nothing' : null,
+          ].filter(Boolean).join(' · ')}
         </div>
       )}
     </div>
