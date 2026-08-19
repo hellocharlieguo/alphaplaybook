@@ -20,7 +20,36 @@ This is a RECOMMENDER — Charlie audits/overrides before any freeze. It never w
 import json, sys, os
 
 CFG_DEFAULT = {
-    "prior_theme_weights": {"AI Compute": 44.0, "AI Application": 26.0, "Monetary Scarcity": 12.5, "Tokenization": 11.5, "Cash": 6.0},
+    # --- L1 structural backbone (added 8/18/26) ---
+    # Conviction in the theme itself, independent of how much airtime it drew.
+    # Calibrated so zero tilt reproduces v3.3: 50.5 / 20.1 / 15.1 / 8.3 + 6 cash.
+    "structural_conviction": {
+        "AI Compute": 90,
+        "AI Application": 39,
+        "Monetary Scarcity": 27,
+        "Tokenization": 16,
+    },
+    "theme_stage": {
+        "AI Compute": "binding",
+        "AI Application": "working",
+        "Monetary Scarcity": "binding",
+        "Tokenization": "working",
+    },
+    # 0.5 -> silence x1.00, full advocacy x1.50, sustained caution x0.50
+    "airtime_influence": 0.5,
+    # null until calibrated against a real conviction_tags.json; compute_l1 exits
+    # rather than guessing the units of `airtime`.
+    "airtime_reference": None,
+
+    "prior_theme_weights": {
+        # re-anchored to the v3.3 freeze 8/18/26 — the limiter clamps against
+        # this, so a stale prior pulls the engine toward a dead allocation.
+        "AI Compute": 50.5,
+        "AI Application": 20.0,
+        "Monetary Scarcity": 15.0,
+        "Tokenization": 8.5,
+        "Cash": 6.0,
+    },
     "theme_move_limit_pct": 4.0,
     "cash_fixed_pct": 6.0,
     "stage_mult": {"binding": 1.00, "working": 0.92, "cooling": 0.80, "exhausted": 0.60},
@@ -57,33 +86,56 @@ def load(fn, fallback=None):
 
 
 def compute_l1(tags, cfg):
-    """Theme intensity = sum(airtime * dir_sign * conviction), credited to beneficiary_theme."""
-    themes = list(cfg["prior_theme_weights"].keys())
-    intensity = {t: 0.0 for t in themes if t != "Cash"}
-    # baseline so a theme with only neutral mentions doesn't vanish: use airtime as a floor weight
-    airtime_floor = {t: 0.0 for t in intensity}
+    """Theme weight = structural conviction x stage_mult, modulated by airtime.
+
+    Structural is the backbone: a theme nobody mentioned this week keeps its
+    weight. Airtime tilts within +/- airtime_influence rather than determining
+    the result, so silence (tilt 0, x1.00) and sustained caution (tilt -1,
+    x1-influence) are no longer the same output. Same shape as compute_l2.
+    """
+    themes = [t for t in cfg["prior_theme_weights"] if t != "Cash"]
+    struct = cfg["structural_conviction"]
+    stages = cfg.get("theme_stage", {})
+    sm = cfg["stage_mult"]
+    infl = cfg.get("airtime_influence", 0.5)
+    ref = cfg.get("airtime_reference")
+
+    net = {t: 0.0 for t in themes}
+    air = {t: 0.0 for t in themes}
     for tag in tags["tags"]:
         th = tag.get("beneficiary_theme") or tag["theme"]
-        if th not in intensity:
+        if th not in net:
             continue
-        air = tag.get("airtime", 0.0)
-        conv = tag.get("conviction", 0.0)
+        a = tag.get("airtime", 0.0)
         sign = DIR_SIGN.get(tag.get("direction", "neutral"), 0.0)
-        # advocacy adds, caution subtracts, neutral contributes airtime-floor only
-        intensity[th] += air * (0.4 + 0.6 * sign * conv)  # floor 0.4*air keeps neutral themes present
-        airtime_floor[th] += air
-    # normalize intensity to (100 - cash)
+        net[th] += a * sign * tag.get("conviction", 0.0)
+        air[th] += a
+
+    # airtime units are undefined until a real conviction_tags.json exists.
+    # Fail loudly rather than scaling the tilt against a guessed reference.
+    if any(air.values()) and not ref:
+        sys.exit("airtime_reference is null in config — calibrate it from a real "
+                 "conviction_tags.json before the airtime tilt can be scaled.")
+
+    intensity = {}
+    for t in themes:
+        base = struct.get(t, 0.0) * sm[stages.get(t, "working")]
+        tilt = 0.0 if not ref else max(-1.0, min(1.0, net[t] / ref))
+        intensity[t] = max(base * (1 + infl * tilt), 0.01)
+
     avail = 100 - cfg["cash_fixed_pct"]
-    tot = sum(max(v, 0.01) for v in intensity.values())
-    raw = {t: max(intensity[t], 0.01) / tot * avail for t in intensity}
-    # +/- move limiter vs prior
+    tot = sum(intensity.values())
+    raw = {t: intensity[t] / tot * avail for t in themes}
+
+    # rate-of-change guard only; renormalisation below can still carry a theme
+    # slightly past its own clamp.
     lim = cfg["theme_move_limit_pct"]
     prior = cfg["prior_theme_weights"]
     limited = {}
     for t in raw:
         p = prior.get(t, raw[t])
         limited[t] = min(max(raw[t], p - lim), p + lim)
-    # renormalize limited back to avail, add cash
+
     s = sum(limited.values())
     out = {t: round(limited[t] / s * avail, 1) for t in limited}
     out["Cash"] = cfg["cash_fixed_pct"]
