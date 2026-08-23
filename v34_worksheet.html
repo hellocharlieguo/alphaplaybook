@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlphaPlaybook v3.4 — trend-first weighting worksheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0e0f11; --panel:#16181c; --rule:#24272d; --rule2:#31353d;
+  --text:#e8e6e3; --dim:#9aa0a8; --faint:#666c75;
+  --derived:#e0915c;      /* computed by the engine */
+  --input:#5fb3c9;        /* you can change this */
+  --pin:#c9a05f;          /* human override */
+  --neg:#c9705a; --pos:#7dba6a;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --sans:'Archivo',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5}
+.wrap{max-width:1560px;margin:0 auto;padding:34px 22px 90px}
+
+header{border-bottom:2px solid var(--rule2);padding-bottom:18px;margin-bottom:26px}
+h1{font-size:23px;font-weight:700;letter-spacing:-.2px;margin:0 0 6px}
+.sub{color:var(--dim);font-size:13px;max-width:70ch}
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;font-family:var(--mono);font-size:11px}
+.legend span{display:flex;align-items:center;gap:6px;color:var(--dim)}
+.dot{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:1400px;font-family:var(--mono);font-size:12.5px}
+thead th{position:sticky;top:0;background:#1b1e23;z-index:2}
+th{text-align:right;padding:9px 11px;font-weight:500;font-size:10.5px;letter-spacing:.4px;
+   text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--rule2);white-space:nowrap}
+th.l,td.l{text-align:left}
+th .f{display:block;font-size:9.5px;color:var(--faint);text-transform:none;letter-spacing:0;margin-top:3px;font-weight:400}
+td{padding:7px 11px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+tbody tr:hover td{background:#1a1d22}
+td.grp{border-left:1px solid var(--rule2)}
+th.grp{border-left:1px solid var(--rule2)}
+.tname{font-family:var(--sans);font-weight:600;font-size:13px;vertical-align:top;border-right:1px solid var(--rule2)}
+.sname{font-family:var(--sans);color:var(--dim);font-size:12.5px}
+.tkr{font-weight:700;letter-spacing:.3px}
+.derived{color:var(--derived)}
+.final{color:var(--derived);font-weight:700;font-size:13.5px}
+.faint{color:var(--faint)}
+input.n{width:52px;background:#101317;border:1px solid #2c3038;color:var(--input);
+  font-family:var(--mono);font-size:12.5px;text-align:right;padding:3px 5px;border-radius:4px}
+input.n:focus{outline:none;border-color:var(--input);background:#0c1418}
+input.n.pin{color:var(--pin);border-color:#3a3324}
+tr.trendstart td{border-top:2px solid var(--rule2)}
+.stage{background:#101317;border:1px solid #2c3038;color:var(--input);font-family:var(--mono);
+  font-size:11.5px;padding:3px 4px;border-radius:4px}
+tfoot td{border-top:2px solid var(--rule2);font-weight:700;padding-top:10px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px;margin-top:26px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:16px 18px}
+.card h3{margin:0 0 10px;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--dim);font-weight:600}
+.card p{margin:0 0 9px;font-size:12.5px;color:var(--dim)}
+.eq{font-family:var(--mono);font-size:12px;color:var(--text);background:#101317;
+    border-left:2px solid var(--derived);padding:7px 10px;border-radius:0 5px 5px 0;margin:7px 0;overflow-x:auto}
+.kv{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;padding:3px 0;border-bottom:1px solid var(--rule)}
+.kv:last-child{border-bottom:none}
+.kv b{color:var(--derived);font-weight:500}
+.dead{opacity:.55}
+.dead .eq{border-left-color:var(--faint)}
+.warn{color:var(--neg)}
+.trendbar{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;padding:4px 0;border-bottom:1px solid var(--rule)}
+.bar{height:3px;background:var(--derived);border-radius:2px;margin-top:3px}
+button.rst{background:none;border:1px solid var(--rule2);color:var(--dim);font-family:var(--mono);
+  font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer}
+button.rst:hover{border-color:var(--input);color:var(--input)}
+
+input.tn{background:transparent;border:1px solid transparent;color:inherit;font-family:inherit;
+  font-size:inherit;font-weight:inherit;width:100%;padding:2px 4px;border-radius:4px}
+input.tn:hover{border-color:var(--rule2)}
+input.tn:focus{outline:none;border-color:var(--input);background:#0c1418;color:var(--input)}
+input.tn.sub{font-size:12.5px;color:var(--dim)}
+select.mv{background:transparent;border:none;color:var(--faint);font-size:10px;cursor:pointer;margin-left:4px}
+select.mv:hover{color:var(--input)}
+.ins{position:fixed;z-index:50;max-width:400px;background:#1b1e23;border:1px solid var(--rule2);
+  border-radius:9px;box-shadow:0 18px 44px rgba(0,0,0,.6);padding:15px 17px;font-size:12.5px;display:none}
+.ins h4{margin:0 0 4px;font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--derived);font-weight:600}
+.ins .who{font-family:var(--mono);font-size:11px;color:var(--faint);margin-bottom:9px}
+.ins p{margin:8px 0 0;color:var(--dim);font-size:12px;line-height:1.55}
+.ins .step{font-family:var(--mono);font-size:12.5px;background:#101317;border-left:2px solid var(--derived);
+  padding:7px 10px;border-radius:0 5px 5px 0;margin:6px 0;color:var(--text);overflow-x:auto}
+.ins .src{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:10px;
+  border-top:1px solid var(--rule);padding-top:8px}
+.ins .warn{color:var(--neg);font-size:11.5px}
+.ins x{position:absolute;top:9px;right:12px;color:var(--faint);cursor:pointer;font-family:var(--mono);font-size:14px}
+.ins x:hover{color:var(--text)}
+td.q,th.q{cursor:pointer}
+td.q:hover{background:#20242a;box-shadow:inset 0 0 0 1px var(--rule2)}
+th.q:hover{color:var(--derived)}
+th.q::after{content:' ?';color:var(--faint);font-size:9px}
+@media(max-width:640px){.wrap{padding:18px 12px 60px}h1{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>v3.4 — trend-first weighting worksheet</h1>
+  <div class="sub">Trend weight is the top-level decision. Sub-theme share comes from severity &times; stage. Name weight is the sub-theme's share adjusted for entry quality. No <code>target_top</code>, no per-name pin. Edit any blue or gold field; everything downstream recomputes.</div>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--derived)"></i>no cash line &mdash; the full 100 flows to the trends</span>
+    <span><i class="dot" style="background:var(--input)"></i>editable input</span>
+    <span><i class="dot" style="background:var(--pin)"></i>human override</span>
+    <span><i class="dot" style="background:var(--derived)"></i>engine-derived</span>
+    <span style="display:flex;gap:6px;align-items:center;font-family:var(--mono)">
+      <span style="color:var(--dim)">breadth</span>
+      <select class="stage" id="brsel" style="font-size:11px" onchange="BREADTH=this.value;render()"></select>
+      <select class="stage" id="cwsel" style="font-size:11px" onchange="CWIN=this.value;render()"></select>
+      <span class="q faint" onclick="hdr('breadth',event)" style="font-size:11px">?</span>
+    </span>
+    <span style="margin-left:auto"><button class="rst" onclick="addTrend()">+ trend</button><button class="rst" onclick="exportState()" style="margin-left:8px">export changes</button><button class="rst" onclick="reset()" style="margin-left:8px">reset to baseline</button></span>
+  </div>
+</header>
+
+<div class="scroll">
+<table>
+<thead><tr>
+  <th class="l">Trend</th>
+  <th class="q" onclick="hdr('trend',event)">Trend&nbsp;wt<span class="f">emergent &middot; override</span></th>
+  <th class="l grp">Sub-theme</th>
+  <th class="l">Ticker</th>
+  <th class="grp">timing<span class="f">where in the cycle</span></th>
+  <th>quality<span class="f">odds of capturing it</span></th>
+  <th class="q" onclick="hdr('wave',event)">wave<span class="f">demand at this stage</span></th>
+  <th class="q" onclick="hdr('sev',event)">S1<span class="f">100 &times; t &times; q</span></th>
+  <th>raw<span class="f">(100&minus;45) &times; t &times; q</span></th>
+  <th class="grp">price</th><th>50-DMA</th><th>200-DMA</th><th>RSI<span class="f">not used</span></th>
+  <th class="q" onclick="hdr('s5',event)">S5<span class="f">derived</span></th>
+  <th>mult<span class="f">band(S5)</span></th>
+  <th>score<span class="f">raw &times; mult</span></th>
+  <th class="grp">share<span class="f">score / &Sigma;trend</span></th>
+  <th>FINAL<span class="f">trend wt &times; share</span></th>
+  <th>v3.3<span class="f">deployed</span></th>
+  <th>&Delta;</th>
+</tr></thead>
+<tbody id="tb"></tbody>
+<tfoot><tr>
+  <td class="l" colspan="18">TOTAL</td>
+  <td class="final" id="tot">—</td><td class="faint">100.0</td><td></td>
+</tr></tfoot>
+</table>
+</div>
+
+<div class="card" id="exp" style="display:none;margin-top:16px">
+  <h3>Export — paste this into chat, or use it to patch the repo</h3>
+  <p id="expnote" style="margin-bottom:8px"></p>
+  <textarea id="exptxt" readonly style="width:100%;height:230px;background:#101317;border:1px solid var(--rule2);
+    border-radius:6px;color:var(--text);font-family:var(--mono);font-size:11.5px;padding:11px;resize:vertical"></textarea>
+  <div style="margin-top:9px;display:flex;gap:8px;align-items:center">
+    <button class="rst" onclick="copyExp()">copy</button>
+    <span id="copied" style="font-family:var(--mono);font-size:11px;color:var(--pos);opacity:0;transition:opacity .2s">copied</span>
+    <button class="rst" style="margin-left:auto" onclick="document.getElementById('exp').style.display='none'">close</button>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Cascade — the whole algorithm</h3>
+    <div class="eq">S1&nbsp;&nbsp;&nbsp;&nbsp;= 100 &times; timing &times; quality</div>
+    <div class="eq">raw&nbsp;&nbsp;&nbsp;= (100 &minus; floor_score) &times; timing &times; quality&nbsp;&nbsp;<span class="faint">floor_score = 45</span></div>
+    <div class="eq">S5&nbsp;&nbsp;&nbsp;&nbsp;= DMA base &minus; stretch penalty&nbsp;&nbsp;<span class="faint">no RSI</span></div>
+    <div class="eq">mult&nbsp;&nbsp;= entry_band(S5)</div>
+    <div class="eq">score = raw &times; mult</div>
+    <div class="eq">weight = trend_wt &times; score / &Sigma;(score in trend)</div>
+    <p>Both S1 inputs are discrete ladders — no free-form numbers. A name below <code>floor_score</code> scores zero and drops out. If it is the only name in its trend, the trend collapses — this is what ETHA's monetary severity of 40 did before it was re-set.</p>
+  </div>
+
+  <div class="card">
+    <h3>Quality — odds of capturing the trend</h3>
+    <div class="kv"><span>sole &nbsp;no substitute exists</span><b>&times;1.00</b></div>
+    <div class="kv"><span>basket &nbsp;you own every winner</span><b>&times;0.92</b></div>
+    <div class="kv"><span>duopoly &nbsp;2-3 control supply</span><b>&times;0.80</b></div>
+    <div class="kv"><span>leader &nbsp;moat, substitutable at cost</span><b>&times;0.72</b></div>
+    <div class="kv"><span>contested &nbsp;one bet, fragmented field</span><b>&times;0.60</b></div>
+    <div class="kv"><span style="color:var(--neg)">remove &nbsp;drop from the book</span><b style="color:var(--neg)">&times;0</b></div>
+    <p style="font-size:11.5px">Same five rungs as timing. Accelerating gaps &mdash; 0.08, 0.12, 0.08, 0.12 &mdash; so the bottom of each ladder costs more than the top. 0.60 is a floor: fade, never zero.</p>
+    <p>A monopoly and a whole-theme basket both score high for opposite reasons. That is the breadth term the old severity scale never had — and why SOXX no longer needs a hand-set floor.</p>
+  </div>
+
+  <div class="card">
+    <h3>Entry bands — S5 &rarr; multiplier</h3>
+    <div class="kv"><span>85–100 &nbsp;pullback, thesis intact</span><b>&times;1.00</b></div>
+    <div class="kv"><span>70–84 &nbsp;&nbsp;off-highs, hasn't run</span><b>&times;0.95</b></div>
+    <div class="kv"><span>55–69 &nbsp;&nbsp;steady early-stage grind</span><b>&times;0.85</b></div>
+    <div class="kv"><span>45–54 &nbsp;&nbsp;near highs, stage peaked</span><b>&times;0.75</b></div>
+    <div class="kv"><span>&lt;45 &nbsp;&nbsp;&nbsp;&nbsp;vertical blowoff</span><b>&times;0.60</b></div>
+    <p class="warn">These five multipliers are not from config. They were set in this session and are the least-validated numbers on the page.</p>
+  </div>
+
+  <div class="card">
+    <h3>Trend fill</h3>
+    <div id="fill"></div>
+    <p style="margin-top:10px">Entry quality is the weighted mean multiplier in the trend. Below ~0.70 means every expression is stretched and redistribution has nothing good to move weight toward — the discipline is inert there.</p>
+  </div>
+
+  <div class="card">
+    <h3>Trend weight — how it is derived</h3>
+    <div class="eq">trend_score = <span class="faint">derived</span>timing &times; conviction &times; breadth</div>
+    <div class="eq">breadth = N_eff, measured from return correlations</div>
+    <div class="eq">trend_wt = 100 &times; trend_score / &Sigma;(all trend scores)</div>
+    <p>Timing is the mean of the trend's sub-themes — derived, not set, so it cannot contradict them. Conviction is the one trend-level judgment left. Not summed from its names. Summing made weight a function of how many tickers happened to be seated — adding two names to a one-name trend took it from 4.7% to 11.6% with no change in conviction at all.</p>
+    <p>Breadth is now measured rather than counted. &radic;n assumed each sub-theme was an independent bet; the correlation matrix says the seven buildout names are worth 1.95, while two uncorrelated application names are worth 2.00.</p>
+    <p>Type in the weight box to override. The rest re-split what is left, so the book always totals 100.</p>
+  </div>
+
+  <div class="card">
+    <h3>Demand wave — what this trend serves</h3>
+    <div class="kv"><span>coding agents &nbsp;<span class="faint">now</span></span><b>&times;1.00</b></div>
+    <div class="kv"><span>macro / off-cycle &nbsp;<span class="faint">own clock</span></span><b>&times;1.00</b></div>
+    <div class="kv"><span>enterprise agents &nbsp;<span class="faint">2027</span></span><b>&times;0.92</b></div>
+    <div class="kv"><span>consumer agents &nbsp;<span class="faint">late 2027</span></span><b>&times;0.80</b></div>
+    <div class="kv"><span>embodied &nbsp;<span class="faint">2028</span></span><b>&times;0.72</b></div>
+    <div class="kv"><span>chatbots &nbsp;<span class="faint">superseded</span></span><b>&times;0.60</b></div>
+    <p>Replaced an abstract conviction ladder (certain / strong / forming) on 8/22. Same multipliers, so no weight changed &mdash; but each rung now names a wave from Visser's own sequencing rather than asking how sure you feel.</p>
+    <p>Nearer wave, higher multiplier. Monetary sits off the AI curve entirely and runs on debasement, which is live now.</p>
+  </div>
+
+  <div class="card">
+    <h3>Sleeve caps — standing rules</h3>
+    <div id="sleeves"></div>
+    <p style="margin-top:10px">A cap spans trends, so it can hold total hard-money exposure even once silver has a second seat in AI buildout. It fires by itself when breached — set once, no weekly re-decision.</p>
+    <p>That is what separates it from a per-trend override: the override is a number you re-type each cycle, which is where version drift comes from. The cap is a rule.</p>
+    <div class="kv" style="margin-top:8px"><span>trends + cash</span><b id="budget">100.0%</b></div>
+    <div class="kv"><span>status</span><b id="budgetnote">balanced</b></div>
+  </div>
+
+  <div class="card dead">
+    <h3>Retired — no longer in the path</h3>
+    <div class="eq">target_top_pct &nbsp;<span class="faint">pinned the #1 name to a constant</span></div>
+    <div class="eq">weight = min_floor + (composite &minus; floor)^k</div>
+    <div class="eq">composite = S1·.30 + S2·.30 + S5·.20 + S6·.10 + conv·.10</div>
+    <div class="eq">single_stock_cap &nbsp;<span class="faint">superseded 6/1/26 by Rule B</span></div>
+    <p>S2, S6 and the convergence bonus no longer size anything directly — with one name per sub-theme there is nothing for a composite to rank. They still gate <em>selection</em>: which candidate wins its sub-theme screen.</p>
+  </div>
+</div>
+
+</div>
+<div class="ins" id="ins"></div>
+<script>
+// [sub-theme, ticker, timing, quality, S5, v3.3 weight, why-this-quality]
+const BASE = [
+ ["1 AI buildout",null,"binding","certain",[
+   ["power/grid","AIPO","binding","basket",[29.28,30.71,27.4,45.12],16.0,'Visser 8/16: "impossible to get enough compute for all of the billions of agents." Power is his top-rated binding bottleneck.',1],
+   ["semis basket","SOXX","cooling","basket",[525.96,558.89,420.8,46.66],12.0,'No direct call. Visser 8/16 argues AGAINST the basket: "Marvell is not the same semiconductor as Infineon, as Nvidia, as Intel." Live objection to the basket rating.',1],
+   ["optical","GLW","binding","duopoly",[154.62,174.2,140.66,46.64],4.5,'CORRECTED 8/22 from cooling. Visser 8/8: "the area I am probably most focused on at this point is the optical names... Vera Rubin is coming." 8/2 highlights Corning reclaiming its 200-day on Meta $6B + Nvidia partnership. 8/15: recovered >50% of the fall.',1],
+   ["lithography","ASML","cooling","sole",[1756.97,1781.4,1446.5,49.84],7.0,'NO VOICE SUPPORT in the last month — zero mentions of ASML, EUV or lithography. Structural seat on the monopoly. Timing carried from the July four-axis spec and unverified since.',1],
+   ["copper input","COPX","working","basket",[93.8,81.17,79.13,69.01],3.0,'NO VOICE SUPPORT. The one copper mention (Visser 8/8) uses copper as a METAPHOR for compute, not as a position. Structural seat.',1]]],
+ ["2 AI applied",null,"working","strong",[
+   ["distribution","AMZN","working","leader",[258.25,249.72,238.32,49.45],10.0,'Camillo 8/9, heaviest coverage in the month (~90 mentions): "mainly Bloom and Amazon"; distribution-moat framing — "intelligence is going to bring cost down massively", the edge accrues to distribution.',2],
+   ["proprietary data","LLY","working","leader",[1243.74,1179.35,1052.92,57.9],10.0,'NO VOICE SUPPORT in the last month — apparent hits were false positives with no pharma content. Structural seat on the 150-year trial-data moat.',1],
+   ]],
+ ["3 Tokenized rails",null,"forward","forming",[
+   ["brokerage rails","HOOD","working","contested",[100.66,100.16,96.04,55.67],6.0,'MOVED 8/22 from AI applied to Tokenized rails. Visser 8/15 groups it with tokenization, not fintech: "the public companies like Figure, like Hood, like PayPal, like Coinbase."',1],
+   ["settlement layer","ETHA","forward","sole",[17.92,13.84,17.62,81.44],2.5,'Visser 8/15-8/16: "beginning in September, the next constraint is not physical, it is financial" — guardrails, consumer agents, settlement, stablecoins, tokenization. Dated, not started.',1]]],
+ ["4 Monetary",null,"binding","certain",[
+   ["gold","GLDM","binding","basket",[90.53,82.58,89.07,69.79],4.0,'Visser 8/16: "you should be buying the debasement trade. You should be buying gold, buying silver, buying Bitcoin." China +20t in July, largest since Oct 2023; Bank of Korea resumes after 13 years.',1],
+   ["bitcoin","IBIT","binding","sole",[43.37,36.28,43.0,78.98],4.0,'Visser 8/16: same debasement instruction, plus the lagging-leg read — "Bitcoin has not moved yet... eventually it will."',1],
+   ["silver","SLV","binding","leader",[62.63,55.63,64.55,66.63],7.0,'Visser 8/16: named directly in the debasement instruction. Dual-axis (monetary + industrial) but only the monetary half has a seat here.',1]]],
+];
+const LADDER=[1.00,0.92,0.80,0.72,0.60];   // identical rungs, accelerating decay
+const STAGES={"binding":LADDER[0],"working":LADDER[1],"cooling":LADDER[2],"forward":LADDER[3],"exhausted":LADDER[4]};
+const QUAL  ={"sole":LADDER[0],"basket":LADDER[1],"duopoly":LADDER[2],"leader":LADDER[3],"contested":LADDER[4],"remove":0};
+const QORDER=["sole","basket","duopoly","leader","contested","remove"];
+// S5 — DMA position + stretch above the 50-DMA. RSI REMOVED 8/22.
+// Original s5score() (pull_candidates.cjs 79-93) also carried an RSI term:
+//   rsi>=70 -> -15, rsi>=60 -> -7, rsi<=35 -> +5
+// Dropped because it was a cliff, not a slope: one tick from 69.9 to 70.0 cost
+// 8 points of S5 and 25% of weight, and it was the only thing putting gold
+// above bitcoin when S1 said the reverse. Stretch keeps a velocity signal on
+// something structural instead of a momentum oscillator.
+// NEVER penalises DMA distance itself - that was the 5/27 proximity trap.
+function s5calc(px,d50,d200,rsi){
+  if(d50==null||d200==null) return {s5:null,base:null,st:null,pen:null,rp:null,nodma:true};
+  const base = px<d200 ? 45 : (px<d50 ? 72 : 58);
+  const st=(px-d50)/d50*100;
+  const rp = st>=50?12 : st>=25?8 : st>=10?4 : 0;
+  const pen = rp*0.5;   // working-theme discount, hardcoded 0.5 in the source
+  return {s5:Math.max(5,Math.min(95,base-pen)),base,st,pen,rp,nodma:false};
+}
+const QWHY={sole:"no substitute exists",basket:"you own every winner in the theme",
+  duopoly:"2-3 firms control supply",leader:"durable moat, substitutable at cost",
+  contested:"one bet in a fragmented field",remove:"REMOVED from the book — zero weight, excluded from the trend"};
+const FLOOR_SCORE=45;
+// Standing risk rule. Spans trends, unlike a per-trend override. Fires on its own
+// when breached; excess reflows pro-rata to everything outside the sleeve.
+let SLEEVES=[{name:"hard money", tickers:["GLDM","IBIT","SLV"], cap:15.0, on:false}];
+const CONV={"certain":LADDER[0],"strong":LADDER[1],"forming":LADDER[2],"speculative":LADDER[3],"watch":LADDER[4]};
+
+// ---- GLOBAL ADOPTION WAVE -------------------------------------------------
+// One timeline, one setting. Visser 8/16 sequencing: coding agents now ->
+// enterprise agents next year -> consumer agents the back half -> embodied 2028.
+// Different waves stress different parts of the buildout, so the sub-theme
+// demand multipliers below shift when the wave advances. Applies to AI buildout
+// ONLY - the other trends are not downstream of the AI adoption curve.
+const WAVES=["chatbots","coding agents","enterprise agents","consumer agents","embodied"];
+let WAVE="coding agents";
+const WAVE_DEMAND={
+  //                chatbots coding enterprise consumer embodied
+  "power/grid":         [0.92, 1.00, 1.00, 1.00, 0.92],
+  "semis basket":       [0.92, 0.92, 0.92, 0.92, 1.00],
+  "memory":             [0.80, 1.00, 1.00, 1.00, 0.80],
+  "storage / nearline": [0.72, 0.80, 1.00, 0.80, 0.72],
+  "optical":            [0.72, 0.92, 1.00, 1.00, 0.72],
+  "lithography":        [0.92, 0.92, 0.92, 0.92, 0.92],
+  "copper input":       [0.80, 0.80, 0.92, 1.00, 1.00],
+};
+const WAVE_WHY={
+ "power/grid":"electrons gate every wave; eases slightly at the edge",
+ "semis basket":"constant through the stack, peaks when silicon goes everywhere",
+ "memory":"Elon: memory is the rate limiter of the agentic era. Binding for every agent wave",
+ "storage / nearline":"peaks at enterprise — data lakes, retrieval, persistent state. Consumer agents are more ephemeral",
+ "optical":"cluster interconnect; peaks once inference is distributed",
+ "lithography":"every wave needs leading edge — flat by construction",
+ "copper input":"rises through the waves; peaks at embodied, where motors and actuators are copper",
+};
+// ---- MEASURED CORRELATIONS -------------------------------------------------
+// Daily log returns, fetched 2026-08-23. Three windows so the window-sensitivity
+// is visible: correlations TIGHTEN as the window shortens (AIPO-SOXX 0.86 -> 0.91,
+// GLDM-IBIT 0.28 -> 0.59), i.e. the recent regime is more correlated.
+const CORR={"1y":{"AIPO":{"AIPO":1.0,"SOXX":0.8561,"MU":0.6895,"WDC":0.6812,"GLW":0.708,"ASML":0.7071,"COPX":0.6183,"AMZN":0.2838,"LLY":-0.0288,"HOOD":0.4315,"ETHA":0.4231,"GLDM":0.354,"IBIT":0.3999,"SLV":0.3559},"SOXX":{"AIPO":0.8561,"SOXX":1.0,"MU":0.8188,"WDC":0.7025,"GLW":0.7392,"ASML":0.8178,"COPX":0.6083,"AMZN":0.2657,"LLY":-0.0578,"HOOD":0.3579,"ETHA":0.3737,"GLDM":0.2985,"IBIT":0.3533,"SLV":0.3282},"MU":{"AIPO":0.6895,"SOXX":0.8188,"MU":1.0,"WDC":0.707,"GLW":0.5838,"ASML":0.6363,"COPX":0.4874,"AMZN":0.1657,"LLY":-0.0259,"HOOD":0.2402,"ETHA":0.3212,"GLDM":0.2611,"IBIT":0.302,"SLV":0.2679},"WDC":{"AIPO":0.6812,"SOXX":0.7025,"MU":0.707,"WDC":1.0,"GLW":0.5603,"ASML":0.5713,"COPX":0.475,"AMZN":0.2302,"LLY":-0.0504,"HOOD":0.2318,"ETHA":0.2366,"GLDM":0.2707,"IBIT":0.2231,"SLV":0.3228},"GLW":{"AIPO":0.708,"SOXX":0.7392,"MU":0.5838,"WDC":0.5603,"GLW":1.0,"ASML":0.6358,"COPX":0.4802,"AMZN":0.1441,"LLY":-0.0121,"HOOD":0.1734,"ETHA":0.2173,"GLDM":0.2256,"IBIT":0.2098,"SLV":0.2583},"ASML":{"AIPO":0.7071,"SOXX":0.8178,"MU":0.6363,"WDC":0.5713,"GLW":0.6358,"ASML":1.0,"COPX":0.5402,"AMZN":0.2107,"LLY":-0.0005,"HOOD":0.306,"ETHA":0.2759,"GLDM":0.2562,"IBIT":0.2546,"SLV":0.2952},"COPX":{"AIPO":0.6183,"SOXX":0.6083,"MU":0.4874,"WDC":0.475,"GLW":0.4802,"ASML":0.5402,"COPX":1.0,"AMZN":0.2249,"LLY":0.0617,"HOOD":0.4285,"ETHA":0.4357,"GLDM":0.6944,"IBIT":0.3977,"SLV":0.7339},"AMZN":{"AIPO":0.2838,"SOXX":0.2657,"MU":0.1657,"WDC":0.2302,"GLW":0.1441,"ASML":0.2107,"COPX":0.2249,"AMZN":1.0,"LLY":0.0448,"HOOD":0.3213,"ETHA":0.2554,"GLDM":0.0696,"IBIT":0.2511,"SLV":0.1318},"LLY":{"AIPO":-0.0288,"SOXX":-0.0578,"MU":-0.0259,"WDC":-0.0504,"GLW":-0.0121,"ASML":-0.0005,"COPX":0.0617,"AMZN":0.0448,"LLY":1.0,"HOOD":0.0962,"ETHA":0.0696,"GLDM":0.1136,"IBIT":0.0943,"SLV":0.1226},"HOOD":{"AIPO":0.4315,"SOXX":0.3579,"MU":0.2402,"WDC":0.2318,"GLW":0.1734,"ASML":0.306,"COPX":0.4285,"AMZN":0.3213,"LLY":0.0962,"HOOD":1.0,"ETHA":0.5775,"GLDM":0.2859,"IBIT":0.6031,"SLV":0.267},"ETHA":{"AIPO":0.4231,"SOXX":0.3737,"MU":0.3212,"WDC":0.2366,"GLW":0.2173,"ASML":0.2759,"COPX":0.4357,"AMZN":0.2554,"LLY":0.0696,"HOOD":0.5775,"ETHA":1.0,"GLDM":0.298,"IBIT":0.9134,"SLV":0.304},"GLDM":{"AIPO":0.354,"SOXX":0.2985,"MU":0.2611,"WDC":0.2707,"GLW":0.2256,"ASML":0.2562,"COPX":0.6944,"AMZN":0.0696,"LLY":0.1136,"HOOD":0.2859,"ETHA":0.298,"GLDM":1.0,"IBIT":0.2788,"SLV":0.8264},"IBIT":{"AIPO":0.3999,"SOXX":0.3533,"MU":0.302,"WDC":0.2231,"GLW":0.2098,"ASML":0.2546,"COPX":0.3977,"AMZN":0.2511,"LLY":0.0943,"HOOD":0.6031,"ETHA":0.9134,"GLDM":0.2788,"IBIT":1.0,"SLV":0.2892},"SLV":{"AIPO":0.3559,"SOXX":0.3282,"MU":0.2679,"WDC":0.3228,"GLW":0.2583,"ASML":0.2952,"COPX":0.7339,"AMZN":0.1318,"LLY":0.1226,"HOOD":0.267,"ETHA":0.304,"GLDM":0.8264,"IBIT":0.2892,"SLV":1.0}},"6m":{"AIPO":{"AIPO":1.0,"SOXX":0.8857,"MU":0.7354,"WDC":0.7384,"GLW":0.7831,"ASML":0.7688,"COPX":0.6701,"AMZN":0.2979,"LLY":-0.038,"HOOD":0.3604,"ETHA":0.3608,"GLDM":0.4274,"IBIT":0.3554,"SLV":0.4883},"SOXX":{"AIPO":0.8857,"SOXX":1.0,"MU":0.8383,"WDC":0.761,"GLW":0.7879,"ASML":0.8532,"COPX":0.6442,"AMZN":0.2216,"LLY":-0.099,"HOOD":0.2866,"ETHA":0.3367,"GLDM":0.3659,"IBIT":0.3284,"SLV":0.4435},"MU":{"AIPO":0.7354,"SOXX":0.8383,"MU":1.0,"WDC":0.7364,"GLW":0.6301,"ASML":0.6646,"COPX":0.5424,"AMZN":0.0719,"LLY":-0.0899,"HOOD":0.2327,"ETHA":0.3661,"GLDM":0.3505,"IBIT":0.3702,"SLV":0.4068},"WDC":{"AIPO":0.7384,"SOXX":0.761,"MU":0.7364,"WDC":1.0,"GLW":0.6241,"ASML":0.6208,"COPX":0.472,"AMZN":0.1696,"LLY":-0.1511,"HOOD":0.2281,"ETHA":0.2852,"GLDM":0.2584,"IBIT":0.2735,"SLV":0.3447},"GLW":{"AIPO":0.7831,"SOXX":0.7879,"MU":0.6301,"WDC":0.6241,"GLW":1.0,"ASML":0.7076,"COPX":0.521,"AMZN":0.1621,"LLY":-0.0197,"HOOD":0.1674,"ETHA":0.2114,"GLDM":0.2737,"IBIT":0.2229,"SLV":0.3672},"ASML":{"AIPO":0.7688,"SOXX":0.8532,"MU":0.6646,"WDC":0.6208,"GLW":0.7076,"ASML":1.0,"COPX":0.6223,"AMZN":0.2034,"LLY":0.0167,"HOOD":0.2941,"ETHA":0.2929,"GLDM":0.3447,"IBIT":0.2743,"SLV":0.4356},"COPX":{"AIPO":0.6701,"SOXX":0.6442,"MU":0.5424,"WDC":0.472,"GLW":0.521,"ASML":0.6223,"COPX":1.0,"AMZN":0.2488,"LLY":0.1429,"HOOD":0.4468,"ETHA":0.5211,"GLDM":0.7183,"IBIT":0.4809,"SLV":0.8265},"AMZN":{"AIPO":0.2979,"SOXX":0.2216,"MU":0.0719,"WDC":0.1696,"GLW":0.1621,"ASML":0.2034,"COPX":0.2488,"AMZN":1.0,"LLY":0.0686,"HOOD":0.2944,"ETHA":0.2943,"GLDM":0.1976,"IBIT":0.2658,"SLV":0.2246},"LLY":{"AIPO":-0.038,"SOXX":-0.099,"MU":-0.0899,"WDC":-0.1511,"GLW":-0.0197,"ASML":0.0167,"COPX":0.1429,"AMZN":0.0686,"LLY":1.0,"HOOD":0.1271,"ETHA":0.0725,"GLDM":0.2335,"IBIT":0.0832,"SLV":0.2226},"HOOD":{"AIPO":0.3604,"SOXX":0.2866,"MU":0.2327,"WDC":0.2281,"GLW":0.1674,"ASML":0.2941,"COPX":0.4468,"AMZN":0.2944,"LLY":0.1271,"HOOD":1.0,"ETHA":0.5233,"GLDM":0.3875,"IBIT":0.5281,"SLV":0.393},"ETHA":{"AIPO":0.3608,"SOXX":0.3367,"MU":0.3661,"WDC":0.2852,"GLW":0.2114,"ASML":0.2929,"COPX":0.5211,"AMZN":0.2943,"LLY":0.0725,"HOOD":0.5233,"ETHA":1.0,"GLDM":0.4554,"IBIT":0.9217,"SLV":0.4393},"GLDM":{"AIPO":0.4274,"SOXX":0.3659,"MU":0.3505,"WDC":0.2584,"GLW":0.2737,"ASML":0.3447,"COPX":0.7183,"AMZN":0.1976,"LLY":0.2335,"HOOD":0.3875,"ETHA":0.4554,"GLDM":1.0,"IBIT":0.4337,"SLV":0.8462},"IBIT":{"AIPO":0.3554,"SOXX":0.3284,"MU":0.3702,"WDC":0.2735,"GLW":0.2229,"ASML":0.2743,"COPX":0.4809,"AMZN":0.2658,"LLY":0.0832,"HOOD":0.5281,"ETHA":0.9217,"GLDM":0.4337,"IBIT":1.0,"SLV":0.4154},"SLV":{"AIPO":0.4883,"SOXX":0.4435,"MU":0.4068,"WDC":0.3447,"GLW":0.3672,"ASML":0.4356,"COPX":0.8265,"AMZN":0.2246,"LLY":0.2226,"HOOD":0.393,"ETHA":0.4393,"GLDM":0.8462,"IBIT":0.4154,"SLV":1.0}},"3m":{"AIPO":{"AIPO":1.0,"SOXX":0.9111,"MU":0.7991,"WDC":0.7453,"GLW":0.7644,"ASML":0.7824,"COPX":0.6402,"AMZN":0.1713,"LLY":-0.3616,"HOOD":0.2591,"ETHA":0.2579,"GLDM":0.4025,"IBIT":0.2115,"SLV":0.4659},"SOXX":{"AIPO":0.9111,"SOXX":1.0,"MU":0.8751,"WDC":0.7583,"GLW":0.8093,"ASML":0.872,"COPX":0.6505,"AMZN":0.0538,"LLY":-0.3053,"HOOD":0.2375,"ETHA":0.2652,"GLDM":0.3359,"IBIT":0.2292,"SLV":0.4517},"MU":{"AIPO":0.7991,"SOXX":0.8751,"MU":1.0,"WDC":0.7391,"GLW":0.6996,"ASML":0.7083,"COPX":0.5951,"AMZN":-0.0987,"LLY":-0.2553,"HOOD":0.1793,"ETHA":0.3221,"GLDM":0.3346,"IBIT":0.3118,"SLV":0.4417},"WDC":{"AIPO":0.7453,"SOXX":0.7583,"MU":0.7391,"WDC":1.0,"GLW":0.6187,"ASML":0.6014,"COPX":0.4958,"AMZN":0.0559,"LLY":-0.4048,"HOOD":0.1869,"ETHA":0.1856,"GLDM":0.2229,"IBIT":0.1692,"SLV":0.3486},"GLW":{"AIPO":0.7644,"SOXX":0.8093,"MU":0.6996,"WDC":0.6187,"GLW":1.0,"ASML":0.7053,"COPX":0.4345,"AMZN":0.0665,"LLY":-0.2335,"HOOD":0.0784,"ETHA":0.104,"GLDM":0.2012,"IBIT":0.0964,"SLV":0.282},"ASML":{"AIPO":0.7824,"SOXX":0.872,"MU":0.7083,"WDC":0.6014,"GLW":0.7053,"ASML":1.0,"COPX":0.5292,"AMZN":-0.0027,"LLY":-0.2084,"HOOD":0.2362,"ETHA":0.1676,"GLDM":0.268,"IBIT":0.1526,"SLV":0.3649},"COPX":{"AIPO":0.6402,"SOXX":0.6505,"MU":0.5951,"WDC":0.4958,"GLW":0.4345,"ASML":0.5292,"COPX":1.0,"AMZN":0.1112,"LLY":-0.0912,"HOOD":0.4108,"ETHA":0.5851,"GLDM":0.7601,"IBIT":0.5331,"SLV":0.8726},"AMZN":{"AIPO":0.1713,"SOXX":0.0538,"MU":-0.0987,"WDC":0.0559,"GLW":0.0665,"ASML":-0.0027,"COPX":0.1112,"AMZN":1.0,"LLY":0.0446,"HOOD":0.2369,"ETHA":0.1809,"GLDM":0.1522,"IBIT":0.1003,"SLV":0.1337},"LLY":{"AIPO":-0.3616,"SOXX":-0.3053,"MU":-0.2553,"WDC":-0.4048,"GLW":-0.2335,"ASML":-0.2084,"COPX":-0.0912,"AMZN":0.0446,"LLY":1.0,"HOOD":0.1179,"ETHA":-0.0209,"GLDM":0.1663,"IBIT":0.0031,"SLV":0.0501},"HOOD":{"AIPO":0.2591,"SOXX":0.2375,"MU":0.1793,"WDC":0.1869,"GLW":0.0784,"ASML":0.2362,"COPX":0.4108,"AMZN":0.2369,"LLY":0.1179,"HOOD":1.0,"ETHA":0.4248,"GLDM":0.4087,"IBIT":0.4448,"SLV":0.4109},"ETHA":{"AIPO":0.2579,"SOXX":0.2652,"MU":0.3221,"WDC":0.1856,"GLW":0.104,"ASML":0.1676,"COPX":0.5851,"AMZN":0.1809,"LLY":-0.0209,"HOOD":0.4248,"ETHA":1.0,"GLDM":0.6106,"IBIT":0.9122,"SLV":0.6491},"GLDM":{"AIPO":0.4025,"SOXX":0.3359,"MU":0.3346,"WDC":0.2229,"GLW":0.2012,"ASML":0.268,"COPX":0.7601,"AMZN":0.1522,"LLY":0.1663,"HOOD":0.4087,"ETHA":0.6106,"GLDM":1.0,"IBIT":0.5945,"SLV":0.8994},"IBIT":{"AIPO":0.2115,"SOXX":0.2292,"MU":0.3118,"WDC":0.1692,"GLW":0.0964,"ASML":0.1526,"COPX":0.5331,"AMZN":0.1003,"LLY":0.0031,"HOOD":0.4448,"ETHA":0.9122,"GLDM":0.5945,"IBIT":1.0,"SLV":0.6244},"SLV":{"AIPO":0.4659,"SOXX":0.4517,"MU":0.4417,"WDC":0.3486,"GLW":0.282,"ASML":0.3649,"COPX":0.8726,"AMZN":0.1337,"LLY":0.0501,"HOOD":0.4109,"ETHA":0.6491,"GLDM":0.8994,"IBIT":0.6244,"SLV":1.0}}};
+const WINDOWS=["1y","6m","3m"];
+let CWIN="1y";
+let BREADTH="neff";   // "neff" = measured independent bets | "sqrt" = sqrt(count)
+
+// Jacobi eigenvalues -> participation ratio. N_eff = (sum L)^2 / sum(L^2).
+// 7 perfectly correlated names -> 1.0. 7 independent -> 7.0.
+function nEff(syms){
+  const S=syms.filter(x=>CORR[CWIN][x]);
+  if(S.length<2) return S.length||1;
+  const n=S.length, A=S.map(a=>S.map(b=>CORR[CWIN][a][b]));
+  for(let it=0;it<200;it++){
+    let p=0,q=1,mx=0;
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++) if(Math.abs(A[i][j])>mx){mx=Math.abs(A[i][j]);p=i;q=j;}
+    if(mx<1e-11) break;
+    const th=0.5*Math.atan2(2*A[p][q],A[p][p]-A[q][q]), c=Math.cos(th), sn=Math.sin(th);
+    for(let k=0;k<n;k++){const a1=c*A[k][p]+sn*A[k][q], a2=-sn*A[k][p]+c*A[k][q]; A[k][p]=a1; A[k][q]=a2;}
+    for(let k=0;k<n;k++){const a1=c*A[p][k]+sn*A[q][k], a2=-sn*A[p][k]+c*A[q][k]; A[p][k]=a1; A[q][k]=a2;}
+  }
+  const lam=A.map((r,i)=>r[i]), s=lam.reduce((a,b)=>a+b,0), s2=lam.reduce((a,b)=>a+b*b,0);
+  return s*s/s2;
+}
+function breadthOf(syms){ return BREADTH==='sqrt' ? Math.sqrt(syms.length) : nEff(syms); }
+function pc1(syms){
+  const S=syms.filter(x=>CORR[CWIN][x]); if(S.length<2) return 1;
+  const ne=nEff(S); return null;
+}
+const WAVE_TREND="1 AI buildout";
+function waveDemand(trend,sub){
+  if(trend!==WAVE_TREND) return 1.0;
+  const row=WAVE_DEMAND[sub]; if(!row) return 1.0;
+  return row[Math.max(0,WAVES.indexOf(WAVE))];
+}
+const CWHY={certain:"multiple voices, observable evidence, investable vehicles exist",
+ strong:"well-argued, evidence accumulating",forming:"dated or named, not yet observable",
+ speculative:"one voice, no confirmation",watch:"named, not investable yet"};
+let D=JSON.parse(JSON.stringify(BASE));
+
+const band=s=>s>=85?1.00:s>=70?0.95:s>=55?0.85:s>=45?0.75:0.60;
+const f1=x=>x.toFixed(1);
+
+let R={};
+function calc(){
+  R={}; const pool=100;
+  const T=[];
+  for(const [tname,ovr,ttiming,tconv,subs] of D){
+    const sc=subs.map(s=>{
+      const td=s[4], S=s5calc(td[0],td[1],td[2],td[3]);
+      const wd=waveDemand(tname,s[0]);
+      const t=STAGES[s[2]], q=QUAL[s[3]], eff=100*t*q*wd,
+            raw=(100-FLOOR_SCORE)*t*q*wd, m=band(S.s5);
+      return {sub:s[0],tkr:s[1],timing:s[2],quality:s[3],tm:t,qm:q,wd,
+              px:td[0],d50:td[1],d200:td[2],rsi:td[3],s5:S.s5,S,
+              dep:s[5],why:s[6],eff,raw,m,score:raw*m};
+    });
+    // trend timing is DERIVED — the mean of its sub-themes. Timing was being
+    // stated twice: once at the trend, once per sub-theme. The sub-theme call is
+    // strictly more informative (Visser's stage clock is sub-theme level), and a
+    // trend-level assertion is either duplication (1 sub-theme) or fiction
+    // (AI buildout was set 'binding' with only 1 of 7 members binding).
+    const live=sc.filter(r=>r.quality!=='remove');
+    const n=live.length;
+    const tmDer = n ? live.reduce((a,r)=>a+r.tm,0)/n : 0;
+    const syms=live.map(r=>r.tkr);
+    const br=n?breadthOf(syms):0;
+    const ts=tmDer*CONV[tconv]*br;
+    T.push({tname,ovr,tmDer,tconv,sc,n,br,ts});
+  }
+  const grand=T.reduce((a,t)=>a+t.ts,0)||1;
+  T.forEach(t=>t.emg=pool*t.ts/grand);
+  const fixed=T.filter(t=>t.ovr!==null), free=T.filter(t=>t.ovr===null);
+  const used=fixed.reduce((a,t)=>a+t.ovr,0), left=pool-used;
+  const freeSum=free.reduce((a,t)=>a+t.ts,0)||1;
+  fixed.forEach(t=>t.tw=t.ovr);
+  free.forEach(t=>t.tw=left*t.ts/freeSum);
+  const rows=[], fills=[];
+  for(const t of T){
+    const sum=t.sc.reduce((a,b)=>a+b.score,0);
+    if(!t.sc.length){fills.push([t.tname,t.tw,0,null,t.emg,t.ovr]);continue;}
+    t.sc.forEach(r=>{r.share=sum>0?r.score/sum:1/t.sc.length; r.w=t.tw*r.share;
+                     r.tot=sum; r.twt=t.tw; r.trend=t.tname; r.n=t.sc.length;
+                     r.tmDer=t.tmDer; r.tconv=t.tconv; r.ts=t.ts; r.br=t.br; r.emg=t.emg; r.ovr=t.ovr;
+                     R[r.tkr]=r;});
+    const q=t.sc.reduce((a,b)=>a+b.m*b.w,0)/(t.tw||1);
+    fills.push([t.tname,t.tw,t.sc.reduce((a,b)=>a+b.w,0),q,t.emg,t.ovr]);
+    rows.push([t.tname,t.tw,t.sc,t.emg,t.ovr]);
+  }
+  for(const sv of SLEEVES){
+    const mem=rows.flatMap(([,,sc])=>sc).filter(r=>sv.tickers.includes(r.tkr));
+    const cur=mem.reduce((a,r)=>a+r.w,0); sv.cur=cur; sv.pre=cur; sv.fired=false;
+    if(!sv.on||cur<=sv.cap+0.001||!mem.length) continue;
+    sv.fired=true; sv.pre=cur; sv.cur=sv.cap; const freed=cur-sv.cap, k=sv.cap/cur;
+    mem.forEach(r=>{r.capped=true; r.w*=k;});
+    // an explicit trend override is a decision — reflow must not silently undo it
+    const out=rows.flatMap(([,,sc])=>sc).filter(r=>!sv.tickers.includes(r.tkr)&&r.ovr===null);
+    const base=out.reduce((a,r)=>a+r.w,0)||1;
+    out.forEach(r=>r.w+=freed*r.w/base);
+  }
+  fills.forEach(f=>{const t=rows.find(x=>x[0]===f[0]); if(t) f[1]=t[2].reduce((a,r)=>a+r.w,0);});
+  return {rows,fills};
+}
+
+function render(){
+  const {rows,fills}=calc();
+  let h='', total=0;
+  for(const [tname,twt,sc,emg,ovr] of rows){
+    sc.forEach((r,i)=>{
+      total+=r.w;
+      const d=r.w-r.dep;
+      h+=`<tr class="${i===0?'trendstart':''}" style="${r.quality==='remove'?'opacity:.42':''}">`;
+      if(i===0){
+        const tt=R[sc[0].tkr];
+        h+=`<td class="l tname" rowspan="${sc.length}">`+
+           `<input class="tn" value="${tname}" onchange="renameTrend('${tname}',this.value)">`+
+           `<div style="margin-top:5px">`+
+           (tname===WAVE_TREND
+             ? `<select class="stage" style="font-size:10.5px" onchange="setWave(this.value)" title="adoption wave — re-rates the sub-themes below">`+
+               WAVES.map(w=>`<option ${w===WAVE?'selected':''}>${w}</option>`).join('')+`</select>`
+             : `<select class="stage" style="font-size:10.5px" onchange="setTrendF('${tname}',3,this.value)" title="${CWHY[tt.tconv]}">`+
+               Object.keys(CONV).map(k=>`<option ${k===tt.tconv?'selected':''}>${k}</option>`).join('')+`</select>`)+
+           `</div>`+
+           `<div class="faint q" onclick="hdr('ttiming',event)" style="font-size:9.5px;margin-top:4px">`+
+             `timing <span class="derived">${tt.tmDer.toFixed(3)}</span> &middot; breadth <span class="derived">${tt.br.toFixed(2)}</span> of ${sc.length}`+
+           `</div>`+
+           (tname===WAVE_TREND
+             ? `<div class="faint q" onclick="hdr('wave',event)" style="font-size:9.5px">adoption wave &mdash; re-rates sub-themes</div>`
+             : `<div class="faint" style="font-size:9.5px">conviction &mdash; ${tt.tconv}</div>`)+
+           `<div class="faint" style="font-size:9.5px">score ${tt.ts.toFixed(2)}</div>`+
+           `</td>`;
+        h+=`<td class="tname" rowspan="${sc.length}" style="text-align:right">`+
+           `<input class="n pin" style="width:52px;font-size:14px" value="${f1(twt)}" onchange="setTrend('${tname}',this.value)">`+
+           `</td>`;
+      }
+      h+=`<td class="l sname grp">${r.sub}</td><td class="l tkr q" onclick="cell('${r.tkr}','tkr',event)">${r.tkr}`+
+         (/NO VOICE SUPPORT/.test(r.why)?`<span style="color:var(--neg);font-size:9px"> \u25cb</span>`
+          :/CORRECTED|MOVED/.test(r.why)?`<span style="color:var(--pin);font-size:9px"> \u25cf</span>`:'')+`</td>`;
+      h+=`<td class="grp"><select class="stage" onchange="setF('${r.tkr}',2,this.value)">`+
+         Object.keys(STAGES).map(k=>`<option ${k===r.timing?'selected':''}>${k}</option>`).join('')+`</select></td>`;
+      h+=`<td><select class="stage" onchange="setF('${r.tkr}',3,this.value)" title="${r.why}">`+
+         QORDER.map(k=>`<option ${k===r.quality?'selected':''}>${k}</option>`).join('')+`</select></td>`;
+      h+=`<td class="${r.wd===1?'faint':'derived'} q" onclick="cell('${r.tkr}','wave',event)">${r.wd===1&&r.trend!==WAVE_TREND?'—':r.wd.toFixed(2)}</td>`+
+         `<td class="derived q" onclick="cell('${r.tkr}','eff',event)">${r.eff.toFixed(0)}</td>`+
+         `<td class="derived q" onclick="cell('${r.tkr}','raw',event)">${r.raw.toFixed(1)}</td>`;
+      const ed=(i,w)=>`<input class="n" style="width:${w}px" value="${[r.px,r.d50,r.d200][i]}" onchange="setTD('${r.tkr}',${i},this.value)">`;
+      h+=`<td class="grp">${ed(0,56)}</td><td>${ed(1,56)}</td><td>${ed(2,56)}</td>`+
+         `<td class="faint" title="reference only - no longer feeds S5">${r.rsi.toFixed(1)}</td>`+
+         `<td class="derived q" onclick="cell('${r.tkr}','s5',event)">${r.s5===null?'—':r.s5.toFixed(0)}</td>`;
+      h+=`<td class="derived q" onclick="cell('${r.tkr}','mult',event)">${r.m.toFixed(2)}</td>`+
+         `<td class="derived q" onclick="cell('${r.tkr}','score',event)">${r.score.toFixed(1)}</td>`;
+      h+=`<td class="grp derived q" onclick="cell('${r.tkr}','share',event)">${(r.share*100).toFixed(1)}%</td>`;
+      h+=`<td class="final q" onclick="cell('${r.tkr}','final',event)">${f1(r.w)}`+
+         (r.capped?`<span style="color:var(--pin);font-size:9.5px"> cap</span>`:'')+`</td>`;
+      h+=`<td class="faint">${r.dep?f1(r.dep):'—'}</td>`;
+      h+=`<td style="color:${d>=0?'var(--pos)':'var(--neg)'}">${d>=0?'+':''}${f1(d)}</td></tr>`;
+    });
+  }
+  document.getElementById('tb').innerHTML=h;
+  document.getElementById('tot').textContent=f1(total);
+  document.getElementById('tot').style.color=Math.abs(total-100)<0.15?'var(--derived)':'var(--neg)';
+  document.getElementById('fill').innerHTML=fills.map(([n,t,held,q,emg,ovr])=>
+    `<div class="trendbar"><span>${n}${ovr!==null?' <span style="color:var(--pin)">override</span>':''}</span><span>${f1(t)}${q!==null?`&nbsp;&nbsp;<b style="color:${q<0.7?'var(--neg)':'var(--derived)'}">q ${q.toFixed(2)}</b>`:''}</span></div>`+
+    `<div class="bar" style="width:${Math.min(100,t)}%"></div>`).join('');
+  document.getElementById('brsel').innerHTML=
+    [['neff','N_eff measured'],['sqrt','&radic;n counted']].map(([v,l])=>`<option value="${v}" ${v===BREADTH?'selected':''}>${l}</option>`).join('');
+  document.getElementById('cwsel').innerHTML=WINDOWS.map(w=>`<option ${w===CWIN?'selected':''}>${w}</option>`).join('');
+  document.getElementById('sleeves').innerHTML=SLEEVES.map((sv,i)=>
+    `<div style="border:1px solid var(--rule);border-radius:6px;padding:9px 10px;margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <label style="font-family:var(--mono);font-size:12px;display:flex;gap:6px;align-items:center">
+          <input type="checkbox" ${sv.on?'checked':''} onchange="setSleeve(${i},'on',this.checked)" style="accent-color:var(--pin)">
+          ${sv.name}</label>
+        <span style="font-family:var(--mono);font-size:12px">
+          <span style="color:${sv.fired?'var(--pin)':'var(--derived)'}">${f1(sv.cur||0)}</span>
+          <span class="faint"> / </span>
+          <input class="n pin" style="width:40px" value="${f1(sv.cap)}" onchange="setSleeve(${i},'cap',this.value)"></span>
+      </div>
+      <input class="n" style="width:100%;text-align:left;margin-top:6px;color:var(--dim);font-size:11px"
+        value="${sv.tickers.join(' ')}" onchange="setSleeve(${i},'tkr',this.value)">
+      ${sv.fired?'<div style="color:var(--pin);font-size:10.5px;font-family:var(--mono);margin-top:5px">CAP FIRED — was '+f1(sv.pre||0)+', excess reflowed</div>':'<div class="faint" style="font-size:10.5px;font-family:var(--mono);margin-top:5px">'+(sv.on?'not binding':'off — currently '+f1(sv.cur||0)+'%')+'</div>'}
+    </div>`).join('');
+  const budget=fills.reduce((a,f)=>a+f[1],0);
+  const be=document.getElementById('budget');
+  be.textContent=f1(budget)+'%';
+  be.style.color=Math.abs(budget-100)<0.05?'var(--derived)':'var(--neg)';
+  document.getElementById('budgetnote').textContent=
+    Math.abs(budget-100)<0.05?'balanced' : (budget>100?f1(budget-100)+'% over — trim a trend or cash':f1(100-budget)+'% unallocated');
+}
+
+const INS=document.getElementById('ins');
+function pop(html,e){
+  INS.innerHTML='<x onclick="INS.style.display=\'none\'">&times;</x>'+html;
+  INS.style.display='block';
+  const w=INS.offsetWidth,h=INS.offsetHeight;
+  let x=e.clientX+14,y=e.clientY+14;
+  if(x+w>innerWidth-12)x=Math.max(12,e.clientX-w-14);
+  if(y+h>innerHeight-12)y=Math.max(12,innerHeight-h-12);
+  INS.style.left=x+'px'; INS.style.top=y+'px';
+  e.stopPropagation();
+}
+document.addEventListener('click',e=>{if(!INS.contains(e.target)&&!e.target.closest('.q'))INS.style.display='none';});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')INS.style.display='none';});
+
+function hdr(k,e){
+ if(k==='sev') pop(`<h4>S1 — two ladders</h4><div class="who">100 &times; timing &times; quality</div>
+  <p>S1 used to be a free-form 0-100 severity number. Two of the four axes had a published rubric; the other two — bottleneck and monetary — had none. Nine numbers, prose justification only, not reproducible by anyone else. This replaces them with two discrete ladders.</p>
+  <div class="step">TIMING &nbsp;&nbsp;binding 1.00 &middot; working 0.92 &middot; cooling 0.80
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forward 0.70 &middot; exhausted 0.60</div>
+  <div class="step">QUALITY &nbsp;sole 1.00 &middot; basket 0.92 &middot; duopoly 0.85
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;leader 0.75 &middot; contested 0.60</div>
+  <p>Quality asks the odds that owning this captures the trend — which is why a basket scores near a monopoly. That is the breadth term the old severity scale never had, and it is why SOXX no longer needs a hand-set floor.</p>
+  <p class="warn">Cost of five rungs: LLY and AMZN both land on working &times; leader and come out identical. The ladder cannot separate a 150-year trial archive from a logistics network. More rungs would fix it; free-form numbers would undo the point.</p>
+  <div class="src">signal_model_config.json &rarr; three_axes.bottleneck.raw_s1</div>`,e);
+ else if(k==='breadth') pop(`<h4>Breadth — measured, not counted</h4><div class="who">N_eff from real correlations &middot; ${CWIN} window</div>
+  <div class="step">N_eff = (&Sigma;&lambda;)&sup2; / &Sigma;&lambda;&sup2;
+7 identical names &rarr; 1.0 &nbsp; 7 independent &rarr; 7.0</div>
+  <p>&radic;n counts sub-themes as if each were an independent bet. They are not. Measured on daily log returns:</p>
+  <div class="step">${D.filter(t=>t[4].length).map(t=>{const S=t[4].map(x=>x[1]); return t[0].padEnd(18,'\u00a0')+'n '+S.length+'   \u221an '+Math.sqrt(S.length).toFixed(2)+'   N_eff '+nEff(S).toFixed(2);}).join('\n')}</div>
+  <p>Seven AI-buildout names average ~0.65 correlation and deliver <b>1.95</b> independent bets. Two application names — AMZN vs LLY at <b>0.04</b> — deliver <b>2.00</b>. Slicing one exposure more finely does not create diversification, and &radic;n was paying you for it.</p>
+  <p class="warn">Backward-looking. Correlations tighten as the window shortens (AIPO-SOXX 0.86 at 1y, 0.91 at 3m; GLDM-IBIT 0.28 to 0.59), so switch windows to see how much the answer depends on the regime. It also creates a perverse incentive: an unrelated name buys trend weight regardless of conviction.</p>`,e);
+ else if(k==='wave') pop(`<h4>Adoption wave</h4><div class="who">one global timeline &middot; currently ${WAVE}</div>
+  <p>Visser 8/16 sequencing: coding agents now, enterprise agents next year, consumer agents the back half, embodied 2028. One setting, so the trends cannot contradict each other.</p>
+  <p>It re-rates <b>${WAVE_TREND}</b> only. Different waves stress different parts of the stack — consumer agents need more memory but less nearline storage than enterprise agents. The other trends are not downstream of this curve and sit at 1.00.</p>
+  <div class="step">${Object.keys(WAVE_DEMAND).map(k=>k.padEnd(20,'\u00a0')+WAVE_DEMAND[k].map(v=>v.toFixed(2)).join('  ')).join('\n')}
+${'\u00a0'.repeat(20)}${WAVES.map(w=>(w===WAVE?'^^^^':'    ')).join('  ')}</div>
+  <p class="warn">Advance this only on observable evidence that the next wave has arrived, not on an announcement. Visser dated Stage 4 to September — that is a claim about rails, not proof the wave has turned.</p>`,e);
+ else if(k==='ttiming'){
+  const t=D.find(x=>x[4].length&&x[4].some(z=>true));
+  let best=null; for(const tr of D){ if(tr[4].length&&tr[4].some(z=>R[z[1]])){ if(!best) best=tr; } }
+  pop(`<h4>Trend timing — derived</h4><div class="who">mean of the sub-themes in this trend</div>
+  <p>Not an input. Timing used to be stated twice: once at the trend and once per sub-theme. The sub-theme call is strictly more informative — Visser's stage clock (memory, optical, power, tokenization) is sub-theme level.</p>
+  <div class="step">trend_timing = mean(sub-theme timing multipliers)</div>
+  <p>AI buildout was set to <b>binding</b> (1.00) while only 1 of its 7 sub-themes is binding — the rest are working and cooling. The real mean is 0.880, so the trend was overstated by about 3 points of weight.</p>
+  <p>Deriving it also means it cannot drift: change a sub-theme's stage and the trend updates on its own.</p>
+  <p class="warn">Simplification: a plain mean counts a 2%-weight sub-theme the same as a 20% one. Weighting by score would be more accurate but circular — the weights depend on the trend weight, which would depend on the weights.</p>`,e);
+ } else if(k==='trend') pop(`<h4>Trend weight</h4><div class="who">timing &times; conviction &times; &radic;breadth</div>
+  <div class="step">trend_score = timing &times; conviction &times; &radic;(sub-themes)
+trend_wt&nbsp;&nbsp;&nbsp; = 100 &times; score / &Sigma;(all scores)</div>
+  <p>Scored at the TREND level, not summed from its names. Summing made the weight a function of ticker count: adding two names to a one-name trend moved it 4.7% &rarr; 11.6% with conviction unchanged.</p>
+  <p>Voices set both inputs. Visser's stage clock gives timing; conviction is how well established the trend is across the voice record.</p>
+  <p>&radic;n keeps breadth meaningful without letting it dominate. It is the one arbitrary choice here.</p>
+  <p>Editable — type a number and the other trends re-split the remainder.</p>`,e);
+ else pop(`<h4>S5 entry quality</h4><div class="who">anti-momentum — high is a better entry</div>
+  <p>Computed, never typed. DMA position sets the base; stretch above the 50-DMA sets the penalty.</p>
+  <div class="step">base&nbsp;&nbsp; below 200-DMA&nbsp;&nbsp; 45
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pullback under 50&nbsp;72
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riding above both&nbsp;58</div>
+  <div class="step">stretch &ge;50% &rarr; 12 &middot; &ge;25% &rarr; 8 &middot; &ge;10% &rarr; 4
+then &times; 0.5 working-theme discount</div>
+  <p>The rule it enforces: penalise velocity, never proximity to highs. A structural winner sits near its highs the whole way up.</p>
+  <p class="warn">RSI term removed 8/22 — a threshold at 70 that cost 8 points of S5 for one tick. Trailing 1-year return is also excluded by design (changed 6/22/26), so a name down 32% that has just bounced still reads as stretched. IBIT is exactly that case.</p>
+  <div class="src">adapted from pull_candidates.cjs s5score()</div>`,e);
+}
+
+function cell(tkr,f,e){
+ const r=R[tkr]; if(!r)return;
+ const B=[[85,'1.00','85-100'],[70,'0.95','70-84'],[55,'0.85','55-69'],[45,'0.75','45-54'],[0,'0.60','under 45']];
+ const bd=B.find(b=>r.s5>=b[0]);
+ const M={
+  tkr:[`${tkr} — ${r.sub}`,
+    `${r.quality==='remove'?'<p class="warn"><b>REMOVED.</b> Zero weight, excluded from this trend\'s breadth and derived timing. The other names re-split the trend.</p>':''}
+    <div class="step">trend&nbsp;&nbsp;&nbsp; ${r.trend}
+timing&nbsp;&nbsp; ${r.timing} (&times;${r.tm.toFixed(2)})
+quality&nbsp; ${r.quality} (&times;${r.qm.toFixed(2)})
+S1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${r.eff.toFixed(0)}   raw ${r.raw.toFixed(1)}
+S5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${r.s5.toFixed(0)}   mult ${r.m.toFixed(2)}
+score&nbsp;&nbsp;&nbsp;${r.score.toFixed(1)}   share ${(r.share*100).toFixed(1)}%
+WEIGHT&nbsp; ${f1(r.w)}%${r.dep?'   (v3.3 was '+f1(r.dep)+'%)':'   (new position)'}</div>
+    <div class="step">px ${r.px}  &middot;  50-DMA ${r.d50}  &middot;  200-DMA ${r.d200}
+stretch ${r.S.st.toFixed(1)}%   RSI ${r.rsi.toFixed(1)} <span class="faint">(not used)</span></div>
+    <div style="margin-top:10px;padding:9px 11px;background:#101317;border-left:2px solid ${/NO VOICE SUPPORT/.test(r.why)?'var(--neg)':/CORRECTED|MOVED/.test(r.why)?'var(--pin)':'var(--rule2)'};border-radius:0 5px 5px 0">
+      <div style="font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);margin-bottom:5px">
+        ${/NO VOICE SUPPORT/.test(r.why)?'&#9675; no voice support':/CORRECTED|MOVED/.test(r.why)?'&#9679; corrected 8/22':'source'}</div>
+      <div style="font-size:11.5px;line-height:1.55;color:${/NO VOICE SUPPORT/.test(r.why)?'var(--neg)':'var(--dim)'}">${r.why}</div>
+    </div>`],
+  wave:[`Wave demand — ${r.sub}`,
+    r.trend!==WAVE_TREND
+    ? `<p>Not applicable. Wave demand shifts only within <b>${WAVE_TREND}</b> — the other trends are not downstream of the AI adoption curve, so they sit at 1.00.</p>`
+    : `<div class="step">current wave: <b>${WAVE}</b>
+${r.sub} demand &rarr; <b>&times;${r.wd.toFixed(2)}</b></div>
+    <div class="step">${WAVES.map(w=>`${(w===WAVE?'&rarr; ':'&nbsp;&nbsp;&nbsp;')}${w.padEnd(18,'\u00a0')} ${WAVE_DEMAND[r.sub]?WAVE_DEMAND[r.sub][WAVES.indexOf(w)].toFixed(2):'—'}`).join('\n')}</div>
+    <p>${WAVE_WHY[r.sub]||''}</p>
+    <p>Different waves stress different parts of the buildout. Advance the wave and these re-rate together — consumer agents need more memory but less nearline storage than enterprise agents do.</p>`],
+  eff:[`S1 — timing &times; quality &times; wave`,
+    `<div class="step">100 &times; timing &times; quality${r.wd!==1?' &times; wave':''}
+100 &times; ${r.tm.toFixed(2)} <span class="faint">(${r.timing})</span> &times; ${r.qm.toFixed(2)} <span class="faint">(${r.quality})</span>${r.wd!==1?` &times; ${r.wd.toFixed(2)} <span class="faint">(${WAVE})</span>`:''} = <b>${r.eff.toFixed(0)}</b></div>
+    <p><b>Timing</b> — where the trend sits in the cycle. binding 1.00 · working 0.92 · cooling 0.80 · forward 0.70 · exhausted 0.60. The 0.60 is a floor: fade, never zero.</p>
+    <p><b>Quality</b> — the odds that owning this actually captures the trend. sole 1.00 · basket 0.92 · duopoly 0.85 · leader 0.75 · contested 0.60. A monopoly and a whole-theme basket both score high for opposite reasons: one has no alternative, the other owns every alternative.</p>
+    <div style="margin-top:9px;padding:8px 10px;background:#101317;border-left:2px solid ${/NO VOICE SUPPORT|CORRECTED|MOVED/.test(r.why)?'var(--pin)':'var(--rule2)'};border-radius:0 5px 5px 0">
+      <div style="font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);margin-bottom:4px">source</div>
+      <div style="font-size:11.5px;line-height:1.5;color:${/NO VOICE SUPPORT/.test(r.why)?'var(--neg)':'var(--dim)'}">${r.why}</div>
+    </div>
+    <p>Voice conviction reaches the model through the timing and quality dropdowns, not through a separate convergence term. One opinion, one place.</p>
+    <p>This replaced nine hand-set severity numbers that had no rubric behind them. Both inputs are now discrete, arguable, and reproducible.</p>`],
+  raw:[`raw — the above-floor portion`,
+    `<div class="step">(100 &minus; floor_score) &times; timing &times; quality
+55 &times; ${r.tm.toFixed(2)} &times; ${r.qm.toFixed(2)} = <b>${r.raw.toFixed(1)}</b></div>
+    <p>The multipliers act on the portion ABOVE floor_score, never on the whole scale. This is the form config specifies for stage decay: <code>ws = floor + (composite &minus; floor) &times; mult</code>.</p>
+    <p class="warn">Corrected 8/22. The earlier form was <code>100 &times; t &times; q &minus; 45</code>, which let the two ladders compound before the floor bit: spread across the 25 combinations was 5,500&times; and three cells scored zero — violating "fade, never zero", the stated principle of the very numbers being borrowed. The correct form spans 2.8&times;, which is 1.67 &times; 1.67, exactly what two ladders of that range should give.</p>`],
+  s5:[`S5 — DMA ladder + stretch`,
+    `<div class="step">base = px &lt; d200 ? 45 : (px &lt; d50 ? 72 : 58)
+${r.px} vs d200 ${r.d200} / d50 ${r.d50} &rarr; <b>${r.S.base}</b></div>
+    <div class="step">stretch = (px &minus; d50) / d50 = ${r.S.st.toFixed(1)}%
+&rarr; rp ${r.S.rp} &times; 0.5 = &minus;${r.S.pen.toFixed(1)}</div>
+    <div class="step">clamp(5, 95, ${r.S.base} &minus; ${r.S.pen.toFixed(1)}) = <b>${r.s5.toFixed(0)}</b></div>
+    <p>Stretch bands: &ge;50% &rarr; 12 &middot; &ge;25% &rarr; 8 &middot; &ge;10% &rarr; 4 &middot; else 0, all halved by the working-theme discount.</p>
+    <p class="warn">RSI removed 8/22. It was a cliff, not a slope — 69.9 to 70.0 cost 8 points of S5 and 25% of weight, and it was the only thing ranking gold above bitcoin when S1 said the reverse. RSI for ${r.tkr} is ${r.rsi.toFixed(1)}, shown for reference only.</p>
+    <p>Measured against the 50-DMA, never as distance from highs.</p>`],
+  mult:[`mult — entry-quality multiplier`,
+    `<div class="step">band(S5 ${r.s5}) &rarr; ${bd[2]} &rarr; <b>&times;${bd[1]}</b></div>
+    <p>The anti-momentum brake. A stretched name gets less than its sub-theme deserves; the difference is redistributed to better entries inside the same trend.</p>
+    <p class="warn">These five multipliers are not in config. They were set in this session and are the least-validated numbers on the page.</p>`],
+  score:[`score — what actually competes`,
+    `<div class="step">raw &times; mult
+${r.raw.toFixed(1)} &times; ${r.m.toFixed(2)} = <b>${r.score.toFixed(1)}</b></div>
+    <p>Severity says how much the sub-theme deserves; the multiplier says how good today's entry is. Score is the product, and it is the only thing ranked inside a trend.</p>`],
+  share:[`share — this name's slice of its trend`,
+    `<div class="step">score / &Sigma;(scores in trend)
+${r.score.toFixed(1)} / ${r.tot.toFixed(1)} = <b>${(r.share*100).toFixed(1)}%</b></div>
+    <p>Normalised across the ${r.n} name${r.n>1?'s':''} in ${r.trend}, so every trend fills to its target exactly. Competition is only ever within a trend — this name never competes with anything outside it.</p>
+    ${r.n===1?'<p class="warn">Sole name in its trend, so share is 100% no matter what it scores. Severity and entry quality are inert here — only the trend weight can size it.</p>':''}`],
+  final:[`final weight`,
+    `<div class="step">trend_wt &times; share
+${r.twt.toFixed(1)}% &times; ${(r.share*100).toFixed(1)}% = <b>${f1(r.w)}%</b></div>
+    <p>No target_top, no per-name cap, no composite. Trend weight is yours; share is the engine's.</p>
+    <p>Deployed v3.3 was ${r.dep?f1(r.dep)+'%':'not held'}, so this is ${r.dep?(r.w>=r.dep?'an increase of ':'a reduction of ')+Math.abs(r.w-r.dep).toFixed(1)+' points':'a new position'}.</p>`]
+ }[f];
+ pop(`<h4>${M[0]}</h4><div class="who">${tkr} &middot; ${r.sub}</div>${M[1]}`,e);
+}
+
+function renameTrend(o,v){v=v.trim();if(!v||v===o)return;for(const t of D)if(t[0]===o)t[0]=v;render();}
+
+function moveTkr(tkr,dest){
+  if(!dest)return; let row=null;
+  for(const t of D){const i=t[4].findIndex(s=>s[1]===tkr); if(i>=0){row=t[4].splice(i,1)[0];break;}}
+  if(row) for(const t of D) if(t[0]===dest) t[4].push(row);
+  render();
+}
+function addTrend(){const n=prompt('New trend name');if(n&&n.trim())D.push([n.trim(),null,'forward','watch',[]]);render();}
+function retireTrend(n){
+  const t=D.find(x=>x[0]===n);
+  if(t&&t[4].length){alert('Move its names out first — '+t[4].length+' still assigned.');return;}
+  D=D.filter(x=>x[0]!==n); render();
+}
+function setSleeve(i,k,v){
+  if(k==='cap')SLEEVES[i].cap=parseFloat(v)||0;
+  else if(k==='on')SLEEVES[i].on=v;
+  else SLEEVES[i].tickers=v.split(/[ ,]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);
+  render();
+}
+function setTD(tkr,i,v){for(const t of D)for(const s of t[4])if(s[1]===tkr)s[4][i]=parseFloat(v)||0;render();}
+function setF(tkr,i,v,num){for(const t of D)for(const s of t[4])if(s[1]===tkr)s[i]=num?(parseFloat(v)||0):v;render();}
+function setTrend(n,v){const x=(v===''||v===null)?null:parseFloat(v);for(const t of D)if(t[0]===n)t[1]=isNaN(x)?null:x;render();}
+function setWave(v){WAVE=v;render();}
+function setTrendF(n,i,v){for(const t of D)if(t[0]===n)t[i]=v;render();}
+function exportState(){
+  const {rows,fills}=calc();
+  const b={}, bt={};   // key by TICKER, not trend name — trends are renameable
+  for(const [tn,tw,tt,tc,subs] of BASE){bt[tn]=tw; for(const x of subs) b[x[1]]={row:x,trend:tn};}
+  const diffs=[]; const L=[];
+  L.push('# AlphaPlaybook v3.4 worksheet — exported '+new Date().toISOString().slice(0,16).replace('T',' '));
+  L.push('# trend-first. S1 = 100*timing*quality; score = max(0,S1-45)*band(S5); weight = trend_wt * score/sum(score in trend)');
+  L.push('');
+  
+  L.push('TREND_WEIGHTS = {   # emergent unless marked OVERRIDE');
+  for(const f of fills){
+    const [tn,tw,,,emg,ovr]=f;
+    if(ovr!==null&&Math.abs(ovr-emg)>0.05) diffs.push(tn+' override '+f1(ovr)+' vs emergent '+f1(emg));
+    if(!(tn in bt)) diffs.push('new trend: '+tn);
+    const tr=D.find(x=>x[0]===tn);
+    L.push('  "'+tn+'": '+f1(tw)+',   # '+(tr?tr[2]+' x '+tr[3]+' x sqrt('+tr[4].length+')':'')+
+      (ovr!==null?'  OVERRIDE, derived was '+f1(emg):''));
+  }
+  L.push('}');
+  L.push('');
+  L.push('# ticker, timing, quality, S1, S5, final_weight');
+  L.push('BOOK = [');
+  for(const [tn,tw,sc] of rows) for(const r of sc){
+    const rec=b[r.tkr], o=rec?rec.row:null; const ch=[];
+    if(rec&&rec.trend!==tn) diffs.push(r.tkr+' moved: '+rec.trend+' -> '+tn);
+    if(o){ if(r.timing!==o[2]){ch.push('timing '+o[2]+'->'+r.timing); diffs.push(r.tkr+' timing '+o[2]+' -> '+r.timing);}
+           if(r.quality!==o[3]){ch.push('quality '+o[3]+'->'+r.quality); diffs.push(r.tkr+' quality '+o[3]+' -> '+r.quality);}
+           const od=o[4]; if(od&&(od[0]!==r.px||od[1]!==r.d50||od[2]!==r.d200||od[3]!==r.rsi)){
+             ch.push('technicals'); diffs.push(r.tkr+' technicals edited (S5 '+r.s5.toFixed(0)+')');} }
+    L.push('  # '+r.tkr+': '+r.why);
+    L.push('  ("'+r.tkr+'", "'+r.timing+'", "'+r.quality+'", '+r.eff.toFixed(0)+', '+r.s5.toFixed(0)+', '+f1(r.w)+'),'+
+           (ch.length?'   # '+ch.join(', '):'')+(o&&o[5]?'   [v3.3 '+f1(o[5])+']':'   [new]'));
+  }
+  L.push(']');
+  const tot=rows.reduce((a,[,,sc])=>a+sc.reduce((x,r)=>x+r.w,0),0);
+  document.getElementById('brsel').innerHTML=
+    [['neff','N_eff measured'],['sqrt','&radic;n counted']].map(([v,l])=>`<option value="${v}" ${v===BREADTH?'selected':''}>${l}</option>`).join('');
+  document.getElementById('cwsel').innerHTML=WINDOWS.map(w=>`<option ${w===CWIN?'selected':''}>${w}</option>`).join('');
+  document.getElementById('sleeves').innerHTML=SLEEVES.map((sv,i)=>
+    `<div style="border:1px solid var(--rule);border-radius:6px;padding:9px 10px;margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <label style="font-family:var(--mono);font-size:12px;display:flex;gap:6px;align-items:center">
+          <input type="checkbox" ${sv.on?'checked':''} onchange="setSleeve(${i},'on',this.checked)" style="accent-color:var(--pin)">
+          ${sv.name}</label>
+        <span style="font-family:var(--mono);font-size:12px">
+          <span style="color:${sv.fired?'var(--pin)':'var(--derived)'}">${f1(sv.cur||0)}</span>
+          <span class="faint"> / </span>
+          <input class="n pin" style="width:40px" value="${f1(sv.cap)}" onchange="setSleeve(${i},'cap',this.value)"></span>
+      </div>
+      <input class="n" style="width:100%;text-align:left;margin-top:6px;color:var(--dim);font-size:11px"
+        value="${sv.tickers.join(' ')}" onchange="setSleeve(${i},'tkr',this.value)">
+      ${sv.fired?'<div style="color:var(--pin);font-size:10.5px;font-family:var(--mono);margin-top:5px">CAP FIRED — was '+f1(sv.pre||0)+', excess reflowed</div>':'<div class="faint" style="font-size:10.5px;font-family:var(--mono);margin-top:5px">'+(sv.on?'not binding':'off — currently '+f1(sv.cur||0)+'%')+'</div>'}
+    </div>`).join('');
+  const budget=fills.reduce((a,f)=>a+f[1],0);
+  L.push('');
+  L.push('# total allocated '+f1(tot)+'%   budget (trends+cash) '+f1(budget)+'%'+(Math.abs(budget-100)<0.05?'':'  <-- NOT 100'));
+  for(const tn of Object.keys(bt)) if(!fills.some(f=>f[0]===tn)) diffs.push('trend removed or renamed: '+tn);
+  L.push('');
+  L.push('SLEEVE_CAPS = [');
+  for(const sv of SLEEVES) L.push('  {"'+sv.name+'": '+f1(sv.cap)+', "on": '+sv.on+', "tickers": '+JSON.stringify(sv.tickers)+'},'+
+    (sv.fired?'   # FIRED at '+f1(sv.cur||0):'   # not binding, at '+f1(sv.cur||0)));
+  L.push(']');
+  L.push('');
+  L.push('# CHANGES FROM BASELINE: '+(diffs.length?'':'none'));
+  diffs.forEach(d=>L.push('#   '+d));
+  document.getElementById('exptxt').value=L.join('\n');
+  document.getElementById('expnote').textContent=diffs.length
+    ? diffs.length+' change'+(diffs.length>1?'s':'')+' from baseline. Everything unchanged is included too, so this is a complete snapshot.'
+    : 'No changes from baseline yet — this is the starting state.';
+  document.getElementById('exp').style.display='block';
+  document.getElementById('exp').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function copyExp(){
+  const t=document.getElementById('exptxt'); t.select(); t.setSelectionRange(0,999999);
+  navigator.clipboard.writeText(t.value).then(()=>{
+    const c=document.getElementById('copied'); c.style.opacity=1; setTimeout(()=>c.style.opacity=0,1400);
+  }).catch(()=>{document.execCommand('copy');});
+}
+function reset(){D=JSON.parse(JSON.stringify(BASE));render();}
+render();
+</script>
+</body>
+</html>
