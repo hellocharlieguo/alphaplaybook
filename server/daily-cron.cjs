@@ -1131,54 +1131,40 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // MODEL PORTFOLIO COMPUTATION
 // ============================================================================
 
-// AlphaPlaybook model portfolio — 16 holdings + cash across 6 themes
-// North star: "Long scarcity, short abundance"
-// AlphaPlaybook AGGRESSIVE sleeve — Decision Engine v2.3 (FULL RESCORE 2026-06-09)
-// Source: AlphaPlaybook_Sleeves_6_9_26.md — evidence: 6/3 TFTC + 6/6 Pomp + 6/7 solo
-// Visser appearances + 6/8 Camillo (methodology only, no new tickers).
-// 6/9 session decisions (ALL APPROVED):
-//   RULE C (new, v2.3): accelerant fired + theme ETF-covered = EXIT, not floor.
-//     First firing: CEG (below-200 + mom-down in trim zone; theme held via AIPO).
-//     Formalized in signal_engine.py apply_exit_rules_vs_prior + config gates.rule_c.
-//   Conviction exits (rationale in sleeves doc): TXN (thinnest Visser linkage, power
-//     theme cooling), AMZN (evidence-gate fail — never entered).
-//   NEW: XLE 5.5% energy hedge (Visser bought XOM/CVX 6/7 — Hormuz + >4% CPI regime;
-//     basket form chosen over the two singles for simplicity). LLY 7% application
-//     satellite ("largest US company by 2030", peptides thesis, multiple appearances).
-//   KEPT: XSD 2.5% (index-beta optionality). FLNC protected from the cooling sweep
-//     (6/7 battery reaffirmation: "a necessity") but velocity-trimmed by the S5
-//     ladder (+397% 1y = parabolic penalty) — thesis up, entry quality down, 3.5%.
-//   Voice floor 3% LIVE (BE armed, not bound). PAUSED below-200, frozen at current
-//     weight (paused is NOT sold; hard-money exit-exempt): IBIT / GLDM / ETHA.
-// Theme shape vs 6/1: power/infra 32.0→21.5, crypto-beta 22.5→19.5, energy 0→5.5,
-//   application 0→7.0, monetary core 24.5 (unchanged), optical/compute 15.5→20.5.
-// Params: 16 holdings + cash, top weight 18%, cash floor 5%, k=2.81. NO single-stock cap.
-// These are FINAL engine output and ship as-is — the nightly boost is DISABLED below.
-// `action` = composite-tier label for the Portfolio tab Action column
-//   (>=80 Strong Entry | 73-79.9 Enter | 67-72.9 Starter/Watch | COPX/BE structural & cash = Hold).
-// Comments after each line are the engine composite scores (UNDISCOUNTED).
+// v3.4 TREND-FIRST — frozen 2026-08-24.
+// Cascade: name = 55 x timing x quality x wave_demand x entry_band(S5);
+//          trend = derived_timing x conviction x breadth(N_eff);
+//          weight = trend_weight x (name score / sum in trend).
+// Canonical: v34_worksheet_2026-08-24.html   Spec: Trend_First_Spec.md
+// 12 holdings. No cash line. Hard-money sleeve cap OFF (GLDM+IBIT+SLV = 30.4%).
+// Retired this freeze: SKHY (unscoreable, no SMA50 until ~Sept 18), SGOV (no cash
+// row in the cascade), MU + WDC (dropped 8/23 on measured redundancy).
 const BASE_PORTFOLIO = {
-  AIPO:  { base_weight: 16.0, theme: 'AI Compute',         action: 'Enter', }, // CORE — power basket (Visser's top bottleneck)
-  SOXX:  { base_weight: 12.0, theme: 'AI Compute',         action: 'Enter', }, // CORE — broad semi basket (carries MU/MRVL/AMD/NVDA)
-  LLY:   { base_weight: 10.0, theme: 'AI Application',     action: 'Enter', }, // application anchor (50/50 with AMZN)
-  AMZN:  { base_weight: 10.0, theme: 'AI Application',     action: 'Enter', }, // consumer-agent platform (50/50 with LLY)
-  SKHY:  { base_weight: 8.0, theme: 'AI Compute',         action: 'Enter', }, // memory conviction — SK Hynix HBM pure-play; no technicals yet
-  ASML:  { base_weight: 7.0, theme: 'AI Compute',         action: 'Enter', }, // satellite — EUV MONOPOLY, additive (SOXX has ~0 ASML)
-  SLV:   { base_weight: 7.0, theme: 'Monetary Scarcity',  action: 'Hold', }, // monetary; paused below-200
-  HOOD:  { base_weight: 6.0, theme: 'Tokenization',       action: 'Enter', }, // tokenization; uptrend
-  SGOV:  { base_weight: 6.0, theme: 'Cash',               action: 'Hold', min_weight: 3, }, // cash floor (min 3)
-  GLW:   { base_weight: 4.5, theme: 'AI Compute',         action: 'Enter', }, // satellite — optical fiber (Corning)
-  IBIT:  { base_weight: 4.0, theme: 'Monetary Scarcity',  action: 'Hold', }, // paused below-200
-  GLDM:  { base_weight: 4.0, theme: 'Monetary Scarcity',  action: 'Hold', }, // paused below-200
-  COPX:  { base_weight: 3.0, theme: 'AI Compute',         action: 'Hold', }, // satellite — copper; carve-out exempt
-  ETHA:  { base_weight: 2.5, theme: 'Tokenization',       action: 'Hold', }, // paused below-200
+  LLY:   { base_weight: 13.4, theme: 'AI Applied',        min_weight:  6.7, action: 'Hold' },
+  AMZN:  { base_weight: 13.3, theme: 'AI Applied',        min_weight:  6.7, action: 'Hold' },
+  IBIT:  { base_weight: 12.5, theme: 'Monetary',          min_weight:  6.2, action: 'Add' },
+  GLDM:  { base_weight: 11.5, theme: 'Monetary',          min_weight:  5.8, action: 'Add' },
+  ETHA:  { base_weight:  9.6, theme: 'Tokenized Rails',   min_weight:  4.8, action: 'Add' },
+  HOOD:  { base_weight:  8.3, theme: 'Tokenized Rails',   min_weight:  4.2, action: 'Add' },
+  SLV:   { base_weight:  6.4, theme: 'Monetary',          min_weight:  3.2, action: 'Hold' },
+  AIPO:  { base_weight:  6.3, theme: 'AI Buildout',       min_weight:  3.1, action: 'Trim' },
+  GLW:   { base_weight:  5.0, theme: 'AI Buildout',       min_weight:  2.5, action: 'Hold' },
+  ASML:  { base_weight:  5.0, theme: 'AI Buildout',       min_weight:  2.5, action: 'Trim' },
+  SOXX:  { base_weight:  4.6, theme: 'AI Buildout',       min_weight:  2.3, action: 'Trim' },
+  COPX:  { base_weight:  4.1, theme: 'AI Buildout',       min_weight:  2.0, action: 'Hold' },
 }
+
+// SGOV left the book 2026-08-24 (v3.4 has no cash row) but the momentum
+// sleeve still settles its cash residual in SGOV, so it must stay PRICED.
+// Without this the fetch list drops it, prices['SGOV'] is undefined, and
+// the `?? 0` at the cash line silently pays 0% on the residual forever.
+const PRICE_EXTRAS = ['SGOV']
 
 // Bump this on ANY engine rescore or weight change. The P&L compares it to the version
 // stored in yesterday's snapshot; a change forces a one-night rebalance-to-target.
 // Between bumps (same tickers, same version) holdings DRIFT with price — winners gain
 // weight, losers shed it. A ticker add/drop also forces a rebalance regardless.
-const PORTFOLIO_VERSION = '2026-07-15-v3.3-coresat'
+const PORTFOLIO_VERSION = '2026-08-24-v3.4-trendfirst'
 
 function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('\n========================================')
@@ -1199,10 +1185,7 @@ function computeModelPortfolio(bullishAssets, quantResult) {
     portfolio[ticker] = { ...config, weight: config.base_weight, adjustments: [] }
   }
 
-  // Enforce SGOV floor (cash floor still applies as a guardrail).
-  if (portfolio['SGOV'].weight < (portfolio['SGOV'].min_weight || 3)) {
-    portfolio['SGOV'].weight = portfolio['SGOV'].min_weight || 3
-  }
+  // SGOV cash floor removed 2026-08-24: v3.4 has no cash row.
 
   // Normalize weights to 100%
   const totalRaw = Object.values(portfolio).reduce((sum, p) => sum + p.weight, 0)
@@ -1923,7 +1906,8 @@ async function main() {
       console.log('   Skipping P&L + daily snapshot. Narrative/crowd signals already written stand.')
     } else {
       // Step 4: Fetch current prices for portfolio tickers
-      const tickers = Object.keys(portfolio)
+      // PRICE_EXTRAS keeps SGOV priced after it left BASE_PORTFOLIO (2026-08-24).
+      const tickers = [...new Set([...Object.keys(portfolio), ...PRICE_EXTRAS])]
       const prices = await fetchCurrentPrices(tickers)
 
       // Step 5: Calculate P&L
