@@ -61,10 +61,15 @@ const THEME_META: Record<string, { color: string }> = {
   'AI Hardware Bottleneck':            { color: '#06b6d4' },
   'Power & Infrastructure':            { color: '#10b981' },
   'Physical Scarcity':                 { color: '#f59e0b' },
-  'Tokenization':                      { color: '#8b5cf6' },
-  'AI Application':                    { color: '#3b82f6' },
-  'Monetary Scarcity':                 { color: '#eab308' },
+  'AI Buildout':                       { color: '#06b6d4' },
+  'AI Applied':                        { color: '#3b82f6' },
+  'Tokenized Rails':                   { color: '#8b5cf6' },
+  'Monetary':                          { color: '#eab308' },
+  // legacy theme labels (older snapshots)
   'AI Compute':                        { color: '#06b6d4' },
+  'AI Application':                    { color: '#3b82f6' },
+  'Tokenization':                      { color: '#8b5cf6' },
+  'Monetary Scarcity':                 { color: '#eab308' },
   'Cash':                              { color: '#6b7280' },
   // legacy theme labels (older snapshots)
   'Compute':                           { color: '#06b6d4' },

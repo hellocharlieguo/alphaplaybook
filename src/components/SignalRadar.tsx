@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Compute',        tag: 'binding now',  blurb: 'Power + chips + copper; trimming parabolic semis.', binding: true },
-  { name: 'AI Application',    tag: 'up the stack', blurb: 'LLY "human software," AMZN efficiency flywheel.' },
-  { name: 'Tokenization',      tag: 'rotating in',  blurb: 'Agents need food; that food is tokens.' },
-  { name: 'Monetary Scarcity', tag: 'paused <200',  blurb: 'Silver no-brainer, BTC next parabola; buying weakness.' },
+  { name: 'AI Buildout',     tag: 'binding, crowded', blurb: 'Power and litho binding, semis cooling; everyone is long it.', binding: true },
+  { name: 'AI Applied',      tag: 'up the stack',     blurb: 'LLY and AMZN \u2014 the only uncorrelated pair in the book.' },
+  { name: 'Tokenized Rails', tag: 'conviction up',    blurb: 'Upgraded 8/24: weekly crypto research began ahead of September.' },
+  { name: 'Monetary',        tag: 'binding now',      blurb: 'BTC reclaimed its 200-DMA on a 7-sigma week; silver still below.' },
 ]
 
 interface Holding { ticker?: string; category?: string }
