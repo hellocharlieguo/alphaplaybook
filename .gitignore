@@ -37,7 +37,7 @@ src/components/*.bak.*
 src/components/*.bak.*
 *_live.tsx
 *_live.cjs
-**/*.bak.*
+**/*.bak*
 
 **/*.bak
 
