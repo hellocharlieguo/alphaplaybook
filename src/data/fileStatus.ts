@@ -251,19 +251,6 @@ export const FILE_STATUS: Record<string, FileState> = {
     "sizeBytes": 211,
     "mtime": "2026-07-27"
   },
-  "src/components/Methodology.tsx": {
-    "exists": true,
-    "tracked": true,
-    "dirty": false,
-    "kind": "file",
-    "sizeBytes": 18660,
-    "mtime": "2026-07-23",
-    "imports": 1,
-    "importedBy": [],
-    "reachable": false,
-    "lastCommit": "2026-07-23",
-    "lastMessage": "Sweep remaining serif/mono fonts to Manrope (SignalRadar themes + other components)"
-  },
   "src/data/systemMap.ts": {
     "exists": true,
     "tracked": true,
@@ -297,7 +284,6 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/App.tsx",
       "src/components/HistoryLog.tsx",
       "src/components/IndicatorPanel.tsx",
-      "src/components/Methodology.tsx",
       "src/components/PnLTracker.tsx",
       "src/components/Portfolio.tsx",
       "src/components/SignalRadar.tsx",
@@ -419,8 +405,7 @@ export const UNDECLARED_UNTRACKED: string[] = [
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */
 export const ORPHANED_SOURCE: string[] = [
-  "src/components/HistoryLog.tsx",
-  "src/components/Methodology.tsx"
+  "src/components/HistoryLog.tsx"
 ]
 
 /** reachable at runtime but absent from systemMap.ts — the map has a blind spot */

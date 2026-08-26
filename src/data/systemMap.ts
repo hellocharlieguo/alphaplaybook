@@ -372,7 +372,6 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     files: [
       F_WEEKLY,
       { path: 'probe_source.textClipping', role: 'Finder stub — will not execute, re-save as .cjs', status: 'orphan' },
-      { path: 'src/components/Methodology.tsx', role: 'public-facing — line 43 still lists S4 w:15', status: 'stale' },
     ],
   },
 
