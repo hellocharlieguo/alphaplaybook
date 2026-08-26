@@ -77,13 +77,19 @@ function calculateRSI(prices, period = 14) {
 const sma = (c, n) => c.length < n ? null : c.slice(-n).reduce((a, b) => a + b, 0) / n
 
 function s5score(price, d50, d200, rsi) {
+  // No DMA -> no trend read. Null-in/null-out BEFORE the clamp.
+  // (JS coerces null->0: `price < null` is false and `(price-d50)/d50` is
+  //  Infinity, which silently produced base=58, rp=12, s5=52 for SKHY.)
+  if (d50 == null || d200 == null) {
+    return { s5: null, base: null, stretch: null, pen: null, no_dma: true }
+  }
   const base = price < d200 ? 45 : (price < d50 ? 72 : 58)
   let pen = 0
   if (rsi >= 70) pen += 15; else if (rsi >= 60) pen += 7; else if (rsi <= 35) pen -= 5
   const st = (price - d50) / d50 * 100
   const rp = st >= 50 ? 12 : st >= 25 ? 8 : st >= 10 ? 4 : 0
   pen += rp * 0.5                                   // working-theme discount
-  return { s5: Math.max(5, Math.min(95, base - pen)), base, stretch: st, pen }
+  return { s5: Math.max(5, Math.min(95, base - pen)), base, stretch: st, pen, no_dma: false }
 }
 
 async function pull(sym) {
@@ -95,9 +101,11 @@ async function pull(sym) {
   const price = closes[closes.length - 1]
   const d50 = sma(closes, 50), d200 = sma(closes, 200)
   const rsi = calculateRSI(rows)
-  const yrAgo = closes.length >= 252 ? closes[closes.length - 252] : closes[0]
-  const ret1y = (price / yrAgo - 1) * 100
-  return { sym, price, d50, d200, rsi, ret1y, ...s5score(price, d50, d200, rsi) }
+  const bars = closes.length
+  const hasYear = bars >= 252
+  const ret1y = hasYear ? (price / closes[bars - 252] - 1) * 100 : null
+  const ret_incep = hasYear ? null : (price / closes[0] - 1) * 100
+  return { sym, price, d50, d200, rsi, ret1y, ret_incep, bars, ...s5score(price, d50, d200, rsi) }
 }
 
 // --- ledger / book / convergence -------------------------------------------
@@ -172,7 +180,8 @@ function computeLenses(ticker, ledger, book) {
   for (const t of pullList) {
     try {
       const d = await pull(t); out.push(d)
-      const gate = d.price < d.d200 ? '  [BELOW-200 -> entry-paused]' : ''
+      const gate = d.no_dma ? '  [NO-DMA -> thesis-seated, S5 must be hand-set]'
+                 : (d.price < d.d200 ? '  [BELOW-200 -> entry-paused]' : '')
       let convStr = ''
       if (ledgerOn) {
         const c = computeLenses(t, ledger, book)
@@ -192,6 +201,9 @@ function computeLenses(ticker, ledger, book) {
     if (ledgerOn) {
       const c = computeLenses(d.sym, ledger, book)
       convFields = `, lenses_pointing=${c.lenses}, voice_conviction=${c.voiceConviction ? 'True' : 'False'}`
+    }
+    if (d.no_dma) {
+      convFields += `, ret_incep=${d.ret_incep == null ? 'null' : d.ret_incep.toFixed(2)}, bars=${d.bars}`
     }
     const f = (v, n = 2) => (v == null ? 'null' : v.toFixed(n))
     console.log(`# ${d.sym}: price=${f(d.price)}, d50=${f(d.d50)}, d200=${f(d.d200)}, rsi=${f(d.rsi)}, ret1y=${f(d.ret1y)}${convFields}  -> s5~${f(d.s5, 0)} (working theme)`)
