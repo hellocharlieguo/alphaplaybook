@@ -1868,6 +1868,26 @@ async function main() {
     return
   }
 
+  // Backup-run early exit. The 00:47 UTC schedule is a safety net for GitHub
+  // dropping the primary 23:17 UTC run (misses: 2026-08-26, 2026-08-28).
+  // runNarrativePipeline / runCrowdPipeline do plain .insert() into `signals`
+  // (see ~L355, ~L514), NOT upserts — so a full second run would duplicate every
+  // signal row on the days the primary succeeded. Exit before Step 1 unless
+  // TODAY is genuinely missing. .limit(1) not .single(): single() throws on zero
+  // rows, which is exactly the case being tested for.
+  if (process.env.BACKUP_RUN) {
+    const { data: already } = await supabase
+      .from('daily_snapshots')
+      .select('snapshot_date')
+      .eq('snapshot_date', TODAY)
+      .limit(1)
+    if (already && already.length) {
+      console.log(`\nBackup run: ${TODAY} snapshot already present — exiting before Step 1. Nothing written.`)
+      return
+    }
+    console.log(`\nBackup run: no ${TODAY} snapshot — primary appears dropped. Proceeding with full run.`)
+  }
+
   const startTime = Date.now()
 
   try {

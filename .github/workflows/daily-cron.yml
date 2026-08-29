@@ -5,9 +5,15 @@ name: Daily cron
 
 on:
   schedule:
-    # 23:00 UTC = 7pm ET (EDT) / 6pm ET (EST). 1-5 = Mon-Fri only, so it never fires
-    # on weekends. The code also guards against weekend runs (e.g. manual triggers).
+    # 23:17 UTC = 7:17pm ET (EDT) / 6:17pm ET (EST). 1-5 = Mon-Fri only, so it never
+    # fires on weekends. The code also guards against weekend runs (e.g. manual
+    # triggers). Observed queue delay is 25-57 min; harmless, since TODAY is ET-based.
     - cron: '17 23 * * 1-5'
+    # Backup. GitHub silently DROPS scheduled runs under load — two misses in three
+    # sessions (2026-08-26, 2026-08-28). 00:47 UTC Tue-Sat is 8:47pm ET Mon-Fri, the
+    # SAME ET trading day as the primary, so the ET weekday guard passes. The run
+    # exits before Step 1 unless TODAY's snapshot is genuinely missing (BACKUP_RUN).
+    - cron: '47 0 * * 2-6'
   workflow_dispatch: {}   # adds a "Run workflow" button for manual verification
 
 jobs:
@@ -29,6 +35,10 @@ jobs:
       - name: Run daily cron
         run: node server/daily-cron.cjs
         env:
+          # Set only when the backup schedule fired, so daily-cron.cjs can exit
+          # before Step 1 if the primary already wrote today's snapshot. Empty on
+          # the primary schedule and on workflow_dispatch (full run).
+          BACKUP_RUN: ${{ github.event.schedule == '47 0 * * 2-6' && '1' || '' }}
           # The code reads VITE_SUPABASE_URL || SUPABASE_URL and
           # SUPABASE_SERVICE_KEY || VITE_SUPABASE_ANON_KEY, so any unset ones are
           # simply ignored — set whichever names match your Render env.
