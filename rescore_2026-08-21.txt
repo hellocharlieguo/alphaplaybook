@@ -1,0 +1,54 @@
+
+rescore_v34.py — v3.3 book, technicals 2026-08-21
+=============================================
+  note: no application_dominance axis in config — LLY/AMZN/HOOD fall through to hand_s1 (expected).
+  preflight ok — 16 rows, 94.00% + SGOV 6.0%
+
+BASE — CPI dormant, capex trigger OFF (recommended read)
+  CPI 3.4  ·  capex_on=False  ·  stages {'AIPO': 'binding', 'SOXX': 'cooling', 'SKHY': 'working', 'GLW': 'cooling', 'ASML': 'cooling', 'MU': 'working', 'MRVL': 'cooling'}
+
+TKR    axis          target  deployed   drift
+---------------------------------------------
+AIPO   bottleneck      18.0      16.0    +2.0
+SOXX   bottleneck       3.5      12.0    -8.5
+SKHY   bottleneck       5.0       8.0    -3.0
+ASML   bottleneck       4.5       7.0    -2.5
+GLW    bottleneck       5.5       4.5    +1.0
+COPX   physical         2.0       3.0    -1.0
+MU     bottleneck*      5.0         —       —
+MRVL   bottleneck*      3.5         —       —
+LLY    applic.         11.0      10.0    +1.0
+AMZN   applic.          4.5      10.0    -5.5
+HOOD   tokeniz.         3.0       6.0    -3.0
+IBIT   monetary         8.0       4.0    +4.0
+GLDM   monetary        12.5       4.0    +8.5
+SLV_M  monetary         3.0         —       —
+SLV_P  physical         3.0         —       —
+ETHA   monetary         3.0       2.5    +0.5
+---------------------------------------------
+SLV    (M+P)            6.0       7.0    -1.0
+SGOV   cash             5.0       6.0    -1.0
+
+  AI Compute      47.0%
+  Application     15.5%
+  Tokenization     6.0%
+  Monetary        23.5%
+  Physical         3.0%
+  Cash             5.0%
+  scarcity tot    31.5%  (cap 45)
+  TOTAL          100.0%
+
+=============================================
+REVIEW BEFORE ANY FREEZE:
+  - s2 / s6 marked TODO in BOOK are seeded, not decided. SOXX and SKHY
+    especially: SOXX's 60 predates its CORE promotion, SKHY's 78 encodes
+    the memory `working` flip.
+  - SKHY S5 is synthetic-neutral (d50=d200=price, ret1y=0). Confirm
+    SignalInput has no s5 override before relying on it.
+  - SLV sits -2.97% vs its 200-DMA, inside the 3% carve-out band, with
+    vc=True. Margin is 0.026pp. Confirm the carve-out fired as intended
+    and did not merely strip the s5_held_below_200_floor (55) while
+    leaving raw S5 (~36) — check both halves moved the same way.
+  - IBIT/GLDM/ETHA/HOOD have all RECLAIMED their 200-DMAs. The reclaim
+    confirmation window is undefined; all four are within 2% of the line.
+  - Nothing here is written to server/daily-cron.cjs.
