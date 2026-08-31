@@ -85,7 +85,7 @@ function s5score(price, d50, d200, rsi) {
   }
   const base = price < d200 ? 45 : (price < d50 ? 72 : 58)
   let pen = 0
-  if (rsi >= 70) pen += 15; else if (rsi >= 60) pen += 7; else if (rsi <= 35) pen -= 5
+  // RSI term removed 2026-08-22 (v3.4): cliff not slope, 69.9->70.0 cost 8 S5 pts.
   const st = (price - d50) / d50 * 100
   const rp = st >= 50 ? 12 : st >= 25 ? 8 : st >= 10 ? 4 : 0
   pen += rp * 0.5                                   // working-theme discount
