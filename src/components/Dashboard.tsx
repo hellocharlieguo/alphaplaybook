@@ -88,12 +88,16 @@ export default function Dashboard() {
     try { const s = localStorage.getItem('ap-portfolio-value'); if (s) { const n = parseFloat(s); if (!isNaN(n) && n > 0) return n } } catch {}
     return 100000
   })
-  const [portfolioInput, setPortfolioInput] = useState(() => portfolioValue.toLocaleString('en-US'))
+  const [portfolioInput, setPortfolioInput] = useState(() => {
+    // Show a number only if the user set one. Default sizing stays 100k; the
+    // box just reads "Enter" so the basis is not mistaken for a real balance.
+    try { return localStorage.getItem('ap-portfolio-value') ? portfolioValue.toLocaleString('en-US') : '' } catch { return '' }
+  })
   useEffect(() => { try { localStorage.setItem('ap-portfolio-value', String(portfolioValue)) } catch {} }, [portfolioValue])
   const handlePortfolioSubmit = () => {
     const val = parseFloat(portfolioInput.replace(/[^0-9.]/g, ''))
     if (!isNaN(val) && val > 0) { setPortfolioValue(val); setPortfolioInput(val.toLocaleString('en-US')) }
-    else { setPortfolioInput(portfolioValue.toLocaleString('en-US')) }
+    else { setPortfolioInput('') }
   }
 
   useEffect(() => {
@@ -262,7 +266,7 @@ function PortfolioValueCard({ input, onInput, onCommit, t }: { input: string; on
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Portfolio value</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ fontSize: 20, fontWeight: 600, color: t.textTertiary, fontFamily: "'Manrope', sans-serif" }}>$</span>
-        <input type="text" inputMode="numeric" value={input} onChange={(e) => onInput(e.target.value)} onBlur={onCommit} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+        <input type="text" inputMode="numeric" placeholder="Enter" value={input} onChange={(e) => onInput(e.target.value)} onBlur={onCommit} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
           style={{ flex: 1, minWidth: 0, fontSize: 20, fontWeight: 600, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '2px 8px', color: t.textPrimary, outline: 'none' }} />
       </div>
       <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 4, fontStyle: 'italic' }}>Sizing only — live engine weights</div>

@@ -29,7 +29,6 @@ interface Snapshot {
   momentum_daily_return_pct: number | null
 }
 
-const PORTFOLIO_BASE = 100000
 
 export default function PnLTracker({ theme: t }: PnLTrackerProps) {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([])
@@ -58,7 +57,6 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
   const alpha = cumulativeReturn - spyCumulativeReturn
   // Prefer the stored portfolio_value (exact, compounded off unrounded daily returns);
   // fall back to the computed value only if the field is null (older rows).
-  const currentValue = latest.portfolio_value ?? PORTFOLIO_BASE * (1 + cumulativeReturn / 100)
   const daysSinceInception = snapshots.length
 
   // Calculate max drawdown
@@ -80,7 +78,6 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Stat Cards */}
       <div className="ap-pnl-stats">
-        <PnLStatCard label="Thematic Value" value={`$${currentValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} color={t.textPrimary} t={t} />
         <PnLStatCard label="Thematic Return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
         <PnLStatCard label="Thematic Alpha" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
         <PnLStatCard label="Max Drawdown" value={`-${maxDrawdown.toFixed(2)}%`} color={t.negative} t={t} />
