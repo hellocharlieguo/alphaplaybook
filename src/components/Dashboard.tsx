@@ -153,7 +153,7 @@ export default function Dashboard() {
           .ap-signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
           .ap-portfolio-grid { display: grid; grid-template-columns: 1fr auto; gap: 16px; }
           .ap-donut-grid { display: grid; grid-template-columns: 200px 1fr; gap: 16px; }
-          .ap-pnl-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+          .ap-pnl-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
           .ap-history-detail { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
           .ap-bestworst { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
           .ap-voices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -263,11 +263,11 @@ function PortfolioValueCard({ input, onInput, onCommit, t }: { input: string; on
     <div style={{ background: 'rgba(30,29,27,0.38)', backdropFilter: 'blur(32px) saturate(132%)', WebkitBackdropFilter: 'blur(32px) saturate(132%)', border: '1px solid rgba(255,255,255,0.11)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
       <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Portfolio value</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 20, fontWeight: 600, color: t.textTertiary, fontFamily: "'Manrope', sans-serif" }}>$</span>
+        <span style={{ fontSize: 22, fontWeight: 600, color: t.textTertiary, fontFamily: "'Manrope', sans-serif" }}>$</span>
         <input type="text" inputMode="numeric" placeholder="Enter" value={input} onChange={(e) => onInput(e.target.value)} onBlur={onCommit} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
-          style={{ flex: 1, minWidth: 0, fontSize: 20, fontWeight: 600, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', background: t.inputBg, border: `1px solid ${t.inputBorder}`, borderRadius: 6, padding: '2px 8px', color: t.textPrimary, outline: 'none' }} />
+          style={{ flex: 1, minWidth: 0, fontSize: 22, fontWeight: 600, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums', background: t.inputBg, border: 'none', borderRadius: 6, padding: '0 8px', color: t.textPrimary, outline: 'none' }} />
       </div>
-      <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 4, fontStyle: 'italic' }}>Sizing only — live engine weights</div>
+      <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2, fontStyle: 'italic' }}>Sizing only — live engine weights</div>
     </div>
   )
 }
