@@ -51,10 +51,6 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256, color: t.textTertiary }}>Loading performance data...</div>
   if (snapshots.length === 0) return <div style={{ textAlign: 'center', padding: '64px 0', color: t.textTertiary }}>No performance data yet. Data will appear after the cron runs.</div>
 
-  const latest = snapshots[snapshots.length - 1]
-  const cumulativeReturn = latest.cumulative_return_pct ?? 0
-  const spyCumulativeReturn = latest.spy_cumulative_return_pct ?? 0
-  const alpha = cumulativeReturn - spyCumulativeReturn
   // Prefer the stored portfolio_value (exact, compounded off unrounded daily returns);
   // fall back to the computed value only if the field is null (older rows).
   const daysSinceInception = snapshots.length
@@ -76,14 +72,6 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Stat Cards */}
-      <div className="ap-pnl-stats">
-        <PnLStatCard label="Thematic Return" value={`${cumulativeReturn >= 0 ? '+' : ''}${cumulativeReturn.toFixed(2)}%`} color={cumulativeReturn >= 0 ? t.positive : t.negative} t={t} />
-        <PnLStatCard label="Thematic Alpha" value={`${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%`} color={alpha >= 0 ? t.positive : t.negative} t={t} />
-        <PnLStatCard label="Max Drawdown" value={`-${maxDrawdown.toFixed(2)}%`} color={t.negative} t={t} />
-        <PnLStatCard label="Days Tracked" value={String(daysSinceInception)} color={t.textPrimary} t={t} />
-      </div>
-
       {/* Equity Curve Chart */}
       <div style={{ ...glass, borderRadius: 12, padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
@@ -156,21 +144,13 @@ export default function PnLTracker({ theme: t }: PnLTrackerProps) {
         </div>
       </div>
 
-      {/* Best/Worst Days */}
-      {bestDay && worstDay && (
-        <div className="ap-bestworst">
-          <div style={{ ...glass, borderRadius: 12, padding: 16 }}>
-            <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Best day</div>
-            <div style={{ fontSize: 18, fontWeight: 500, color: t.positive, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums' }}>+{bestDay.ret.toFixed(2)}%</div>
-            <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{new Date(bestDay.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-          </div>
-          <div style={{ ...glass, borderRadius: 12, padding: 16 }}>
-            <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4 }}>Worst day</div>
-            <div style={{ fontSize: 18, fontWeight: 500, color: t.negative, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums' }}>{worstDay.ret.toFixed(2)}%</div>
-            <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2 }}>{new Date(worstDay.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-          </div>
-        </div>
-      )}
+      {/* Summary stats — drawdown, tracking length, best/worst */}
+      <div className="ap-pnl-stats">
+        <PnLStatCard label="Max Drawdown" value={`-${maxDrawdown.toFixed(2)}%`} color={t.negative} t={t} />
+        <PnLStatCard label="Days Tracked" value={String(daysSinceInception)} color={t.textPrimary} t={t} />
+        {bestDay && <PnLStatCard label={`Best day · ${new Date(bestDay.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`} value={`+${bestDay.ret.toFixed(2)}%`} color={t.positive} t={t} />}
+        {worstDay && <PnLStatCard label={`Worst day · ${new Date(worstDay.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`} value={`${worstDay.ret.toFixed(2)}%`} color={t.negative} t={t} />}
+      </div>
     </div>
   )
 }
