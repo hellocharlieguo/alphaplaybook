@@ -88,11 +88,9 @@ export default function Dashboard() {
     try { const s = localStorage.getItem('ap-portfolio-value'); if (s) { const n = parseFloat(s); if (!isNaN(n) && n > 0) return n } } catch {}
     return 100000
   })
-  const [portfolioInput, setPortfolioInput] = useState(() => {
-    // Show a number only if the user set one. Default sizing stays 100k; the
-    // box just reads "Enter" so the basis is not mistaken for a real balance.
-    try { return localStorage.getItem('ap-portfolio-value') ? portfolioValue.toLocaleString('en-US') : '' } catch { return '' }
-  })
+  // Always starts empty so the box reads "Enter". Sizing still defaults to
+  // 100k via portfolioValue; the basis is deliberately not shown as a number.
+  const [portfolioInput, setPortfolioInput] = useState('')
   useEffect(() => { try { localStorage.setItem('ap-portfolio-value', String(portfolioValue)) } catch {} }, [portfolioValue])
   const handlePortfolioSubmit = () => {
     const val = parseFloat(portfolioInput.replace(/[^0-9.]/g, ''))
