@@ -149,11 +149,11 @@ export default function Dashboard() {
           input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
           input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: ${t.sliderThumb}; border: 2px solid ${t.bg}; cursor: pointer; }
           input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: ${t.sliderTrack}; }
-          .ap-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+          .ap-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
           .ap-signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
           .ap-portfolio-grid { display: grid; grid-template-columns: 1fr auto; gap: 16px; }
           .ap-donut-grid { display: grid; grid-template-columns: 200px 1fr; gap: 16px; }
-          .ap-pnl-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+          .ap-pnl-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
           .ap-history-detail { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
           .ap-bestworst { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
           .ap-voices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
