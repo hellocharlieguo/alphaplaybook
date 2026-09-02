@@ -1025,8 +1025,11 @@ async function fetchFearGreed() {
         // Open-interest floor. Field name varies across Kalshi payloads; if none
         // parse we get 0 and skip the check rather than reject everything on a
         // rename — the sum guard still applies.
+        // Field is open_interest_fp on this endpoint (confirmed against
+        // probe_fear_guards.cjs L45). Fallbacks kept in case it is renamed; if
+        // none parse we get 0 and skip the floor rather than reject everything.
         const totalOi = nearest.list.reduce((s, m) =>
-          s + (Number(m.open_interest ?? m.openInterest ?? m.oi) || 0), 0)
+          s + (Number(m.open_interest_fp ?? m.open_interest ?? m.openInterest ?? m.oi) || 0), 0)
         if (totalOi > 0 && totalOi < FG_MIN_OI) {
           skipped.push(`${nearest.ev} OI ${totalOi}`)
           continue
