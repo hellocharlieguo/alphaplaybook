@@ -988,53 +988,75 @@ async function fetchFearGreed() {
         if (!ev) continue
         ;(events[ev] = events[ev] || []).push(m)
       }
-      const nearest = Object.entries(events)
+      // Walk candidates in expiry order and take the first that clears the
+      // guards. Previously this evaluated ONLY the nearest event and returned
+      // null on failure, so a single incoherent ladder (26SEP04: sum 1.540)
+      // blanked the tile while 26SEP11 (sum 1.020, 16,377 OI) sat unused.
+      const candidates = Object.entries(events)
         .map(([ev, list]) => ({ ev, list, close: String(list[0].close_time || '') }))
-        .sort((a, b) => a.close.localeCompare(b.close))[0]
-      if (!nearest) return null
-      const mids = {}
-      for (const m of nearest.list) {
-        const name = String(m.yes_sub_title || m.subtitle || '').trim()
-        if (FG_BANDS.indexOf(name) < 0) continue
-        const b = parseFloat(m.yes_bid_dollars), a = parseFloat(m.yes_ask_dollars)
-        if (isNaN(b) || isNaN(a) || a <= 0) continue
-        mids[name] = (b + a) / 2
+        .sort((a, b) => a.close.localeCompare(b.close))
+      if (!candidates.length) return null
+      const FG_MIN_OI = 500
+      const skipped = []
+      for (const nearest of candidates) {
+        const mids = {}
+        for (const m of nearest.list) {
+          const name = String(m.yes_sub_title || m.subtitle || '').trim()
+          if (FG_BANDS.indexOf(name) < 0) continue
+          const b = parseFloat(m.yes_bid_dollars), a = parseFloat(m.yes_ask_dollars)
+          if (isNaN(b) || isNaN(a) || a <= 0) continue
+          mids[name] = (b + a) / 2
+        }
+        if (Object.keys(mids).length !== 5) {
+          skipped.push(`${nearest.ev} ladder ${Object.keys(mids).length}/5`)
+          continue
+        }
+        const sum = FG_BANDS.reduce((s, k) => s + mids[k], 0)
+        // Band widened 0.97-1.03 -> 0.95-1.06 on 2026-08-03. The old ceiling was
+        // rejecting the nearest and MOST liquid event (AUG07: sum 1.045, 3797 OI)
+        // over an ordinary 4.5% overround that the normalization below divides out,
+        // while admitting a near-empty book (AUG14: 895 OI, 9 contracts on Extreme
+        // Fear). 1.06 still rejects a genuinely unmade ladder (AUG21: sum 1.385,
+        // identical mids across unrelated bands).
+        if (sum < 0.95 || sum > 1.06) {
+          skipped.push(`${nearest.ev} sum ${sum.toFixed(3)}`)
+          continue
+        }
+        // Open-interest floor. Field name varies across Kalshi payloads; if none
+        // parse we get 0 and skip the check rather than reject everything on a
+        // rename — the sum guard still applies.
+        const totalOi = nearest.list.reduce((s, m) =>
+          s + (Number(m.open_interest ?? m.openInterest ?? m.oi) || 0), 0)
+        if (totalOi > 0 && totalOi < FG_MIN_OI) {
+          skipped.push(`${nearest.ev} OI ${totalOi}`)
+          continue
+        }
+        const norm = {}
+        for (const k of FG_BANDS) norm[k] = mids[k] / sum
+        let band = FG_BANDS[0]
+        for (const k of FG_BANDS) if (norm[k] > norm[band]) band = k
+        const sideProb =
+          (band === 'Fear' || band === 'Extreme Fear') ? norm['Extreme Fear'] + norm['Fear']
+          : (band === 'Greed' || band === 'Extreme Greed') ? norm['Greed'] + norm['Extreme Greed']
+          : null
+        const implied = FG_BANDS.reduce((s, k) => s + norm[k] * FG_MIDPOINTS[k], 0)
+        const out = {
+          band,
+          prob: Math.round(norm[band] * 1000) / 1000,
+          side_prob: sideProb === null ? null : Math.round(sideProb * 1000) / 1000,
+          implied: Math.round(implied * 10) / 10,
+          bands: FG_BANDS.reduce((o, k) => { o[k] = Math.round(norm[k] * 1000) / 1000; return o }, {}),
+          event: nearest.ev,
+          total_oi: totalOi || null,
+          close_time: nearest.list[0].close_time || null,
+          as_of: new Date().toISOString(),
+        }
+        if (skipped.length) console.warn(`  Fear & Greed: skipped ${skipped.join(', ')}`)
+        console.log(`  Fear & Greed (${nearest.ev}): ${band} ${Math.round(norm[band] * 100)}% · implied ${out.implied} · sum ${sum.toFixed(3)} · OI ${totalOi}`)
+        return out
       }
-      if (Object.keys(mids).length !== 5) {
-        console.warn(`  Fear & Greed: incomplete ladder (${Object.keys(mids).length}/5 bands) — skipping`)
-        return null
-      }
-      const sum = FG_BANDS.reduce((s, k) => s + mids[k], 0)
-      // Band widened 0.97-1.03 -> 0.95-1.06 on 2026-08-03. The old ceiling was
-      // rejecting the nearest and MOST liquid event (AUG07: sum 1.045, 3797 OI)
-      // over an ordinary 4.5% overround that the normalization below divides out,
-      // while admitting a near-empty book (AUG14: 895 OI, 9 contracts on Extreme
-      // Fear). 1.06 still rejects a genuinely unmade ladder (AUG21: sum 1.385,
-      // identical mids across unrelated bands).
-      if (sum < 0.95 || sum > 1.06) {
-        console.warn(`  Fear & Greed: mids sum ${sum.toFixed(3)}, outside 0.95-1.06 — skipping`)
-        return null
-      }
-      const norm = {}
-      for (const k of FG_BANDS) norm[k] = mids[k] / sum
-      let band = FG_BANDS[0]
-      for (const k of FG_BANDS) if (norm[k] > norm[band]) band = k
-      const sideProb =
-        (band === 'Fear' || band === 'Extreme Fear') ? norm['Extreme Fear'] + norm['Fear']
-        : (band === 'Greed' || band === 'Extreme Greed') ? norm['Greed'] + norm['Extreme Greed']
-        : null
-      const implied = FG_BANDS.reduce((s, k) => s + norm[k] * FG_MIDPOINTS[k], 0)
-      const out = {
-        band,
-        prob: Math.round(norm[band] * 1000) / 1000,
-        side_prob: sideProb === null ? null : Math.round(sideProb * 1000) / 1000,
-        implied: Math.round(implied * 10) / 10,
-        bands: FG_BANDS.reduce((o, k) => { o[k] = Math.round(norm[k] * 1000) / 1000; return o }, {}),
-        close_time: nearest.list[0].close_time || null,
-        as_of: new Date().toISOString(),
-      }
-      console.log(`  Fear & Greed (${nearest.ev}): ${band} ${Math.round(norm[band] * 100)}% · implied ${out.implied} · sum ${sum.toFixed(3)}`)
-      return out
+      console.warn(`  Fear & Greed: no candidate cleared guards (${skipped.join(', ')})`)
+      return null
     } catch (e) { /* next host */ }
   }
   return null

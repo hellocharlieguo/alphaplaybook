@@ -119,8 +119,6 @@ export default function Dashboard() {
 
   const cumulativeReturn = latestSnapshot?.cumulative_return_pct ?? 0
   const alpha = (latestSnapshot?.cumulative_return_pct ?? 0) - (latestSnapshot?.spy_cumulative_return_pct ?? 0)
-  const spyRsi = latestSnapshot?.spy_rsi ?? null
-  const signalCount = (latestSnapshot?.narrative_signals?.length ?? 0) + (latestSnapshot?.polymarket_signals?.length ?? 0) + (spyRsi !== null ? 1 : 0)
 
   // Market sentiment — Kalshi KXFEAR, market-implied CNN Fear & Greed band at the
   // nearest Friday settle. Display-only; feeds no score. Null-safe: the cron skips
@@ -207,7 +205,7 @@ export default function Dashboard() {
                 t={t}
               />
             ) : (
-              <StatCard label="Active signals" value={String(signalCount)} color={t.textPrimary} sub="3 sources" t={t} />
+              <StatCard label="Market sentiment" value="—" color={t.textTertiary} sub="awaiting Kalshi quote" t={t} />
             )}
           </div>
 
