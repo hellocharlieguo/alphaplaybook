@@ -301,21 +301,7 @@ const CONV={"certain":LADDER[0],"strong":LADDER[1],"forming":LADDER[2],"speculat
 // demand multipliers below shift when the wave advances. Applies to AI buildout
 // ONLY - the other trends are not downstream of the AI adoption curve.
 const WAVES=["chatbots","coding agents","enterprise agents","consumer agents","embodied"];
-// WAVE ADVANCED 2026-09-07: coding agents -> consumer agents.
-// Visser 9/6/26 weekly: "Then we went to the coding agents, but now we're in
-// the personal and the workflow agents. That means we need financial agents
-// and that's what's beginning to happen now."
-// Observable corroboration, not an announcement: Grok/MoonPay crypto buy-and-lend
-// shipped; Stripe integrations; Grokbot-style agents framed as a new consumption
-// shock (Gavin Baker segment, cited 9/6).
-// Rung read: his example is "the personal workflow agent - to read, to summarize,
-// compare, recommend, ask permission" -> consumer, not enterprise. The two rungs
-// differ only on copper input (0.92 vs 1.00); every other held sub-theme is
-// identical, so the ambiguity is worth 0.3pp on COPX and nothing else.
-// NOT FROZEN. Worksheet-only input change; server/daily-cron.cjs still runs
-// 2026-08-31-v3.4.1-stageflip. No 5d criterion fired (no ticker-set change,
-// no stage flip, no candidate cleared). Turnover would have been 2.9pp.
-let WAVE="consumer agents";
+let WAVE="coding agents";
 const WAVE_DEMAND={
   //                chatbots coding enterprise consumer embodied
   "power/grid":         [0.92, 1.00, 1.00, 1.00, 0.92],
