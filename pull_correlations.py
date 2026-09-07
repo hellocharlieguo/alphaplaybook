@@ -17,7 +17,7 @@ Run:  cd ~/Desktop/alphaplaybook && python3 pull_correlations.py
 """
 import json, math, ssl, time, urllib.request
 
-SYMS = ["AIPO","SOXX","GLW","ASML","COPX","AMZN","LLY","HOOD","ETHA","GLDM","IBIT","SLV",
+SYMS = ["AIPO","SOXX","GLW","ASML","COPX","AMZN","LLY","HOOD","ETHA","GLDM","IBIT","SLV","BSOL","GSOL",
         "MU","WDC","SNDK","COHR","LITE","AAOI"]   # book + candidates worth screening
 WINDOWS = {"1y": None, "6m": 125, "3m": 63}
 OUT = "corr_matrix.json"

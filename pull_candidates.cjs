@@ -49,6 +49,12 @@ const CONV = {
 }
 
 const TICKERS = [
+  // added 2026-09-07: Solana vehicles for the 'speed / execution' sub-theme
+  // Visser 9/5: "Bitcoin as collateral and store value... Ethereum for the
+  // trust... Solana for the speed." WATCH-NOT-SEAT until correlations exist.
+  // BSOL listed 2025-10-28 (~215 sessions) - short of the 1y window; GSOL has
+  // longer history via its pre-uplisting trust. Expect a partial 1y series.
+  'BSOL', 'GSOL',
   // --- held book (15) ---
   'AIPO','SOXX','MU','GLW','SNDK', 'SKHY', 'WDC', 'NVDA', 'MRVL','ASML','LLY','AMZN','HOOD','IBIT','GLDM','ETHA','COPX','SLV','SGOV',
   // --- standing watch / graduation candidates ---
