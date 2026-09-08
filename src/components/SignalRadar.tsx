@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'binding, crowded', blurb: 'Power and litho binding, semis cooling; everyone is long it.', binding: true },
-  { name: 'AI Applied',      tag: 'up the stack',     blurb: 'LLY and AMZN \u2014 the only uncorrelated pair in the book.' },
-  { name: 'Tokenized Rails', tag: 'conviction up',    blurb: 'Upgraded 8/24: weekly crypto research began ahead of September.' },
-  { name: 'Monetary',        tag: 'binding now',      blurb: 'BTC reclaimed its 200-DMA on a 7-sigma week; silver still below.' },
+  { name: 'AI Buildout',     tag: 'binding, crowded', blurb: 'Power and optical binding, semis cooling; SMH \u221214% QTD and he says ignore it.', binding: true },
+  { name: 'AI Applied',      tag: 'wave advanced',    blurb: 'Personal and workflow agents now; neither name mentioned by L1 this week.' },
+  { name: 'Tokenized Rails', tag: 'held at working',  blurb: 'ETHA working a second week; Solana named as the speed leg, unseated.' },
+  { name: 'Monetary',        tag: 'third wave start', blurb: 'BTC third-wave start; gold and silver silent two weeks running.' },
 ]
 
 interface Holding { ticker?: string; category?: string }
