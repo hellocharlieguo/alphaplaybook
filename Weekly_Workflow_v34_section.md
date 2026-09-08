@@ -52,10 +52,11 @@ The cycle runs as a conversation against two artifacts: the transcripts and the 
 capture, a stale `corr_matrix.json`, or a packet section that fell back to a raw
 grep invalidates everything downstream of it.
 
-**If `--pull` fails** on the network or the Twelve Data key, drop the flag, run
-the packet offline, and paste `node pull_candidates.cjs` output separately.
-Section E will say the technicals are cached and stale rather than pretend
-otherwise. Do not score entry bands on a stale capture.
+**If `--pull` fails** on the network or the Twelve Data key, `cycle_packet.py`
+refuses to write the cache and falls back to the newest prior capture, marked
+STALE. Section E states this plainly. Do not score entry bands on a stale
+capture — re-run the pull, or paste `node pull_candidates.cjs` output into the
+chat separately.
 
 **The recommended classification is built into the worksheet, not held for
 approval.** Rejecting it is cheap — the alternative's effect is stated alongside
