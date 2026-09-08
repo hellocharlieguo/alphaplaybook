@@ -126,6 +126,39 @@ about gold. Every count still requires reading the quote.
 
 ---
 
+## 5.2b · Coverage audit — theme to ticker
+
+The sweep finds names L1 said. This finds themes L1 described that no ticker
+expresses. Solana was findable by name; memory was not — it sat as a
+`WAVE_DEMAND` row at maximum demand with no seat for months.
+
+**Weekly, three lines:**
+
+1. Any `WAVE_DEMAND` row with no seated sub-theme? (The packet reports this.)
+2. Any theme discussed at length with no ticker expressing it?
+3. Any seat whose vehicle no longer matches its row after a spin-off, index
+   reconstitution or business change?
+
+**Full audit on any of:** the wave advances · L1 names a new sub-theme · an
+unseated demand row appears · monthly regardless.
+
+The full version researches vehicles — search for what actually trades against
+the theme, then check each candidate on four gates:
+
+- **History.** Enough sessions for the correlation window. A short-history
+  vehicle truncates the whole matrix (see 5.6). DRAM ETF at ~110 closes fails
+  here; MU/SNDK/WDC at 252 pass.
+- **Purity.** Does the vehicle express the row, or something adjacent? Post-spin,
+  SNDK is NAND and WDC is HDD/nearline — different rows.
+- **Double-count.** Verify the holdings of any seated ETF before adding a name
+  beside it. **Never assert index composition without checking.** MU inside SOXX
+  would make a memory seat partly redundant.
+- **Entry.** Stretch and 200-DMA position. A 40% stretch means the brake fights
+  the seat from day one.
+
+Output is *watch-not-seat with a named trigger*, never a seat. Record what is
+unexpressed and why, so the gap is visible next week rather than rediscovered.
+
 ## 5.3 · Run it
 
 ```
