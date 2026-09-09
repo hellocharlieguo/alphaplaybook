@@ -7,6 +7,8 @@ import {
 } from '../data/systemMap'
 import type { Block, SysFile } from '../data/systemMap'
 import { FILE_STATUS, MAP_META } from '../data/fileStatus'
+import { BOOK } from '../data/bookSnapshot'
+import { VOICES } from '../data/voiceCards'
 
 // System tab — blueprint schematic on a frosted panel.
 // Display-only: reads nothing, writes nothing. Content in src/data/systemMap.ts.
@@ -158,9 +160,9 @@ export default function SystemTab({ theme }: { theme: Theme }) {
             </div>
           </div>
           <div style={{ fontFamily: MONO, fontSize: 9.5, color: theme.textTertiary, letterSpacing: '0.1em', lineHeight: 1.85, textAlign: 'right', textTransform: 'uppercase' }}>
-            REV <b style={{ color: theme.textSecondary, fontWeight: 400 }}>v3.3-CORESAT</b><br />
-            FROZEN <b style={{ color: theme.textSecondary, fontWeight: 400 }}>2026-07-15</b><br />
-            DETAIL <b style={{ color: theme.textSecondary, fontWeight: 400 }}>B</b>
+            REV <b style={{ color: theme.textSecondary, fontWeight: 400 }}>{BOOK.version.slice(11)}</b><br />
+            FROZEN <b style={{ color: theme.textSecondary, fontWeight: 400 }}>{BOOK.version.slice(0, 10)}</b><br />
+            NAMES <b style={{ color: theme.textSecondary, fontWeight: 400 }}>{BOOK.count}</b>
           </div>
         </div>
 
@@ -284,7 +286,9 @@ export default function SystemTab({ theme }: { theme: Theme }) {
               </button>
             )}
 
-            {detail.blocks.map((b, i) => <BlockView key={i} block={b} theme={theme} />)}
+            {[...liveBlocks(selected!), ...detail.blocks].map((b, i) => (
+              <BlockView key={i} block={b} theme={theme} />
+            ))}
 
             {detail.parts && detail.parts.length > 0 && (
               <>
@@ -327,6 +331,47 @@ export default function SystemTab({ theme }: { theme: Theme }) {
   )
 }
 
+// Blocks derived from the live sources rather than declared here. systemMap.ts
+// holds topology and judgment; holdings come from BASE_PORTFOLIO via
+// bookSnapshot.ts, voice content from voiceCards.ts. No third copy.
+function liveBlocks(id: string): Block[] {
+  if (id === 'themes') {
+    const out: Block[] = [{ t: 'sec', label: `Sleeves · ${BOOK.version}` }]
+    for (const s of BOOK.sleeves) out.push({ t: 'bar', k: s.name, v: `${s.weight}%`, pct: s.weight })
+    out.push({ t: 'sec', label: `Holdings · ${BOOK.count}` })
+    for (const h of BOOK.holdings) {
+      out.push({ t: 'kv', k: `${h.ticker} · ${h.theme}`, v: `${h.weight}  ${h.action}` })
+    }
+    out.push({ t: 'note', text: `Derived from BASE_PORTFOLIO in server/daily-cron.cjs at npm run map. Weights sum to ${BOOK.total}. Floor is min_weight per name.` })
+    return out
+  }
+
+  if (id === 'freeze') {
+    return [
+      { t: 'sec', label: 'Live version' },
+      { t: 'kv', k: 'PORTFOLIO_VERSION', v: BOOK.version },
+      { t: 'kv', k: 'Holdings', v: String(BOOK.count) },
+      { t: 'note', text: 'Read from the cron constant, not typed here. A version bump forces a one-night rebalance to target; between bumps the book drifts with price.' },
+    ]
+  }
+
+  const voice = VOICES.find((v) => v.name.toLowerCase() === id)
+  if (voice) {
+    const out: Block[] = [
+      { t: 'sec', label: voice.headline },
+      { t: 'kv', k: 'as of', v: voice.asOf },
+      { t: 'kv', k: 'feeds the engine', v: voice.active ? 'yes' : 'frozen reference card', pending: !voice.active },
+    ]
+    if (voice.subtitle) out.push({ t: 'note', text: voice.subtitle })
+    if (voice.themes.length) out.push({ t: 'sec', label: `Themes · ${voice.themes.length}` })
+    for (const th of voice.themes) out.push({ t: 'row', title: th.name, quote: th.editorial })
+    out.push({ t: 'note', text: 'Live from src/data/voiceCards.ts — the weekly one-file edit.' })
+    return out
+  }
+
+  return []
+}
+
 // ---------------------------------------------------------------- blocks
 
 function SEC(theme: Theme): CSSProperties {
@@ -342,6 +387,7 @@ const FILE_TONE: Record<SysFile['status'], { label: string; key: 'ok' | 'warn' |
   stale:      { label: 'stale',      key: 'warn' },
   modified:   { label: 'modified',   key: 'warn' },
   missing:    { label: 'missing',    key: 'bad' },
+  ignored:    { label: 'gitignored', key: 'info' },
   orphan:     { label: 'orphan',     key: 'bad' },
   untracked:  { label: 'untracked',  key: 'warn' },
   unverified: { label: 'unverified', key: 'info' },
@@ -358,6 +404,7 @@ function resolveStatus(file: SysFile): { status: SysFile['status']; state?: type
   if (!state) return { status: 'unverified' }
   if (state.kind === 'table') return { status: 'proposed', state }
   if (!state.exists) return { status: 'missing', state }
+  if (state.ignored) return { status: 'ignored', state }
   if (!state.tracked) return { status: 'untracked', state }
   // unreachable from the Vite entry point = dead code, whatever git says
   if (state.reachable === false) return { status: 'orphan', state }

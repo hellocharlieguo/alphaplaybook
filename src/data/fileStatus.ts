@@ -8,6 +8,8 @@ export interface FileState {
   exists: boolean
   tracked: boolean
   dirty: boolean
+  /** matched by .gitignore — excluded on purpose, not by neglect */
+  ignored?: boolean
   kind?: string
   sizeBytes?: number
   mtime?: string
@@ -23,15 +25,16 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-08-19T14:05:49.794Z",
-  "commit": "dc95bf9",
-  "declared": 34,
-  "missing": 3,
-  "untracked": 9,
-  "modified": 1,
-  "undeclared": 6,
-  "orphanedSource": 2,
-  "undeclaredSource": 10
+  "generatedAt": "2026-09-09T19:44:50.917Z",
+  "commit": "598680f",
+  "declared": 37,
+  "missing": 8,
+  "untracked": 0,
+  "ignored": 3,
+  "modified": 2,
+  "undeclared": 1,
+  "orphanedSource": 0,
+  "undeclaredSource": 11
 } as const
 
 export const FILE_STATUS: Record<string, FileState> = {
@@ -39,6 +42,7 @@ export const FILE_STATUS: Record<string, FileState> = {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 23015,
     "mtime": "2026-07-16",
@@ -49,9 +53,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 19205,
-    "mtime": "2026-07-15",
+    "mtime": "2026-08-26",
     "lastCommit": "2026-07-13",
     "lastMessage": "Engine v3.1: remove S4 (option-C weights); add MU/SKHY/MRVL to bottleneck axis; extend proximity carve-out to physical-s"
   },
@@ -59,6 +64,7 @@ export const FILE_STATUS: Record<string, FileState> = {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 9310,
     "mtime": "2026-08-19",
@@ -69,16 +75,18 @@ export const FILE_STATUS: Record<string, FileState> = {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 93451,
-    "mtime": "2026-08-04",
-    "lastCommit": "2026-08-03",
-    "lastMessage": "fear/greed: widen mid-sum guard to 0.95-1.06"
+    "sizeBytes": 94141,
+    "mtime": "2026-09-02",
+    "lastCommit": "2026-09-01",
+    "lastMessage": "fetchFearGreed: iterate candidate KXFEAR events by expiry rather than only the nearest, with a 500 open_interest_fp floo"
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 21360,
     "mtime": "2026-08-17",
@@ -94,63 +102,73 @@ export const FILE_STATUS: Record<string, FileState> = {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 19210,
-    "mtime": "2026-08-17",
+    "sizeBytes": 16376,
+    "mtime": "2026-09-08",
     "imports": 0,
     "importedBy": [
-      "src/components/SignalRecap.tsx"
+      "src/components/SignalRecap.tsx",
+      "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-08-17",
-    "lastMessage": "Voice cards 8/17: extract VOICES to src/data; Visser dates Stage 4 tokenization, Camillo BE drawdown re-rates entry, ZaS"
+    "lastCommit": "2026-09-07",
+    "lastMessage": "SignalRadar + voiceCards: 9/07 cycle chips, ZaStocks asOf 9/1-7"
   },
   "Weekly_Workflow.md": {
-    "exists": true,
-    "tracked": true,
+    "exists": false,
+    "tracked": false,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 7040,
-    "mtime": "2026-07-06",
-    "lastCommit": "2026-07-11",
-    "lastMessage": "Track current four-axis spec, live book doc, workflow, freeze patches"
+    "lastCommit": "2026-09-08",
+    "lastMessage": "patches/ directory for patch scripts; workflow v34 rev 2026-09-07 with nomination sweep and coverage audit; packet secti"
   },
   "pull_candidates.cjs": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 10929,
-    "mtime": "2026-08-11",
-    "lastCommit": "2026-08-10",
-    "lastMessage": "Fix: null-safe formatters for SKHY (no d50/d200 until Sept 18 / Apr 2027)"
+    "sizeBytes": 11331,
+    "mtime": "2026-09-07",
+    "lastCommit": "2026-09-07",
+    "lastMessage": "voiceCards 2026-09-07 cycle: Visser 9/5-9/6, ZaStocks 9/1-9/7. Camillo stale, untouched. Add BSOL/GSOL to correlation + "
   },
   "conviction_tags.sql": {
     "exists": true,
-    "tracked": false,
+    "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 2509,
-    "mtime": "2026-07-15"
+    "mtime": "2026-07-15",
+    "lastCommit": "2026-08-29",
+    "lastMessage": "Track never-committed canonical files and spent v3.4 patch scripts"
   },
   "Conviction_Tagging_Rubric.docx": {
     "exists": true,
-    "tracked": false,
+    "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 12217,
-    "mtime": "2026-07-15"
+    "mtime": "2026-07-15",
+    "lastCommit": "2026-08-29",
+    "lastMessage": "Track never-committed canonical files and spent v3.4 patch scripts"
   },
   "conviction_tags.json": {
     "exists": false,
     "tracked": false,
     "dirty": false,
+    "ignored": false,
     "kind": "file"
   },
   "severity_scores.json": {
     "exists": true,
     "tracked": false,
     "dirty": false,
+    "ignored": true,
     "kind": "file",
     "sizeBytes": 983,
     "mtime": "2026-07-15"
@@ -159,48 +177,53 @@ export const FILE_STATUS: Record<string, FileState> = {
     "exists": false,
     "tracked": false,
     "dirty": false,
+    "ignored": false,
     "kind": "file"
   },
   "theme_weights.json": {
     "exists": false,
     "tracked": false,
     "dirty": false,
+    "ignored": false,
     "kind": "file"
   },
   "src/components/SignalRadar.tsx": {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 3501,
-    "mtime": "2026-07-23",
+    "sizeBytes": 3607,
+    "mtime": "2026-09-08",
     "imports": 1,
     "importedBy": [
       "src/components/SignalRecap.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-07-23",
-    "lastMessage": "Sweep remaining serif/mono fonts to Manrope (SignalRadar themes + other components)"
+    "lastCommit": "2026-09-07",
+    "lastMessage": "SignalRadar + voiceCards: 9/07 cycle chips, ZaStocks asOf 9/1-7"
   },
   "src/components/Portfolio.tsx": {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 17409,
-    "mtime": "2026-07-23",
+    "sizeBytes": 17696,
+    "mtime": "2026-08-25",
     "imports": 2,
     "importedBy": [
       "src/components/Dashboard.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-07-23",
-    "lastMessage": "Sweep remaining serif/mono fonts to Manrope (SignalRadar themes + other components)"
+    "lastCommit": "2026-08-24",
+    "lastMessage": "UI: retheme signal cards for v3.4 trend names"
   },
   "Signal_Engine_Reference.md": {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 9601,
     "mtime": "2026-07-15",
@@ -211,6 +234,7 @@ export const FILE_STATUS: Record<string, FileState> = {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 12476,
     "mtime": "2026-07-10",
@@ -219,52 +243,97 @@ export const FILE_STATUS: Record<string, FileState> = {
   },
   "Weekly_Workflow_v2.docx": {
     "exists": true,
-    "tracked": false,
+    "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 11974,
-    "mtime": "2026-07-16"
+    "mtime": "2026-07-16",
+    "lastCommit": "2026-08-29",
+    "lastMessage": "Track never-committed canonical files and spent v3.4 patch scripts"
   },
-  "rescore_current_v3.py": {
+  "rescore_trendfirst.py": {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 5915,
-    "mtime": "2026-07-06",
-    "lastCommit": "2026-07-05",
-    "lastMessage": "Three-axis S1 engine (offline): config block + s1_axes helper + rescore_v3 (score_ticker unchanged, cron untouched)"
+    "sizeBytes": 13492,
+    "mtime": "2026-08-23",
+    "lastCommit": "2026-08-23",
+    "lastMessage": "v3.4 trend-first scoring: replace composite with timing x quality x wave x entry, breadth measured as N_eff from correla"
   },
-  "patch_gate_no_dma.py": {
-    "exists": true,
+  "rescore_current_v3.py": {
+    "exists": false,
     "tracked": false,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 1660,
-    "mtime": "2026-08-11"
+    "lastCommit": "2026-08-29",
+    "lastMessage": "Archive retired composite rescorers"
+  },
+  "Trend_First_Spec.md": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 6566,
+    "mtime": "2026-08-23",
+    "lastCommit": "2026-08-23",
+    "lastMessage": "v3.4 trend-first scoring: replace composite with timing x quality x wave x entry, breadth measured as N_eff from correla"
+  },
+  "corr_matrix.json": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 17331,
+    "mtime": "2026-09-07",
+    "lastCommit": "2026-09-07",
+    "lastMessage": "corr: 19 symbols/252 sessions, GSOL as SOL proxy (BSOL 215 closes truncated all series). Reinject worksheet"
+  },
+  "patch_gate_no_dma.py": {
+    "exists": false,
+    "tracked": false,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file"
   },
   "probe_source.textClipping": {
     "exists": true,
     "tracked": false,
     "dirty": false,
+    "ignored": true,
     "kind": "file",
     "sizeBytes": 211,
     "mtime": "2026-07-27"
   },
+  "src/components/Methodology.tsx": {
+    "exists": false,
+    "tracked": false,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "lastCommit": "2026-08-25",
+    "lastMessage": "remove orphaned Methodology.tsx and its registry entries"
+  },
   "src/data/systemMap.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 31924,
-    "mtime": "2026-08-19",
+    "sizeBytes": 27992,
+    "mtime": "2026-09-09",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-08-19",
-    "lastMessage": "Theme weights: record verified L1/L2 math, correct the fallback claim, flag missing structural backbone"
+    "lastCommit": "2026-09-07",
+    "lastMessage": "systemMap: repoint canonical worksheet to v34_worksheet.html, add 9/07 snapshot. Deployed weights unchanged - no freeze "
   },
   "system_changelog": {
     "exists": false,
@@ -276,13 +345,13 @@ export const FILE_STATUS: Record<string, FileState> = {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 16909,
-    "mtime": "2026-08-15",
+    "sizeBytes": 16803,
+    "mtime": "2026-09-02",
     "imports": 7,
     "importedBy": [
       "src/App.tsx",
-      "src/components/HistoryLog.tsx",
       "src/components/IndicatorPanel.tsx",
       "src/components/PnLTracker.tsx",
       "src/components/Portfolio.tsx",
@@ -293,78 +362,88 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/TradingTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-08-14",
-    "lastMessage": "Add System tab: 3D pipeline graph with per-node history inspector (phase 1, constants)"
+    "lastCommit": "2026-09-01",
+    "lastMessage": "fetchFearGreed: iterate candidate KXFEAR events by expiry rather than only the nearest, with a 500 OI floor; sentiment t"
   },
   ".gitignore": {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 783,
-    "mtime": "2026-08-17",
-    "lastCommit": "2026-08-17",
-    "lastMessage": "gitignore: Finder artifacts, local asset folders, generated engine output"
+    "sizeBytes": 798,
+    "mtime": "2026-09-08",
+    "lastCommit": "2026-09-07",
+    "lastMessage": "cycle_packet.py: read-only weekly state gather (queue item 16)"
   },
   ".github/workflows/": {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "dir",
-    "childCount": 1,
-    "lastCommit": "2026-06-15",
-    "lastMessage": "Change cron schedule time to 17:00 UTC"
+    "childCount": 2,
+    "lastCommit": "2026-08-29",
+    "lastMessage": "Actually apply the backup cron patch"
   },
   ".env.local": {
     "exists": true,
     "tracked": false,
     "dirty": false,
+    "ignored": true,
     "kind": "file",
     "sizeBytes": 612,
     "mtime": "2026-06-04"
   },
   "severity_probe.cjs": {
     "exists": true,
-    "tracked": false,
+    "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 9912,
-    "mtime": "2026-07-15"
+    "mtime": "2026-07-15",
+    "lastCommit": "2026-08-29",
+    "lastMessage": "Track never-committed canonical files and spent v3.4 patch scripts"
   },
   "probe_fear_guards.cjs": {
     "exists": true,
-    "tracked": false,
+    "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 3053,
-    "mtime": "2026-08-04"
+    "mtime": "2026-08-04",
+    "lastCommit": "2026-08-29",
+    "lastMessage": "Track never-committed canonical files and spent v3.4 patch scripts"
   },
   "src/components/PnLTracker.tsx": {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 14325,
-    "mtime": "2026-07-31",
+    "sizeBytes": 12699,
+    "mtime": "2026-09-01",
     "imports": 2,
     "importedBy": [
       "src/components/Dashboard.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-07-31",
-    "lastMessage": "PnLTracker: SPY Daily geometric, matching stored Thematic daily"
+    "lastCommit": "2026-09-01",
+    "lastMessage": "UI: portfolio sizing input always shows 'Enter' placeholder (math unchanged, defaults 100k); Performance tab opens on eq"
   },
   "src/supabase.ts": {
     "exists": true,
     "tracked": true,
     "dirty": false,
+    "ignored": false,
     "kind": "file",
     "sizeBytes": 238,
     "mtime": "2026-04-08",
     "imports": 0,
     "importedBy": [
       "src/components/Dashboard.tsx",
-      "src/components/HistoryLog.tsx",
       "src/components/PnLTracker.tsx",
       "src/components/Portfolio.tsx",
       "src/components/TradingTab.tsx"
@@ -374,39 +453,33 @@ export const FILE_STATUS: Record<string, FileState> = {
     "lastMessage": "add supabase"
   },
   "src/components/HistoryLog.tsx": {
-    "exists": true,
-    "tracked": true,
-    "dirty": false,
+    "exists": false,
+    "tracked": false,
+    "dirty": true,
+    "ignored": false,
     "kind": "file",
-    "sizeBytes": 11480,
-    "mtime": "2026-07-23",
-    "imports": 2,
-    "importedBy": [],
-    "reachable": false,
     "lastCommit": "2026-07-23",
     "lastMessage": "Sweep remaining serif/mono fonts to Manrope (SignalRadar themes + other components)"
   }
 }
 
 export const DECLARED_BUT_MISSING: string[] = [
+  "Weekly_Workflow.md",
   "conviction_tags.json",
   "theme_engine_config.json",
-  "theme_weights.json"
+  "theme_weights.json",
+  "rescore_current_v3.py",
+  "patch_gate_no_dma.py",
+  "src/components/Methodology.tsx",
+  "src/components/HistoryLog.tsx"
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "patch_asof_tz.py",
-  "patch_freeze_v31.py",
-  "patch_freeze_v32.py",
-  "patch_freeze_v33.py",
-  "patch_mobile_ui.py",
-  "patch_s5_null_guard.py"
+  "src/data/bookSnapshot.ts"
 ]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */
-export const ORPHANED_SOURCE: string[] = [
-  "src/components/HistoryLog.tsx"
-]
+export const ORPHANED_SOURCE: string[] = []
 
 /** reachable at runtime but absent from systemMap.ts — the map has a blind spot */
 export const UNDECLARED_SOURCE: string[] = [
@@ -415,6 +488,7 @@ export const UNDECLARED_SOURCE: string[] = [
   "src/components/SystemTab.tsx",
   "src/components/TradingChart.tsx",
   "src/components/TradingTab.tsx",
+  "src/data/bookSnapshot.ts",
   "src/data/fileStatus.ts",
   "src/lib/elliott.ts",
   "src/lib/indicator_docs.ts",
