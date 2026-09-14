@@ -41,7 +41,6 @@ The cycle runs as a conversation against two artifacts: the transcripts and the 
    ```
    cd ~/Desktop/alphaplaybook
    python3 cycle_packet.py --pull
-   python3 cycle_scan.py --dir <transcript dir> --since <window>
    open packet/
    ```
 4. Attach `packet/cycle_YYYY-MM-DD.md` and paste the sweep output.
@@ -97,7 +96,7 @@ gap, never silently filled from the prior window.
 ## 5.2 · Nomination sweep — MANDATORY, RUNS FIRST
 
 ```
-python3 cycle_scan.py --dir <transcripts> --since <window>
+python3 cycle_scan.py --dir /mnt/project    (Claude runs this, not you)
 ```
 
 Every other step greps for things **already in the book**, to confirm or refute
