@@ -337,8 +337,8 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     source: 'phase 2: system_changelog · PORTFOLIO_VERSION drives P&L drift',
     blocks: [
       { t: 'sec', label: 'Current' },
-      { t: 'kv', k: 'Version string', v: '2026-07-15-v3.3-coresat' },
-      { t: 'kv', k: 'Names', v: '14' },
+      { t: 'kv', k: 'Version string', v: '2026-09-14-v3.5-asmlcut' },
+      { t: 'kv', k: 'Names', v: '11' },
       { t: 'sec', label: 'Changelog' },
       { t: 'row', date: '8/11', pill: 'engine', tone: 'engine', title: 'Memory stage exhausted → working', quote: '×0.60 → ×0.92. Applied by raising SKHY S2 into the 65–89 band — the engine derives stage from S2 thresholds computationally, there is no stage config field. Standing wiring trap: contract is not spot. SK Hynix sells bilateral contracts to hyperscalers, so feeding spot into severity_probe.cjs produces a false negative on SKHY.' },
       { t: 'row', date: '8/11', pill: 'data', tone: 'data', title: 'Null-DMA coercion patched', quote: 'JS null coerced to 0 produced a fabricated S5 of 52 for SKHY. Three of four patches applied.' },
