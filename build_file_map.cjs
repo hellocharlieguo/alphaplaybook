@@ -180,8 +180,17 @@ function buildGraph() {
 const CRON = path.join(REPO, 'server/daily-cron.cjs')
 const BOOK_OUT = path.join(REPO, 'src/data/bookSnapshot.ts')
 
-// \s+ not a single space: sub-10 weights are padded to align the column
-const HOLDING_RE = /(\w+):\s*\{\s*base_weight:\s+([\d.]+),\s*theme:\s*'([^']+)',\s*min_weight:\s+([\d.]+),\s*action:\s*'([^']+)'/g
+// Two-stage parse. A single regex over the whole entry is brittle: the columns
+// are space-padded for alignment, and one stray space before a comma silently
+// DROPPED a holding in testing. Match the block, then each field independently,
+// and fail loudly if a block parses partially.
+const ENTRY_RE = /(\w+)\s*:\s*\{([^}]*)\}/g
+const FIELD = {
+  weight: /base_weight\s*:\s*([\d.]+)/,
+  theme: /theme\s*:\s*'([^']*)'/,
+  minWeight: /min_weight\s*:\s*([\d.]+)/,
+  action: /action\s*:\s*'([^']*)'/,
+}
 
 function buildBook() {
   if (!fs.existsSync(CRON)) return null
@@ -194,14 +203,30 @@ function buildBook() {
 
   const holdings = []
   let m
-  HOLDING_RE.lastIndex = 0
-  while ((m = HOLDING_RE.exec(blockText)) !== null) {
+  ENTRY_RE.lastIndex = 0
+  while ((m = ENTRY_RE.exec(blockText)) !== null) {
+    const [ticker, body] = [m[1], m[2]]
+    const w = body.match(FIELD.weight)
+    const th = body.match(FIELD.theme)
+    const mw = body.match(FIELD.minWeight)
+    const ac = body.match(FIELD.action)
+    // A partially-parsed entry is worse than none: it would vanish from the book
+    // and only show up as a weights-sum warning.
+    if (!w || !th) fail(`BASE_PORTFOLIO entry ${ticker} parsed partially — weight=${!!w} theme=${!!th}. Refusing to emit a book missing a holding.`)
     holdings.push({
-      ticker: m[1], weight: parseFloat(m[2]), theme: m[3],
-      minWeight: parseFloat(m[4]), action: m[5],
+      ticker,
+      weight: parseFloat(w[1]),
+      theme: th[1],
+      minWeight: mw ? parseFloat(mw[1]) : 0,
+      action: ac ? ac[1] : '',
     })
   }
   if (!holdings.length) fail('parsed 0 holdings from BASE_PORTFOLIO — check the literal format')
+
+  const total0 = holdings.reduce((a, h) => a + h.weight, 0)
+  if (Math.abs(total0 - 100) > 0.05) {
+    console.warn(`  WARNING: BASE_PORTFOLIO weights sum to ${total0.toFixed(1)}, not 100`)
+  }
 
   const version = (src.match(/const PORTFOLIO_VERSION\s*=\s*'([^']+)'/) || [])[1]
   if (!version) fail('PORTFOLIO_VERSION not found')
@@ -251,6 +276,18 @@ function fail(msg) {
 }
 
 function main() {
+  // --book-only regenerates just bookSnapshot.ts from BASE_PORTFOLIO. It touches
+  // no git state, so it is safe in CI and on Vercel's shallow clone, and it runs
+  // as a prebuild step so the book can never lag a deploy.
+  if (process.argv.includes('--book-only')) {
+    const book = buildBook()
+    if (!book) fail('server/daily-cron.cjs not found')
+    writeBook(book)
+    console.log(`bookSnapshot.ts  ${book.count} holdings @ ${book.version}  (${book.sleeves.map((x) => x.name + ' ' + x.weight).join(' · ')})`)
+    if (Math.abs(book.total - 100) > 0.05) console.log(`WARNING: weights sum to ${book.total}, not 100`)
+    return
+  }
+
   if (!fs.existsSync(path.join(REPO, '.git'))) fail('not a git repo — run from the repo root')
 
   const declared = readDeclared()

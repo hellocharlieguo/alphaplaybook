@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "map": "node build_file_map.cjs"
+    "map": "node build_file_map.cjs",
+    "prebuild": "node build_file_map.cjs --book-only"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.102.1",
