@@ -47,7 +47,7 @@ export interface SysLabel { x: number; y: number; text: string }
 export type Block =
   | { t: 'sec'; label: string }
   | { t: 'kv'; k: string; v: string; pending?: boolean }
-  | { t: 'bar'; k: string; v: string; pct: number }
+  | { t: 'bar'; k: string; v: string; pct: number; sub?: string; drift?: number }
   | { t: 'row'; date?: string; pill?: string; tone?: 'engine' | 'book' | 'data' | 'open'; title: string; quote?: string; pending?: boolean }
   | { t: 'note'; text: string }
 
@@ -120,7 +120,7 @@ const F_THEME: SysFile    = { path: 'theme_engine.py',           role: 'L1/L2 re
 const F_CRON: SysFile     = { path: 'server/daily-cron.cjs',     role: 'nightly orchestrator',                       status: 'live' }
 const F_RECAP: SysFile    = { path: 'src/components/SignalRecap.tsx', role: 'renders the three voice cards',         status: 'live' }
 const F_VOICES: SysFile   = { path: 'src/data/voiceCards.ts',    role: 'weekly card content — one-file edit',        status: 'live' }
-const F_WEEKLY: SysFile   = { path: 'Weekly_Workflow.md',        role: 'the §1–§8 weekly run order',                 status: 'live' }
+const F_WEEKLY: SysFile   = { path: 'Weekly_Workflow_v34_section.md', role: 'the current v3.4 weekly run order', status: 'live' }
 const F_PULL: SysFile     = { path: 'pull_candidates.cjs',       role: 'candidate technicals pull — uncommitted edits, git diff first', status: 'modified' }
 
 export const SYS_DETAILS: Record<string, SysDetail> = {
@@ -282,7 +282,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     ],
     files: [
       F_WEEKLY,
-      { path: 'Weekly_Workflow_v2.docx', role: 'revised run order — not yet promoted', status: 'untracked' },
+      { path: 'Weekly_Workflow original.md', role: 'superseded run order, kept for history', status: 'live' },
     ],
   },
 
@@ -307,10 +307,10 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     files: [
       F_ENGINE, F_PULL,
       { path: 'rescore_trendfirst.py', role: 'canonical v3.4 offline runner', status: 'live' },
-      { path: 'rescore_current_v3.py', role: 'orphaned — do not run; rescore_v34.py likewise', status: 'orphan' },
       { path: 'Trend_First_Spec.md', role: 'v3.4 methodology spec', status: 'live' },
       { path: 'corr_matrix.json', role: 'measured correlations, 251 sessions', status: 'live' },
-      { path: 'patch_gate_no_dma.py', role: 'fourth null-DMA patch — never run', status: 'untracked' },
+      { path: 'pull_correlations.py', role: 'refreshes corr_matrix.json', status: 'live' },
+      { path: 'v34_worksheet.html', role: 'canonical interactive methodology reference', status: 'live' },
     ],
   },
 
@@ -327,7 +327,6 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     files: [
       F_WEEKLY,
       { path: 'probe_source.textClipping', role: 'Finder stub — will not execute, re-save as .cjs', status: 'orphan' },
-      { path: 'src/components/Methodology.tsx', role: 'dead code — nothing imports it; its S4 staleness is moot until revived', status: 'unverified' },
     ],
   },
 
@@ -337,8 +336,8 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     source: 'phase 2: system_changelog · PORTFOLIO_VERSION drives P&L drift',
     blocks: [
       { t: 'sec', label: 'Current' },
-      { t: 'kv', k: 'Version string', v: '2026-09-14-v3.5-asmlcut' },
-      { t: 'kv', k: 'Names', v: '11' },
+      { t: 'kv', k: 'Version string', v: '2026-07-15-v3.3-coresat' },
+      { t: 'kv', k: 'Names', v: '14' },
       { t: 'sec', label: 'Changelog' },
       { t: 'row', date: '8/11', pill: 'engine', tone: 'engine', title: 'Memory stage exhausted → working', quote: '×0.60 → ×0.92. Applied by raising SKHY S2 into the 65–89 band — the engine derives stage from S2 thresholds computationally, there is no stage config field. Standing wiring trap: contract is not spot. SK Hynix sells bilateral contracts to hyperscalers, so feeding spot into severity_probe.cjs produces a false negative on SKHY.' },
       { t: 'row', date: '8/11', pill: 'data', tone: 'data', title: 'Null-DMA coercion patched', quote: 'JS null coerced to 0 produced a fabricated S5 of 52 for SKHY. Three of four patches applied.' },
@@ -369,7 +368,19 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
       { t: 'note', text: 'Site deploys instantly on push, but data only changes after the 23:17 UTC cron writes to Supabase.' },
     ],
     files: [
+      { path: 'src/main.tsx', role: 'Vite entry — reachability is measured from here', status: 'live' },
+      { path: 'src/App.tsx', role: 'root component', status: 'live' },
       { path: 'src/components/Dashboard.tsx', role: 'app shell — theme tokens, tab routing, stat cards', status: 'live' },
+      { path: 'src/components/SystemTab.tsx', role: 'this tab — topology from systemMap, state from the generated modules', status: 'live' },
+      { path: 'src/data/fileStatus.ts', role: 'generated — git state, import graph, reachability', status: 'live' },
+      { path: 'src/data/bookSnapshot.ts', role: 'generated — holdings and sleeves from BASE_PORTFOLIO', status: 'live' },
+      { path: 'src/components/TradingTab.tsx', role: 'hidden tab, still imported by Dashboard so it still ships', status: 'live' },
+      { path: 'src/components/TradingChart.tsx', role: 'Elliott wave chart', status: 'live' },
+      { path: 'src/components/IndicatorPanel.tsx', role: 'indicator readouts for the Trading tab', status: 'live' },
+      { path: 'src/lib/elliott.ts', role: 'Elliott wave labelling', status: 'live' },
+      { path: 'src/lib/technicals.ts', role: 'RSI, SMA, stretch helpers', status: 'live' },
+      { path: 'src/lib/indicator_docs.ts', role: 'indicator copy', status: 'live' },
+      { path: 'build_file_map.cjs', role: 'npm run map — generates fileStatus.ts and bookSnapshot.ts', status: 'live' },
       { path: '.gitignore', role: 'keeps Finder artifacts and local assets out', status: 'live' },
     ],
   },
@@ -384,7 +395,7 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
       { t: 'note', text: 'Market-holiday guard: Steps 4–6 skip when spyDate does not equal TODAY. The cron never writes podcast_log or system_changelog — those stay weekly and human-authored.' },
     ],
     files: [
-      { path: '.github/workflows/', role: 'the schedule definition', status: 'unverified', kind: 'dir' },
+      { path: '.github/workflows/daily-cron.yml', role: 'the 23:17 UTC schedule definition', status: 'live' },
       F_CRON,
     ],
   },
@@ -424,7 +435,6 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     ],
     files: [
       F_CRON,
-      { path: 'patch_gate_no_dma.py', role: 'the fourth null-DMA patch — still unrun', status: 'untracked' },
     ],
   },
 
@@ -462,7 +472,6 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     files: [
       { path: 'src/supabase.ts', role: 'browser client — anon key, read-only', status: 'live' },
       { path: 'server/daily-cron.cjs', role: 'the only writer — service-role key', status: 'live' },
-      { path: 'src/components/HistoryLog.tsx', role: 'merged into Performance — unreachable from the entry point', status: 'unverified' },
     ],
   },
 }

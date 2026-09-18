@@ -28,7 +28,16 @@ const HUMAN = '#d8c46a' // human-gate amber — System-tab semantics, no global 
 
 const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace'
 
-export default function SystemTab({ theme }: { theme: Theme }) {
+// The same row shape Portfolio reads: daily_snapshots.portfolio, written by the
+// nightly cron. weight_pct is the LIVE DRIFTED weight at the last close;
+// target_weight_pct is the engine base weight it drifts from.
+export interface SysSnapshot {
+  snapshot_date?: string
+  portfolio?: any[] | null
+  portfolio_version?: string | null
+}
+
+export default function SystemTab({ theme, snapshot }: { theme: Theme; snapshot?: SysSnapshot | null }) {
   const [selected, setSelected] = useState<string | null>(null)
   const stageRef = useRef<HTMLDivElement>(null)
 
@@ -286,7 +295,7 @@ export default function SystemTab({ theme }: { theme: Theme }) {
               </button>
             )}
 
-            {[...liveBlocks(selected!), ...detail.blocks].map((b, i) => (
+            {[...liveBlocks(selected!, snapshot), ...detail.blocks].map((b, i) => (
               <BlockView key={i} block={b} theme={theme} />
             ))}
 
@@ -334,25 +343,89 @@ export default function SystemTab({ theme }: { theme: Theme }) {
 // Blocks derived from the live sources rather than declared here. systemMap.ts
 // holds topology and judgment; holdings come from BASE_PORTFOLIO via
 // bookSnapshot.ts, voice content from voiceCards.ts. No third copy.
-function liveBlocks(id: string): Block[] {
+// Sleeves summed from the live snapshot rows. Derived, never asserted — the
+// same rule the generator follows for the frozen book.
+function liveSleeves(rows: any[]): { name: string; weight: number }[] {
+  const m: Record<string, number> = {}
+  for (const r of rows) {
+    const k = String(r?.category ?? r?.theme ?? 'Unassigned')
+    m[k] = (m[k] ?? 0) + (Number(r?.weight_pct) || 0)
+  }
+  return Object.entries(m)
+    .map(([name, weight]) => ({ name, weight: Math.round(weight * 10) / 10 }))
+    .sort((a, b) => b.weight - a.weight)
+}
+
+function liveBlocks(id: string, snapshot?: SysSnapshot | null): Block[] {
+  const rows: any[] = Array.isArray(snapshot?.portfolio) ? snapshot!.portfolio! : []
+  const hasLive = rows.length > 0
   if (id === 'themes') {
-    const out: Block[] = [{ t: 'sec', label: `Sleeves · ${BOOK.version}` }]
-    for (const s of BOOK.sleeves) out.push({ t: 'bar', k: s.name, v: `${s.weight}%`, pct: s.weight })
-    out.push({ t: 'sec', label: `Holdings · ${BOOK.count}` })
-    for (const h of BOOK.holdings) {
-      out.push({ t: 'kv', k: `${h.ticker} · ${h.theme}`, v: `${h.weight}  ${h.action}` })
+    const out: Block[] = []
+    const target = new Map(BOOK.sleeves.map((s) => [s.name, s.weight]))
+
+    if (hasLive) {
+      out.push({ t: 'sec', label: `Sleeves · live at ${snapshot?.snapshot_date ?? 'last close'}` })
+      for (const s of liveSleeves(rows)) {
+        const tgt = target.get(s.name)
+        const d = tgt === undefined ? undefined : Math.round((s.weight - tgt) * 10) / 10
+        out.push({
+          t: 'bar',
+          k: s.name,
+          v: `${s.weight}%`,
+          pct: s.weight,
+          drift: d,
+          sub: tgt === undefined
+            ? 'not in the frozen book'
+            : `target ${tgt}%  ·  drift ${d! >= 0 ? '+' : ''}${d}`,
+        })
+      }
+      out.push({ t: 'note', text: 'Bars are the live drifted weights from daily_snapshots.portfolio — the same rows the Portfolio tab renders. Target is the frozen engine weight from BASE_PORTFOLIO; the gap is price drift since the last freeze.' })
+    } else {
+      out.push({ t: 'sec', label: `Sleeves · frozen target` })
+      for (const s of BOOK.sleeves) out.push({ t: 'bar', k: s.name, v: `${s.weight}%`, pct: s.weight })
+      out.push({ t: 'note', text: 'No snapshot rows yet tonight — showing the frozen target from BASE_PORTFOLIO. Live drifted weights appear once the cron has written a snapshot.' })
     }
-    out.push({ t: 'note', text: `Derived from BASE_PORTFOLIO in server/daily-cron.cjs at npm run map. Weights sum to ${BOOK.total}. Floor is min_weight per name.` })
+
+    out.push({ t: 'sec', label: `Holdings · ${BOOK.count} frozen` })
+    const liveW = new Map(rows.map((r: any) => [String(r?.ticker), Number(r?.weight_pct) || 0]))
+    for (const h of BOOK.holdings) {
+      const lw = liveW.get(h.ticker)
+      out.push({
+        t: 'kv',
+        k: `${h.ticker} · ${h.theme}`,
+        v: lw === undefined ? `${h.weight}  ${h.action}` : `${lw.toFixed(1)}  ← ${h.weight}  ${h.action}`,
+      })
+    }
+    // a ticker the cron is pricing that the frozen book does not list
+    for (const r of rows) {
+      const tk = String(r?.ticker)
+      if (!BOOK.holdings.some((h) => h.ticker === tk)) {
+        out.push({ t: 'kv', k: `${tk} · live only`, v: `${(Number(r?.weight_pct) || 0).toFixed(1)}`, pending: true })
+      }
+    }
+    out.push({ t: 'note', text: `Frozen weights from BASE_PORTFOLIO, regenerated on every build. Sum ${BOOK.total}. Floor is min_weight per name. Where a live weight exists it is shown first, then the target it drifts from.` })
     return out
   }
 
   if (id === 'freeze') {
-    return [
-      { t: 'sec', label: 'Live version' },
-      { t: 'kv', k: 'PORTFOLIO_VERSION', v: BOOK.version },
-      { t: 'kv', k: 'Holdings', v: String(BOOK.count) },
-      { t: 'note', text: 'Read from the cron constant, not typed here. A version bump forces a one-night rebalance to target; between bumps the book drifts with price.' },
+    const deployed = snapshot?.portfolio_version ?? null
+    const out: Block[] = [
+      { t: 'sec', label: 'Version' },
+      { t: 'kv', k: 'in code', v: BOOK.version },
+      { t: 'kv', k: 'last snapshot', v: deployed ?? 'no snapshot read', pending: !deployed },
+      { t: 'kv', k: 'holdings in code', v: String(BOOK.count) },
     ]
+    if (deployed && deployed !== BOOK.version) {
+      out.push({
+        t: 'row',
+        pill: 'open',
+        tone: 'open',
+        title: 'Code and data disagree',
+        quote: `BASE_PORTFOLIO reads ${BOOK.version} but the most recent snapshot still carries ${deployed}. The engine change is deployed to the site and not yet reflected in data — the next cron run at 23:17 UTC forces a one-night rebalance to the new target.`,
+      })
+    }
+    out.push({ t: 'note', text: 'Both read from live sources: the code version from BASE_PORTFOLIO at build, the data version from the snapshot at page load. A version bump forces a rebalance to target; between bumps the book drifts with price.' })
+    return out
   }
 
   const voice = VOICES.find((v) => v.name.toLowerCase() === id)
@@ -470,15 +543,25 @@ function BlockView({ block, theme }: { block: Block; theme: Theme }) {
   }
 
   if (block.t === 'bar') {
+    // drift is signed: green when the sleeve has run above target, red below.
+    const driftColor =
+      block.drift === undefined || Math.abs(block.drift) < 0.05 ? theme.textTertiary
+      : block.drift > 0 ? theme.positive
+      : theme.negative
     return (
-      <div style={{ marginBottom: 8 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '7px 0', fontSize: 12.5 }}>
+      <div style={{ marginBottom: 9 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '7px 0 4px', fontSize: 12.5 }}>
           <span style={{ color: theme.textSecondary }}>{block.k}</span>
           <span style={{ fontFamily: MONO, fontSize: 11.5, color: theme.textPrimary }}>{block.v}</span>
         </div>
         <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.09)', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${block.pct}%`, background: `linear-gradient(90deg, ${theme.accent}, ${hexToRgba(theme.accent, 0.3)})` }} />
+          <div style={{ height: '100%', width: `${Math.max(0, Math.min(100, block.pct))}%`, background: `linear-gradient(90deg, ${theme.accent}, ${hexToRgba(theme.accent, 0.3)})` }} />
         </div>
+        {block.sub && (
+          <div style={{ fontFamily: MONO, fontSize: 9, color: driftColor, marginTop: 4, letterSpacing: '0.04em' }}>
+            {block.sub}
+          </div>
+        )}
       </div>
     )
   }

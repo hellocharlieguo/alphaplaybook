@@ -25,6 +25,9 @@ interface DailySnapshot {
   capex_yoy_pct?: number | null
   visser_stage?: number | null
   macro_signals?: any | null
+  // written by the cron (server/daily-cron.cjs) and returned by select('*');
+  // typed here so the System tab can compare it against BASE_PORTFOLIO.
+  portfolio_version?: string | null
 }
 
 export interface Theme {
@@ -232,7 +235,7 @@ export default function Dashboard() {
                 {activeTab === 'portfolio' && <Portfolio snapshot={latestSnapshot} theme={t} portfolioValue={portfolioValue} />}
                 {activeTab === 'pnl' && <PnLTracker theme={t} />}
                 {activeTab === 'trading' && <TradingTab theme={t} />}
-                {activeTab === 'system' && <SystemTab theme={t} />}
+                {activeTab === 'system' && <SystemTab theme={t} snapshot={latestSnapshot} />}
               </>
             )}
           </div>

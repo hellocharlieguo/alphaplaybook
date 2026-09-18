@@ -16,7 +16,7 @@ export const BOOK = {
   version: "2026-09-14-v3.5-asmlcut",
   count: 11,
   total: 100,
-  generatedAt: "2026-09-18T19:09:17.299Z",
+  generatedAt: "2026-09-18T19:16:51.879Z",
   sleeves: [
   {
     "name": "Monetary",
