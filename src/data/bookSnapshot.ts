@@ -13,18 +13,18 @@ export interface Holding {
 export interface Sleeve { name: string; weight: number }
 
 export const BOOK = {
-  version: "2026-09-14-v3.5-asmlcut",
+  version: "2026-09-22-v3.6-ethabind",
   count: 11,
   total: 100,
-  generatedAt: "2026-09-18T19:16:51.879Z",
+  generatedAt: "2026-09-22T20:39:18.737Z",
   sleeves: [
   {
     "name": "Monetary",
-    "weight": 29.1
+    "weight": 28.8
   },
   {
     "name": "AI Applied",
-    "weight": 26.4
+    "weight": 26.2
   },
   {
     "name": "AI Buildout",
@@ -32,86 +32,86 @@ export const BOOK = {
   },
   {
     "name": "Tokenized Rails",
-    "weight": 19.8
+    "weight": 20.3
   }
 ] as Sleeve[],
   holdings: [
   {
     "ticker": "LLY",
-    "weight": 13.2,
+    "weight": 13.1,
     "theme": "AI Applied",
-    "minWeight": 6.6,
-    "action": "Trim"
+    "minWeight": 6.5,
+    "action": "Hold"
   },
   {
     "ticker": "AMZN",
-    "weight": 13.2,
+    "weight": 13.1,
     "theme": "AI Applied",
-    "minWeight": 6.6,
-    "action": "Add"
+    "minWeight": 6.5,
+    "action": "Hold"
   },
   {
     "ticker": "IBIT",
-    "weight": 12.2,
+    "weight": 12.1,
     "theme": "Monetary",
-    "minWeight": 6.1,
+    "minWeight": 6,
     "action": "Hold"
   },
   {
     "ticker": "GLDM",
-    "weight": 9.1,
+    "weight": 9,
     "theme": "Monetary",
     "minWeight": 4.5,
     "action": "Hold"
   },
   {
     "ticker": "ETHA",
-    "weight": 12.4,
+    "weight": 12.5,
     "theme": "Tokenized Rails",
     "minWeight": 6.2,
-    "action": "Add"
+    "action": "Hold"
   },
   {
     "ticker": "HOOD",
-    "weight": 7.4,
+    "weight": 7.8,
     "theme": "Tokenized Rails",
-    "minWeight": 3.7,
-    "action": "Trim"
+    "minWeight": 3.9,
+    "action": "Add"
   },
   {
     "ticker": "SLV",
-    "weight": 7.8,
+    "weight": 7.7,
     "theme": "Monetary",
     "minWeight": 3.9,
     "action": "Hold"
   },
   {
     "ticker": "AIPO",
-    "weight": 6.4,
+    "weight": 7,
     "theme": "AI Buildout",
-    "minWeight": 3.2,
-    "action": "Hold"
-  },
-  {
-    "ticker": "GLW",
-    "weight": 5.6,
-    "theme": "AI Buildout",
-    "minWeight": 2.8,
+    "minWeight": 3.5,
     "action": "Add"
   },
   {
-    "ticker": "SOXX",
-    "weight": 6,
+    "ticker": "GLW",
+    "weight": 6.1,
     "theme": "AI Buildout",
     "minWeight": 3,
     "action": "Add"
   },
   {
-    "ticker": "COPX",
-    "weight": 6.7,
+    "ticker": "SOXX",
+    "weight": 5.2,
     "theme": "AI Buildout",
-    "minWeight": 3.4,
-    "action": "Add"
+    "minWeight": 2.6,
+    "action": "Trim"
+  },
+  {
+    "ticker": "COPX",
+    "weight": 6.4,
+    "theme": "AI Buildout",
+    "minWeight": 3.2,
+    "action": "Trim"
   }
 ] as Holding[],
 }

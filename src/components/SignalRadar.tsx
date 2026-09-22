@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: '11 names now',     blurb: 'ASML cut \u2014 it sat inside SOXX at 2.49%. AIPO and GLW both broke their 200-DMAs.', binding: true },
-  { name: 'AI Applied',      tag: 'wave unchanged',   blurb: 'AMZN below its 50-DMA lifts its entry band; ties LLY at 13.2 for the first time.' },
-  { name: 'Tokenized Rails', tag: 'third week working', blurb: '\u201cWe\u2019re at the beginning of tokenization\u201d \u2014 the beginning argues against escalating.' },
-  { name: 'Monetary',        tag: 'BTC carries it',   blurb: 'Gold and silver silent three weeks; both entry-paused below their 200-DMAs.' },
+  { name: 'AI Buildout',     tag: 'anchors reclaim 200s', blurb: 'AIPO and GLW back above their 200-DMAs, bands 0.75 \u2192 0.85. MU swap held \u2014 no Visser support for memory.', binding: true },
+  { name: 'AI Applied',      tag: 'on the 50-DMA',     blurb: 'AMZN and LLY both within 0.4% of their 50-DMAs. Visser: Lilly is \u201cpart of the consumer agent trade.\u201d' },
+  { name: 'Tokenized Rails', tag: 'ETHA now binding',  blurb: '\u201cWe are finally at the point.\u201d Rung 0.92 \u2192 1.00, but a 26.5% stretch cuts the band \u2014 ETHA 12.4 \u2192 12.5.' },
+  { name: 'Monetary',        tag: 'BTC line: 80k',     blurb: 'Visser\u2019s dated test: Bitcoin below 80,000 by end of October is \u201ca problem.\u201d Silver named; gold silent a fourth week.' },
 ]
 
 interface Holding { ticker?: string; category?: string }
