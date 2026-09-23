@@ -120,7 +120,7 @@ export const VOICES: VoiceSection[] = [
   {
     name: 'ZaStocks',
     headline: 'SURVIVE THE CHOP, THEN PRESS',
-    subtitle: 'Technical setups via scheduled Grok task — candidates to verify, never auto-seat',
+    subtitle: 'ZaStocks (@ZaStocks) — technical setups via scheduled Grok task; candidates to verify, never auto-seat',
     asOf: 'wk of Sep 14 – 21 · via Grok',
     active: true,
     themes: [
