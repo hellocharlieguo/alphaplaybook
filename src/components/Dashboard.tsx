@@ -200,8 +200,10 @@ export default function Dashboard() {
               <PortfolioValueCard input={portfolioInput} onInput={setPortfolioInput} onCommit={handlePortfolioSubmit} t={t} />
             ) : fg ? (
               <StatCard
-                label="Market sentiment"
-                value={`${Math.round((fg.prob ?? 0) * 100)}% ${fg.band}`}
+                label="CNN Fear & Greed Index"
+                value={String(fg.band)}
+                pill={`${Math.round((fg.prob ?? 0) * 100)}% probability`}
+                pillTone={String(fg.band).includes('Fear') ? 'neg' : String(fg.band).includes('Greed') ? 'pos' : 'neutral'}
                 color={String(fg.band).includes('Fear') ? t.negative
                      : String(fg.band).includes('Greed') ? t.positive
                      : t.textPrimary}
@@ -211,7 +213,7 @@ export default function Dashboard() {
                 expanded={fgOpen}
               />
             ) : (
-              <StatCard label="Market sentiment" value="—" color={t.textTertiary} sub="awaiting Kalshi quote" t={t} />
+              <StatCard label="CNN Fear & Greed Index" value="—" color={t.textTertiary} sub="awaiting Kalshi quote" t={t} />
             )}
           </div>
           {activeTab !== 'portfolio' && fg && fgOpen && <FearGreedPanel fg={fg} t={t} />}
@@ -253,8 +255,14 @@ export default function Dashboard() {
   )
 }
 
-function StatCard({ label, value, color, sub, t, onClick, expanded }: { label: string; value: string; color: string; sub?: string; t: Theme; onClick?: () => void; expanded?: boolean }) {
+function StatCard({ label, value, color, sub, t, onClick, expanded, pill, pillTone = 'neutral' }: { label: string; value: string; color: string; sub?: string; t: Theme; onClick?: () => void; expanded?: boolean; pill?: string; pillTone?: 'pos' | 'neg' | 'neutral' }) {
   const clickable = !!onClick
+  // Pill colors match InflationRegimeCard's BULLISH / BEARISH pills.
+  const pc = pillTone === 'neg'
+    ? { text: '#d98e79', bg: 'rgba(201,112,90,0.16)', border: 'rgba(201,112,90,0.34)' }
+    : pillTone === 'pos'
+    ? { text: '#8fd07e', bg: 'rgba(125,186,106,0.16)', border: 'rgba(125,186,106,0.34)' }
+    : { text: '#b8b8bd', bg: 'rgba(255,255,255,0.07)', border: 'rgba(255,255,255,0.18)' }
   return (
     <div
       onClick={onClick}
@@ -273,7 +281,12 @@ function StatCard({ label, value, color, sub, t, onClick, expanded }: { label: s
           </svg>
         )}
       </div>
-      <div style={{ fontSize: 22, fontWeight: 600, color, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 22, fontWeight: 600, color, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums' }}>{value}</span>
+        {pill && (
+          <span style={{ alignSelf: 'center', fontSize: 9.5, letterSpacing: 0.5, textTransform: 'uppercase', whiteSpace: 'nowrap', color: pc.text, background: pc.bg, border: `1px solid ${pc.border}`, padding: '2px 7px', borderRadius: 5 }}>{pill}</span>
+        )}
+      </div>
       {sub && <div style={{ fontSize: 11, color: t.textTertiary, marginTop: 2, textTransform: 'capitalize' }}>{sub}</div>}
     </div>
   )
@@ -410,7 +423,7 @@ function InflationRegimeCard({ regime, t }: { regime: any; t: Theme }) {
   const sub = has ? `${above ? 'Above' : 'Below'} 4% line · S&P ${above ? 'hist. negative' : '+12%/yr'}` : 'Awaiting CPI data'
   return (
     <div style={{ background: 'rgba(30,29,27,0.38)', backdropFilter: 'blur(32px) saturate(132%)', WebkitBackdropFilter: 'blur(32px) saturate(132%)', border: '1px solid rgba(255,255,255,0.11)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
-      <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Inflation regime</div>
+      <div style={{ fontSize: 11, color: t.textTertiary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Inflation</div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <span style={{ fontSize: 22, fontWeight: 600, color, fontFamily: "'Manrope', sans-serif", fontVariantNumeric: 'tabular-nums' }}>{value}</span>
         {has && (
