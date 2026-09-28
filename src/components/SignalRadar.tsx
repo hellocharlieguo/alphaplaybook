@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'anchors reclaim 200s', blurb: 'AIPO and GLW back above their 200-DMAs, bands 0.75 \u2192 0.85. MU swap held \u2014 no Visser support for memory.', binding: true },
-  { name: 'AI Applied',      tag: 'on the 50-DMA',     blurb: 'AMZN and LLY both within 0.4% of their 50-DMAs. Visser: Lilly is \u201cpart of the consumer agent trade.\u201d' },
-  { name: 'Tokenized Rails', tag: 'ETHA now binding',  blurb: '\u201cWe are finally at the point.\u201d Rung 0.92 \u2192 1.00, but a 26.5% stretch cuts the band \u2014 ETHA 12.4 \u2192 12.5.' },
-  { name: 'Monetary',        tag: 'BTC line: 80k',     blurb: 'Visser\u2019s dated test: Bitcoin below 80,000 by end of October is \u201ca problem.\u201d Silver named; gold silent a fourth week.' },
+  { name: 'AI Buildout',     tag: 'SOXX now working',  blurb: 'Visser: \u201cthe infrastructure trade has a catalyst.\u201d SOXX rung 0.80 \u2192 0.92 \u2014 its top holdings are Intel and AMD. Override retired; trend 25.0 on the engine\u2019s own number.', binding: true },
+  { name: 'AI Applied',      tag: 'AMZN top seat',     blurb: 'AMZN 3.9% under its 50-DMA, best entry band \u2014 13.9, largest in the book. Visser expects Mag 7 multiple compression; Camillo is buying weakness.' },
+  { name: 'Tokenized Rails', tag: '44 of 46 above 50',  blurb: '\u201cThis, my friends, is a bull market.\u201d ETHA stretch eased 26.5% \u2192 19.4%, band back to 0.85 \u2014 12.5 \u2192 13.2.' },
+  { name: 'Monetary',        tag: 'IBIT now working',  blurb: '\u201cBitcoin doesn\u2019t fit in that fundamental argument.\u201d One rung down, 12.1 \u2192 11.3. GLDM and SLV below their 200-DMAs, 16.9% entry-paused.' },
 ]
 
 interface Holding { ticker?: string; category?: string }

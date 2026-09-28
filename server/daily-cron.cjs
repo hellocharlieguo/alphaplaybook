@@ -1165,17 +1165,17 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // Retired this freeze: SKHY (unscoreable, no SMA50 until ~Sept 18), SGOV (no cash
 // row in the cascade), MU + WDC (dropped 8/23 on measured redundancy).
 const BASE_PORTFOLIO = {
-  LLY:   { base_weight: 13.1, theme: 'AI Applied',        min_weight:  6.5, action: 'Hold' },
-  AMZN:  { base_weight: 13.1, theme: 'AI Applied',        min_weight:  6.5, action: 'Hold' },
-  IBIT:  { base_weight: 12.1, theme: 'Monetary',          min_weight:  6.0, action: 'Hold' },
-  GLDM:  { base_weight:  9.0, theme: 'Monetary',          min_weight:  4.5, action: 'Hold' },
-  ETHA:  { base_weight: 12.5, theme: 'Tokenized Rails',   min_weight:  6.2, action: 'Hold' },
-  HOOD:  { base_weight:  7.8, theme: 'Tokenized Rails',   min_weight:  3.9, action: 'Add' },
-  SLV:   { base_weight:  7.7, theme: 'Monetary',          min_weight:  3.9, action: 'Hold' },
-  AIPO:  { base_weight:  7.0, theme: 'AI Buildout',       min_weight:  3.5, action: 'Add' },
-  GLW:   { base_weight:  6.1, theme: 'AI Buildout',       min_weight:  3.0, action: 'Add' },
-  SOXX:  { base_weight:  5.2, theme: 'AI Buildout',       min_weight:  2.6, action: 'Trim' },
-  COPX:  { base_weight:  6.4, theme: 'AI Buildout',       min_weight:  3.2, action: 'Trim' },
+  LLY:   { base_weight: 12.4, theme: 'AI Applied',        min_weight:  6.2, action: 'Trim' },
+  AMZN:  { base_weight: 13.9, theme: 'AI Applied',        min_weight:  7.0, action: 'Add' },
+  IBIT:  { base_weight: 11.3, theme: 'Monetary',          min_weight:  5.7, action: 'Trim' },
+  GLDM:  { base_weight:  9.1, theme: 'Monetary',          min_weight:  4.5, action: 'Hold' },
+  ETHA:  { base_weight: 13.2, theme: 'Tokenized Rails',   min_weight:  6.6, action: 'Add' },
+  HOOD:  { base_weight:  7.3, theme: 'Tokenized Rails',   min_weight:  3.6, action: 'Trim' },
+  SLV:   { base_weight:  7.8, theme: 'Monetary',          min_weight:  3.9, action: 'Hold' },
+  AIPO:  { base_weight:  7.1, theme: 'AI Buildout',       min_weight:  3.5, action: 'Hold' },
+  GLW:   { base_weight:  6.1, theme: 'AI Buildout',       min_weight:  3.0, action: 'Hold' },
+  SOXX:  { base_weight:  5.3, theme: 'AI Buildout',       min_weight:  2.6, action: 'Hold' },
+  COPX:  { base_weight:  6.5, theme: 'AI Buildout',       min_weight:  3.2, action: 'Hold' },
 }
 
 // SGOV left the book 2026-08-24 (v3.4 has no cash row) but the momentum
@@ -1188,7 +1188,7 @@ const PRICE_EXTRAS = ['SGOV']
 // stored in yesterday's snapshot; a change forces a one-night rebalance-to-target.
 // Between bumps (same tickers, same version) holdings DRIFT with price — winners gain
 // weight, losers shed it. A ticker add/drop also forces a rebalance regardless.
-const PORTFOLIO_VERSION = '2026-09-22-v3.6-ethabind'
+const PORTFOLIO_VERSION = '2026-09-28-v3.7-ibitsoxx'
 
 function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('\n========================================')

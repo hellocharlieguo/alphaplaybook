@@ -25,16 +25,16 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-09-09T19:44:50.917Z",
-  "commit": "598680f",
-  "declared": 37,
-  "missing": 8,
+  "generatedAt": "2026-09-28T22:53:07.885Z",
+  "commit": "4c19845",
+  "declared": 47,
+  "missing": 3,
   "untracked": 0,
   "ignored": 3,
-  "modified": 2,
+  "modified": 6,
   "undeclared": 1,
   "orphanedSource": 0,
-  "undeclaredSource": 11
+  "undeclaredSource": 0
 } as const
 
 export const FILE_STATUS: Record<string, FileState> = {
@@ -74,13 +74,13 @@ export const FILE_STATUS: Record<string, FileState> = {
   "server/daily-cron.cjs": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 94141,
-    "mtime": "2026-09-02",
-    "lastCommit": "2026-09-01",
-    "lastMessage": "fetchFearGreed: iterate candidate KXFEAR events by expiry rather than only the nearest, with a 500 open_interest_fp floo"
+    "sizeBytes": 94046,
+    "mtime": "2026-09-28",
+    "lastCommit": "2026-09-22",
+    "lastMessage": "FREEZE 2026-09-22-v3.6-ethabind: ETHA working->binding (Visser 9/20 'we are finally at the point'). 11 names unchanged. "
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
@@ -101,28 +101,30 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/voiceCards.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 16376,
-    "mtime": "2026-09-08",
+    "sizeBytes": 12493,
+    "mtime": "2026-09-28",
     "imports": 0,
     "importedBy": [
       "src/components/SignalRecap.tsx",
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-07",
-    "lastMessage": "SignalRadar + voiceCards: 9/07 cycle chips, ZaStocks asOf 9/1-7"
+    "lastCommit": "2026-09-23",
+    "lastMessage": "voiceCards: restore ZaStocks name in subtitle (dropped in 7698265)"
   },
-  "Weekly_Workflow.md": {
-    "exists": false,
-    "tracked": false,
+  "Weekly_Workflow_v34_section.md": {
+    "exists": true,
+    "tracked": true,
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "lastCommit": "2026-09-08",
-    "lastMessage": "patches/ directory for patch scripts; workflow v34 rev 2026-09-07 with nomination sweep and coverage audit; packet secti"
+    "sizeBytes": 13675,
+    "mtime": "2026-09-14",
+    "lastCommit": "2026-09-14",
+    "lastMessage": "workflow: protocol correction - transcripts are Project-files only, Claude runs the nomination sweep"
   },
   "pull_candidates.cjs": {
     "exists": true,
@@ -190,18 +192,18 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/SignalRadar.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 3607,
-    "mtime": "2026-09-08",
+    "sizeBytes": 3949,
+    "mtime": "2026-09-28",
     "imports": 1,
     "importedBy": [
       "src/components/SignalRecap.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-07",
-    "lastMessage": "SignalRadar + voiceCards: 9/07 cycle chips, ZaStocks asOf 9/1-7"
+    "lastCommit": "2026-09-22",
+    "lastMessage": "FREEZE 2026-09-22-v3.6-ethabind: ETHA working->binding (Visser 9/20 'we are finally at the point'). 11 names unchanged. "
   },
   "src/components/Portfolio.tsx": {
     "exists": true,
@@ -241,16 +243,16 @@ export const FILE_STATUS: Record<string, FileState> = {
     "lastCommit": "2026-07-11",
     "lastMessage": "Track current four-axis spec, live book doc, workflow, freeze patches"
   },
-  "Weekly_Workflow_v2.docx": {
+  "Weekly_Workflow original.md": {
     "exists": true,
     "tracked": true,
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 11974,
-    "mtime": "2026-07-16",
-    "lastCommit": "2026-08-29",
-    "lastMessage": "Track never-committed canonical files and spent v3.4 patch scripts"
+    "sizeBytes": 7040,
+    "mtime": "2026-07-06",
+    "lastCommit": "2026-09-08",
+    "lastMessage": "patches/ directory for patch scripts; workflow v34 rev 2026-09-07 with nomination sweep and coverage audit; packet secti"
   },
   "rescore_trendfirst.py": {
     "exists": true,
@@ -262,15 +264,6 @@ export const FILE_STATUS: Record<string, FileState> = {
     "mtime": "2026-08-23",
     "lastCommit": "2026-08-23",
     "lastMessage": "v3.4 trend-first scoring: replace composite with timing x quality x wave x entry, breadth measured as N_eff from correla"
-  },
-  "rescore_current_v3.py": {
-    "exists": false,
-    "tracked": false,
-    "dirty": false,
-    "ignored": false,
-    "kind": "file",
-    "lastCommit": "2026-08-29",
-    "lastMessage": "Archive retired composite rescorers"
   },
   "Trend_First_Spec.md": {
     "exists": true,
@@ -294,12 +287,27 @@ export const FILE_STATUS: Record<string, FileState> = {
     "lastCommit": "2026-09-07",
     "lastMessage": "corr: 19 symbols/252 sessions, GSOL as SOL proxy (BSOL 215 closes truncated all series). Reinject worksheet"
   },
-  "patch_gate_no_dma.py": {
-    "exists": false,
-    "tracked": false,
+  "pull_correlations.py": {
+    "exists": true,
+    "tracked": true,
     "dirty": false,
     "ignored": false,
-    "kind": "file"
+    "kind": "file",
+    "sizeBytes": 2762,
+    "mtime": "2026-09-07",
+    "lastCommit": "2026-09-07",
+    "lastMessage": "corr: 19 symbols/252 sessions, GSOL as SOL proxy (BSOL 215 closes truncated all series). Reinject worksheet"
+  },
+  "v34_worksheet.html": {
+    "exists": true,
+    "tracked": true,
+    "dirty": true,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 86717,
+    "mtime": "2026-09-28",
+    "lastCommit": "2026-09-22",
+    "lastMessage": "FREEZE 2026-09-22-v3.6-ethabind: ETHA working->binding (Visser 9/20 'we are finally at the point'). 11 names unchanged. "
   },
   "probe_source.textClipping": {
     "exists": true,
@@ -310,30 +318,21 @@ export const FILE_STATUS: Record<string, FileState> = {
     "sizeBytes": 211,
     "mtime": "2026-07-27"
   },
-  "src/components/Methodology.tsx": {
-    "exists": false,
-    "tracked": false,
-    "dirty": false,
-    "ignored": false,
-    "kind": "file",
-    "lastCommit": "2026-08-25",
-    "lastMessage": "remove orphaned Methodology.tsx and its registry entries"
-  },
   "src/data/systemMap.ts": {
     "exists": true,
     "tracked": true,
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 27992,
-    "mtime": "2026-09-09",
+    "sizeBytes": 28883,
+    "mtime": "2026-09-28",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-07",
-    "lastMessage": "systemMap: repoint canonical worksheet to v34_worksheet.html, add 9/07 snapshot. Deployed weights unchanged - no freeze "
+    "lastCommit": "2026-09-22",
+    "lastMessage": "FREEZE 2026-09-22-v3.6-ethabind: ETHA working->binding (Visser 9/20 'we are finally at the point'). 11 names unchanged. "
   },
   "system_changelog": {
     "exists": false,
@@ -341,14 +340,44 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "kind": "table"
   },
+  "src/main.tsx": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 230,
+    "mtime": "2026-04-06",
+    "imports": 2,
+    "importedBy": [],
+    "reachable": true,
+    "lastCommit": "2026-04-06",
+    "lastMessage": "initial commit"
+  },
+  "src/App.tsx": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 349,
+    "mtime": "2026-04-08",
+    "imports": 1,
+    "importedBy": [
+      "src/main.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-04-08",
+    "lastMessage": "dashboard UI"
+  },
   "src/components/Dashboard.tsx": {
     "exists": true,
     "tracked": true,
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 16803,
-    "mtime": "2026-09-02",
+    "sizeBytes": 26759,
+    "mtime": "2026-09-25",
     "imports": 7,
     "importedBy": [
       "src/App.tsx",
@@ -362,8 +391,166 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/TradingTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-01",
-    "lastMessage": "fetchFearGreed: iterate candidate KXFEAR events by expiry rather than only the nearest, with a 500 OI floor; sentiment t"
+    "lastCommit": "2026-09-25",
+    "lastMessage": "Stat cards: F&G shows band + probability pill, rename to CNN Fear & Greed Index / Inflation"
+  },
+  "src/components/SystemTab.tsx": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 29345,
+    "mtime": "2026-09-18",
+    "imports": 5,
+    "importedBy": [
+      "src/components/Dashboard.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-09-18",
+    "lastMessage": "System tab reads the live snapshot: drifted sleeves vs frozen target, flag code/data version disagreement"
+  },
+  "src/data/fileStatus.ts": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 13790,
+    "mtime": "2026-09-09",
+    "imports": 0,
+    "importedBy": [
+      "src/components/SystemTab.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-09-09",
+    "lastMessage": "System tab live: holdings from BASE_PORTFOLIO, voices from voiceCards, v3.4 cascade replaces v3.3 composite"
+  },
+  "src/data/bookSnapshot.ts": {
+    "exists": true,
+    "tracked": true,
+    "dirty": true,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 2101,
+    "mtime": "2026-09-28",
+    "imports": 0,
+    "importedBy": [
+      "src/components/SystemTab.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-09-22",
+    "lastMessage": "FREEZE 2026-09-22-v3.6-ethabind: ETHA working->binding (Visser 9/20 'we are finally at the point'). 11 names unchanged. "
+  },
+  "src/components/TradingTab.tsx": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 16041,
+    "mtime": "2026-07-21",
+    "imports": 7,
+    "importedBy": [
+      "src/components/Dashboard.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-07-21",
+    "lastMessage": "Switch to Manrope everywhere (unified, incl. numbers); shrink Trading EW Phase card"
+  },
+  "src/components/TradingChart.tsx": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 12548,
+    "mtime": "2026-07-22",
+    "imports": 3,
+    "importedBy": [
+      "src/components/TradingTab.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-07-22",
+    "lastMessage": "Fix empty last-price tag; add projected wave numbers, A label, and target distance filter"
+  },
+  "src/components/IndicatorPanel.tsx": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 3759,
+    "mtime": "2026-07-21",
+    "imports": 1,
+    "importedBy": [
+      "src/components/TradingTab.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-07-21",
+    "lastMessage": "Trading tab: match stat-card font to site style, move indicators below chart (Option C auto-fit)"
+  },
+  "src/lib/elliott.ts": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 13188,
+    "mtime": "2026-07-22",
+    "imports": 1,
+    "importedBy": [
+      "src/components/TradingChart.tsx",
+      "src/components/TradingTab.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-07-22",
+    "lastMessage": "Fix empty last-price tag; add projected wave numbers, A label, and target distance filter"
+  },
+  "src/lib/technicals.ts": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 4325,
+    "mtime": "2026-07-21",
+    "imports": 0,
+    "importedBy": [
+      "src/components/TradingChart.tsx",
+      "src/components/TradingTab.tsx",
+      "src/lib/elliott.ts"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-07-20",
+    "lastMessage": "Trading tab: BTC technical workbench (algo Elliott Wave, 50/200 MAs, anchored VWAP, volume profile, RSI, fib targets)"
+  },
+  "src/lib/indicator_docs.ts": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 3088,
+    "mtime": "2026-07-21",
+    "imports": 0,
+    "importedBy": [
+      "src/components/TradingTab.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-07-20",
+    "lastMessage": "Trading tab: BTC technical workbench (algo Elliott Wave, 50/200 MAs, anchored VWAP, volume profile, RSI, fib targets)"
+  },
+  "build_file_map.cjs": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 16163,
+    "mtime": "2026-09-18",
+    "lastCommit": "2026-09-18",
+    "lastMessage": "Book snapshot regenerates on every build; harden BASE_PORTFOLIO parse against padding"
   },
   ".gitignore": {
     "exists": true,
@@ -376,13 +563,14 @@ export const FILE_STATUS: Record<string, FileState> = {
     "lastCommit": "2026-09-07",
     "lastMessage": "cycle_packet.py: read-only weekly state gather (queue item 16)"
   },
-  ".github/workflows/": {
+  ".github/workflows/daily-cron.yml": {
     "exists": true,
     "tracked": true,
     "dirty": false,
     "ignored": false,
-    "kind": "dir",
-    "childCount": 2,
+    "kind": "file",
+    "sizeBytes": 2351,
+    "mtime": "2026-08-29",
     "lastCommit": "2026-08-29",
     "lastMessage": "Actually apply the backup cron patch"
   },
@@ -451,47 +639,21 @@ export const FILE_STATUS: Record<string, FileState> = {
     "reachable": true,
     "lastCommit": "2026-04-08",
     "lastMessage": "add supabase"
-  },
-  "src/components/HistoryLog.tsx": {
-    "exists": false,
-    "tracked": false,
-    "dirty": true,
-    "ignored": false,
-    "kind": "file",
-    "lastCommit": "2026-07-23",
-    "lastMessage": "Sweep remaining serif/mono fonts to Manrope (SignalRadar themes + other components)"
   }
 }
 
 export const DECLARED_BUT_MISSING: string[] = [
-  "Weekly_Workflow.md",
   "conviction_tags.json",
   "theme_engine_config.json",
-  "theme_weights.json",
-  "rescore_current_v3.py",
-  "patch_gate_no_dma.py",
-  "src/components/Methodology.tsx",
-  "src/components/HistoryLog.tsx"
+  "theme_weights.json"
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "src/data/bookSnapshot.ts"
+  "v34_worksheet_2026-09-28.html"
 ]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */
 export const ORPHANED_SOURCE: string[] = []
 
 /** reachable at runtime but absent from systemMap.ts — the map has a blind spot */
-export const UNDECLARED_SOURCE: string[] = [
-  "src/App.tsx",
-  "src/components/IndicatorPanel.tsx",
-  "src/components/SystemTab.tsx",
-  "src/components/TradingChart.tsx",
-  "src/components/TradingTab.tsx",
-  "src/data/bookSnapshot.ts",
-  "src/data/fileStatus.ts",
-  "src/lib/elliott.ts",
-  "src/lib/indicator_docs.ts",
-  "src/lib/technicals.ts",
-  "src/main.tsx"
-]
+export const UNDECLARED_SOURCE: string[] = []
