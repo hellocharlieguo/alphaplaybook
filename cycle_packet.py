@@ -29,7 +29,7 @@ SYSMAP = "src/data/systemMap.ts"
 CORRJSON = "corr_matrix.json"
 
 BOOK_TRENDS = {
-    "1 AI buildout": ["AIPO", "SOXX", "GLW", "ASML", "COPX"],
+    "1 AI buildout": ["AIPO", "SOXX", "GLW", "COPX"],   # ASML cut 2026-09-14
     "2 AI applied": ["AMZN", "LLY"],
     "3 Tokenized rails": ["HOOD", "ETHA"],
     "4 Monetary": ["GLDM", "IBIT", "SLV"],
@@ -44,7 +44,7 @@ QUEUE = [
     ("9  actions/checkout not @v5", ".github/workflows", r"checkout@v[1-4]"),
     ("20 corr truncates to shortest", "pull_correlations.py", r"set\.intersection"),
     ("21 .bak files inside src/", "src/data", r"\.bak"),
-    ("23 pull_candidates TICKERS stale", "pull_candidates.cjs", r"SKHY"),
+    ("23 pull_candidates TICKERS stale", "pull_candidates.cjs", r"held book \(15\)"),
 ]
 
 buf = []
@@ -146,6 +146,8 @@ def sec_book():
     pairs = re.findall(r"ticker:\s*'([A-Z]+)'[^}]*?base_weight:\s+([0-9.]+)", src, re.S)
     if not pairs:
         pairs = re.findall(r"'([A-Z]{2,5})'[^\n]*?base_weight:\s+([0-9.]+)", src)
+    if not pairs:   # live form: `  LLY:   { base_weight: 13.1, ...` (unquoted key)
+        pairs = re.findall(r"^\s*([A-Z]{2,5}):\s*\{\s*base_weight:\s+([0-9.]+)", src, re.M)
     if pairs:
         tot = sum(float(x[1]) for x in pairs)
         w(f"{len(pairs)} names, weights sum to **{tot:.1f}**\n")
@@ -375,6 +377,27 @@ def sec_corr():
         except Exception as e:
             w(f"\n_Could not diff worksheet CORR ({type(e).__name__})._")
 
+# ------------------------------------------------- H. book changes (5.11)
+def sec_book_changes():
+    if not os.path.exists("book_changes.cjs") or not os.path.exists("theme_map.json"):
+        w("**book_changes.cjs or theme_map.json not found — section H not run.**")
+        return
+    cap = CAND_CACHE if os.path.exists(CAND_CACHE) else None
+    if not cap:
+        last, age = _newest_cache()
+        if not last:
+            w("**No technicals capture — section H not run.**"); return
+        cap = os.path.join(OUTDIR, last)
+        if age != TODAY:
+            w(f"**STALE: projections use the {age} capture.**\n")
+    r = subprocess.run(f"node book_changes.cjs {cap}", shell=True,
+                       capture_output=True, text=True, timeout=300)
+    if r.returncode != 0:
+        w(f"**book_changes.cjs FAILED (exit {r.returncode}).**\n```")
+        w((r.stdout + r.stderr)[:3000]); w("```"); return
+    body = r.stdout.split("\n", 1)[1] if r.stdout.startswith("## H") else r.stdout
+    w(body.rstrip())
+
 # ------------------------------------------------- G. queue
 def sec_queue():
     w("| item | target | state |")
@@ -413,6 +436,7 @@ def main():
     section("E · Technicals", lambda: sec_tech(a.pull))
     section("F · Correlations", sec_corr)
     section("G · Queue checks", sec_queue)
+    section("H · Book changes — derived candidates (workflow 5.11)", sec_book_changes)
 
     body = "\n".join(buf) + "\n"
     open(OUT, "w", encoding="utf-8").write(body)
