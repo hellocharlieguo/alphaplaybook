@@ -8,6 +8,10 @@
  *   cd ~/Desktop/alphaplaybook
  *   node book_changes.cjs                                   # newest packet/candidates_*.txt
  *   node book_changes.cjs packet/candidates_2026-09-28.txt
+ *   node book_changes.cjs --with COIN,BE                     # JOINT projection: all added at once
+ *   node book_changes.cjs --with COIN:working/leader,BE@power_grid
+ *        SYM[:timing/quality][@theme] — overrides default timing/quality; @theme picks the row
+ *        when a vehicle maps to more than one theme (COIN: tokenization, agent_payments).
  *
  * Read-only. Verdicts: ADD · ADD-WHEN · NOT WORTH IT · ALREADY HELD · NO DATA.
  * A name with no measured correlation is PROVISIONAL: the engine drops it from
@@ -28,7 +32,11 @@ const engine = () => new Function('document', 'window', 'innerWidth', 'innerHeig
   js + '\n;return {calc,getD:()=>D,R:()=>R,CORR};')(stub, { addEventListener() {} }, 1000, 1000, {})
 
 const TM = JSON.parse(fs.readFileSync('theme_map.json', 'utf8')).themes
-let capFile = process.argv[2]
+const argv = process.argv.slice(2)
+const wi = argv.indexOf('--with')
+const WITH = wi >= 0 ? (argv[wi + 1] || '').split(',').filter(Boolean) : null
+if (wi >= 0) argv.splice(wi, 2)
+let capFile = argv[0]
 if (!capFile) {
   const c = fs.readdirSync('packet').filter(f => /^candidates_.*\.txt$/.test(f)).sort()
   if (!c.length) { console.error('No packet/candidates_*.txt — run cycle_packet.py --pull first.'); process.exit(1) }
@@ -44,6 +52,58 @@ for (const line of fs.readFileSync(capFile, 'utf8').split('\n')) {
 const B = engine(); B.calc(); const R0 = B.R(); const CORR = B.CORR
 const held = new Set(Object.keys(R0))
 const f1 = x => x.toFixed(1), sg = x => (x >= 0 ? '+' : '') + x.toFixed(1)
+
+if (WITH) { joint(WITH); process.exit(0) }
+
+function joint(specs) {
+  const W = engine(); const D = W.getD(); const added = []
+  for (const spec of specs) {
+    const m = spec.match(/^([A-Z0-9.]+)(?::(\w+)\/(\w+))?(?:@(\w+))?$/)
+    if (!m) { console.error(`Bad --with entry: ${spec}`); process.exit(1) }
+    const [, sym, tOv, qOv, thOv] = m
+    const hits = Object.entries(TM).filter(([k, t]) => (!thOv || k === thOv) && t.vehicles && t.vehicles[sym]
+      && !String(t.vehicles[sym]).startsWith('in_etf') && t.vehicles[sym] !== 'held')
+    if (!hits.length) { console.error(`${sym}: not a candidate in theme_map.json${thOv ? ' under ' + thOv : ''}`); process.exit(1) }
+    const [key, th] = hits[0]
+    if (!th.trend) { console.error(`${sym}: theme ${key} has no trend assigned`); process.exit(1) }
+    const td = TD[sym]; if (!td || td[1] == null || td[2] == null) { console.error(`${sym}: no usable technicals in ${capFile}`); process.exit(1) }
+    const timing = tOv || (th.timing && (th.timing[sym] || th.timing._)) || 'forward'
+    const quality = qOv || (th.quality && th.quality[sym]) || 'leader'
+    D.find(t => t[0] === th.trend)[4].push([th.sub || key, sym, timing, quality, td, 0, '', 1])
+    const [px, d50, d200] = td, st = (px - d50) / d50 * 100
+    added.push({ sym, key, trend: th.trend, timing, quality, st, v200: (px - d200) / d200 * 100,
+                 entryOK: st <= MAX_STRETCH && px >= d200, corr: !!CORR['1y'][sym] })
+    if (hits.length > 1 && !thOv) console.log(`note: ${sym} maps to ${hits.map(h => h[0]).join(', ')} — using ${key} (override with ${sym}@theme)`)
+  }
+  W.calc(); const R = W.R()
+  console.log(`## H+ · Joint projection — ${specs.join(' + ')}\n`)
+  console.log(`Engine: v34_worksheet.html · technicals: ${capFile}\n`)
+  console.log('| added | theme | timing/quality | stretch | vs 200 | entry | corr measured |')
+  console.log('|---|---|---|---:|---:|---|---|')
+  for (const a of added) console.log(`| **${a.sym}** | ${a.key} | ${a.timing}/${a.quality} | ${f1(a.st)}% | ${sg(a.v200)}% | ${a.entryOK ? 'OK' : '**NOT MET**'} | ${a.corr ? 'yes' : '**NO**'} |`)
+  const trends = [...new Set(Object.values(R).map(r => r.trend))]
+  console.log('\n| trend | now | joint | Δ | N_eff now → joint |')
+  console.log('|---|---:|---:|---:|---|')
+  for (const t of trends) {
+    const now = Object.values(R0).find(r => r.trend === t), jt = Object.values(R).find(r => r.trend === t)
+    console.log(`| ${t} | ${f1(now.twt)} | ${f1(jt.twt)} | ${sg(jt.twt - now.twt)} | ${now.br.toFixed(3)} → ${jt.br.toFixed(3)} |`)
+  }
+  console.log('\n| name | now | joint | Δ |')
+  console.log('|---|---:|---:|---:|')
+  let turn = 0
+  for (const r of Object.values(R).sort((a, b) => b.w - a.w)) {
+    const now = R0[r.tkr] ? R0[r.tkr].w : 0; turn += Math.abs(r.w - now)
+    console.log(`| ${R0[r.tkr] ? r.tkr : '**' + r.tkr + '** (new)'} | ${R0[r.tkr] ? f1(now) : '—'} | ${f1(r.w)} | ${sg(r.w - now)} |`)
+  }
+  const small = added.filter(a => R[a.sym].w < MIN_ADD).map(a => `${a.sym} ${f1(R[a.sym].w)}%`)
+  console.log(`\nTurnover vs current engine book: **${f1(turn)}pp** (Σ|Δ|). Names: ${Object.keys(R0).length} → ${Object.keys(R).length}.`)
+  if (small.length) console.log(`**Below the ${MIN_ADD}% ADD line in the joint book:** ${small.join(', ')}.`)
+  const bad = added.filter(a => !a.entryOK).map(a => a.sym)
+  if (bad.length) console.log(`**Entry not met:** ${bad.join(', ')} — these are ADD-WHEN, not ADD.`)
+  const nc = added.filter(a => !a.corr).map(a => a.sym)
+  if (nc.length) console.log(`**No measured correlations:** ${nc.join(', ')} — breadth understated; run pull_correlations.py + inject_corr.py.`)
+  console.log(`\n"now" is the current worksheet engine on this capture, not the deployed freeze.`)
+}
 
 console.log(`## H · Book changes — derived candidates (workflow 5.11)\n`)
 console.log(`Engine: v34_worksheet.html · technicals: ${capFile} · ADD needs >= ${MIN_ADD}% · entry: stretch <= ${MAX_STRETCH}% and above 200-DMA · duplicate: 1y corr > ${DUP_CORR}\n`)
