@@ -7,7 +7,10 @@
  *
  * Must be run from the repo root (so it finds .env.local in the current dir).
  *
- * Convergence (tiered 3-voice model — mirrors convergence_voices in signal_model_config.json):
+ * 2026-09-29 (workflow 5.11): derived vehicles from theme_map.json are pulled automatically;
+ * ZaStocks tickers are NOT inputs (his themes count, his names do not) — no pull, no leg.
+ *
+ * Convergence (tiered voice model — mirrors convergence_voices in signal_model_config.json):
  *   Visser leg   = in the live BASE_PORTFOLIO (book) OR a logged Visser mention (<=120d)
  *   Camillo leg  = a positive Camillo ledger row (<=75d)
  *   ZaStocks leg = a positive ZaStocks ledger row (<=45d) — CORROBORATION-ONLY: counts
@@ -55,11 +58,23 @@ const TICKERS = [
   // BSOL listed 2025-10-28 (~215 sessions) - short of the 1y window; GSOL has
   // longer history via its pre-uplisting trust. Expect a partial 1y series.
   'BSOL', 'GSOL',
-  // --- held book (15) ---
+  // --- held book + memory/lithography look-through names (book = 11 as of v3.7) ---
   'AIPO','SOXX','MU','GLW','SNDK', 'SKHY', 'WDC', 'NVDA', 'MRVL','ASML','LLY','AMZN','HOOD','IBIT','GLDM','ETHA','COPX','SLV','SGOV',
   // --- standing watch / graduation candidates ---
   'FLNC','MSTR','TEM','PLTR','VST','COIN','CRCL','DELL','INTC','RDDT','LITE','COHR','SOFI','AAOI'
 ];
+// Derived vehicles (Weekly Workflow 5.11). Held names come from the book; in-ETF,
+// private and 'none' entries are not pulled.
+function themeMapTickers(path = 'theme_map.json') {
+  try {
+    const tm = JSON.parse(fs.readFileSync(path, 'utf8')).themes || {}
+    const s = new Set()
+    for (const t of Object.values(tm))
+      for (const [sym, st] of Object.entries(t.vehicles || {}))
+        if ((st === 'candidate' || st === 'watch') && !sym.startsWith('PRIV:')) s.add(sym.toUpperCase())
+    return [...s]
+  } catch (e) { console.error(`theme_map.json not read (${e.message}) — derived vehicles not pulled.`); return [] }
+}
 // full funnel book + CRCL (Tokenization 2nd-seat candidate), pulled same-date so the
 // deploy weights are all computed on consistent technicals. Ledger names (Camillo /
 // ZaStocks / Visser mentions) are merged in below at runtime.
@@ -145,7 +160,7 @@ function computeLenses(ticker, ledger, book) {
   const U = ticker.toUpperCase()
   const visser = book.has(U) || legFor('Visser', U, ledger)   // book OR logged mention
   const camillo = legFor('Camillo', U, ledger)
-  let zastocks = legFor('ZaStocks', U, ledger)
+  let zastocks = false   // 2026-09-29: ZaStocks tickers are not inputs (workflow 5.11)
   const zaSeen = zastocks
   if (CONV.zastocksCorroborationOnly && zastocks && !(visser || camillo)) zastocks = false
   const voices = [visser && 'Visser', camillo && 'Camillo', zastocks && 'ZaStocks'].filter(Boolean)
@@ -176,8 +191,11 @@ function computeLenses(ticker, ledger, book) {
 
   // --- merge ledger names (Camillo / ZaStocks / Visser) AND the live book into the pull set ---
   const pullSet = new Set(TICKERS.map(t => t.toUpperCase()))
+  const derived = themeMapTickers()
+  for (const t of derived) pullSet.add(t)
+  if (derived.length) console.log(`theme_map.json: ${derived.length} derived vehicles merged into the pull set\n`)
   if (ledgerOn) {
-    for (const r of ledger) pullSet.add(String(r.ticker).toUpperCase())
+    for (const r of ledger) if (r.voice !== 'ZaStocks') pullSet.add(String(r.ticker).toUpperCase())
     for (const t of book) pullSet.add(t)   // always pull every live BASE_PORTFOLIO name so a rescore has all seats
   }
   const pullList = [...pullSet]

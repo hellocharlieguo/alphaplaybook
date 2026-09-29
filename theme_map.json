@@ -1,0 +1,191 @@
+{
+ "_doc": "Theme -> asset derivation. Voices name themes (any voice); tickers are DERIVED here, never taken from a voice directly (ZaStocks tickers are never inputs). Engine decides whether and how much. Maintained each cycle by Weekly Workflow 5.11. 'lex' is a case-insensitive regex matched on cleaned transcript text. Vehicle status: held | in_etf (look-through, verified pct + as_of) | candidate | watch | private | none.",
+ "_revised": "2026-09-29",
+ "themes": {
+  "power_grid": {
+   "trend": "1 AI buildout",
+   "sub": "power/grid",
+   "lex": "\\bpower (?:grid|constraint|demand)|\\belectricity\\b|\\bthe grid\\b|\\bnuclear\\b|\\bphysical world\\b|\\belectrons\\b",
+   "vehicles": {
+    "AIPO": "held",
+    "VST": "candidate",
+    "BE": "candidate",
+    "FLNC": "candidate"
+   }
+  },
+  "semis_compute": {
+   "trend": "1 AI buildout",
+   "sub": "semis basket",
+   "lex": "\\bcompute\\b|\\bsemiconductors?\\b|\\bsemis\\b|\\bchips?\\b|\\bGPUs?\\b|\\bCPUs?\\b|\\binference\\b|\\btoken (?:numbers|usage)\\b",
+   "vehicles": {
+    "SOXX": "held",
+    "INTC": "in_etf:SOXX:10.20:2026-09-24",
+    "AMD": "in_etf:SOXX:9.58:2026-09-24",
+    "NVDA": "in_etf:SOXX:7.29:2026-09-24",
+    "AVGO": "in_etf:SOXX:6.78:2026-09-24",
+    "MRVL": "in_etf:SOXX:4.39:2026-09-24",
+    "ARM": "candidate"
+   }
+  },
+  "memory": {
+   "trend": "1 AI buildout",
+   "sub": "memory",
+   "lex": "\\bmemory\\b(?! of)|\\bHBM\\b|\\bDRAM\\b|\\bNAND\\b|\\bmicron\\b",
+   "vehicles": {
+    "MU": "in_etf:SOXX:8.08:2026-09-24",
+    "SKHY": "in_etf:SOXX:3.11:2026-09-24"
+   },
+   "note": "DRAM/HBM only - pure vehicles MU and SK hynix are both inside SOXX; Samsung has no US listing. SNDK is NAND (post-spin) and sits under storage. Max-demand WAVE_DEMAND row with no direct holding. 'memory' also matches agent-memory talk - read the quote."
+  },
+  "storage_nearline": {
+   "trend": "1 AI buildout",
+   "sub": "storage / nearline",
+   "lex": "\\bstorage\\b|\\bhard drives?\\b|\\bnearline\\b",
+   "vehicles": {
+    "WDC": "candidate",
+    "SNDK": "candidate"
+   },
+   "note": "Post-spin: SNDK = NAND flash, WDC = HDD/nearline."
+  },
+  "optical": {
+   "trend": "1 AI buildout",
+   "sub": "optical",
+   "lex": "\\boptical\\b|\\bfiber\\b|\\bphotonics?\\b|\\bco-?packaged\\b",
+   "vehicles": {
+    "GLW": "held",
+    "LITE": "candidate",
+    "COHR": "candidate",
+    "AAOI": "candidate"
+   }
+  },
+  "lithography": {
+   "trend": "1 AI buildout",
+   "sub": "lithography",
+   "lex": "\\blithography\\b|\\bEUV\\b|\\bASML\\b",
+   "vehicles": {
+    "ASML": "in_etf:SOXX:1.39:2026-09-24"
+   }
+  },
+  "copper_input": {
+   "trend": "1 AI buildout",
+   "sub": "copper input",
+   "lex": "\\bcopper\\b|\\belectrification\\b|\\bphysical world\\b",
+   "vehicles": {
+    "COPX": "held"
+   }
+  },
+  "distribution": {
+   "trend": "2 AI applied",
+   "sub": "distribution",
+   "lex": "\\bdistribution\\b|\\blogistics\\b|\\bfulfill?ment\\b|\\bAWS\\b|\\bcloud (?:bill|revenue)\\b",
+   "vehicles": {
+    "AMZN": "held"
+   }
+  },
+  "ai_biology": {
+   "trend": "2 AI applied",
+   "sub": "proprietary data",
+   "lex": "\\bdrug discovery\\b|\\bbiotech\\b|\\bpharma\\w*\\b|\\bhealth ?care\\b|\\bbiology\\b|\\bcrisp[eo]r\\b|\\bgene editing\\b",
+   "vehicles": {
+    "LLY": "held",
+    "TEM": "candidate",
+    "ABCL": "candidate"
+   }
+  },
+  "consumer_agent_platform": {
+   "trend": "2 AI applied",
+   "sub": "consumer agent platform",
+   "lex": "\\bconsumer agents?\\b|\\bpersonal (?:agent|assistant)s?\\b|\\bmuse\\b",
+   "vehicles": {
+    "META": "watch",
+    "AAPL": "none",
+    "GOOGL": "none"
+   },
+   "note": "2026-09-28: all three voices named it; Visser negative on the stocks ('I think the disappointment will come'). Value flows to compute - already held."
+  },
+  "settlement": {
+   "trend": "3 Tokenized rails",
+   "sub": "settlement layer",
+   "lex": "\\bethereum\\b|\\bsettlement\\b|\\bsmart contracts?\\b",
+   "vehicles": {
+    "ETHA": "held"
+   }
+  },
+  "tokenization": {
+   "trend": "3 Tokenized rails",
+   "sub": "brokerage rails",
+   "lex": "\\btokeni[sz]\\w*\\b|\\bstock tokens\\b|\\bon-?chain\\b|\\breal.world assets\\b|\\bRWA\\b",
+   "vehicles": {
+    "HOOD": "held",
+    "COIN": "candidate"
+   }
+  },
+  "speed_layer": {
+   "trend": "3 Tokenized rails",
+   "sub": "speed layer",
+   "lex": "\\bsol[ao]na\\b|\\bsalana\\b|\\bcrypto speed\\b|\\bspeed layer\\b",
+   "vehicles": {
+    "GSOL": "candidate",
+    "BSOL": "candidate"
+   },
+   "note": "Visser 9/07 'three horsemen' (Solana = speed); named 9/20, 9/27. BSOL history too short for corr window - use GSOL."
+  },
+  "agent_payments": {
+   "trend": "3 Tokenized rails",
+   "sub": "agent payments",
+   "lex": "\\bstable ?coins?\\b|\\bagentic payments?\\b|\\bpayment protocols?\\b|\\bprogrammable money\\b|\\bguard ?rails\\b",
+   "vehicles": {
+    "CRCL": "candidate",
+    "COIN": "candidate",
+    "PRIV:STRIPE": "private"
+   }
+  },
+  "bitcoin": {
+   "trend": "4 Monetary",
+   "sub": "bitcoin",
+   "lex": "\\bbitcoin\\b",
+   "vehicles": {
+    "IBIT": "held",
+    "MSTR": "candidate"
+   }
+  },
+  "gold": {
+   "trend": "4 Monetary",
+   "sub": "gold",
+   "lex": "\\bgold\\b(?!man)",
+   "vehicles": {
+    "GLDM": "held"
+   }
+  },
+  "silver": {
+   "trend": "4 Monetary",
+   "sub": "silver",
+   "lex": "\\bsilver\\b",
+   "vehicles": {
+    "SLV": "held"
+   }
+  },
+  "robotics": {
+   "trend": null,
+   "sub": null,
+   "lex": "\\bhumanoids?\\b|\\brobot(?:ics|s)?\\b|\\bself.driving\\b|\\bembodied\\b",
+   "vehicles": {},
+   "note": "Vehicles NOT YET DERIVED. Named by Visser, Camillo, ZaStocks 9/21-27. Research on first qualifying cycle."
+  },
+  "space": {
+   "trend": null,
+   "sub": null,
+   "lex": "\\bspace (?:is a group|stocks|group|exposure|names)\\b|\\bsatellites?\\b|\\brocket launch\\w*\\b",
+   "vehicles": {},
+   "note": "Vehicles NOT YET DERIVED. ZaStocks theme 9/27 - his tickers are not inputs."
+  },
+  "short_friction": {
+   "trend": null,
+   "sub": null,
+   "lex": "\\bfriction\\b|\\bmiddlem[ae]n\\b",
+   "vehicles": {},
+   "note": "Long-only book: avoided, not shorted. Logged for context.",
+   "long_only_skip": true
+  }
+ }
+}
