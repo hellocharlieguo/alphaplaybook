@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'SOXX now working',  blurb: 'Visser: \u201cthe infrastructure trade has a catalyst.\u201d SOXX rung 0.80 \u2192 0.92 \u2014 its top holdings are Intel and AMD. Override retired; trend 25.0 on the engine\u2019s own number.', binding: true },
-  { name: 'AI Applied',      tag: 'AMZN top seat',     blurb: 'AMZN 3.9% under its 50-DMA, best entry band \u2014 13.9, largest in the book. Visser expects Mag 7 multiple compression; Camillo is buying weakness.' },
-  { name: 'Tokenized Rails', tag: '44 of 46 above 50',  blurb: '\u201cThis, my friends, is a bull market.\u201d ETHA stretch eased 26.5% \u2192 19.4%, band back to 0.85 \u2014 12.5 \u2192 13.2.' },
-  { name: 'Monetary',        tag: 'IBIT now working',  blurb: '\u201cBitcoin doesn\u2019t fit in that fundamental argument.\u201d One rung down, 12.1 \u2192 11.3. GLDM and SLV below their 200-DMAs, 16.9% entry-paused.' },
+  { name: 'AI Buildout',     tag: 'Chips at the top',   blurb: 'Visser: \u201cthe infrastructure trade has a catalyst.\u201d Chips (SOXX, led by Intel and AMD) now rated at peak demand; theme 25 \u2192 27.', binding: true },
+  { name: 'AI Applied',      tag: 'Amazon cut to 9.5',  blurb: 'AI assistants contest Amazon\u2019s lead and Visser expects big-tech valuations to shrink. Theme 26 \u2192 21; Eli Lilly 11.8.' },
+  { name: 'Tokenized Rails', tag: 'Coinbase added',    blurb: 'Coinbase joins at 7.5 on Visser\u2019s tokenization and agent-payments themes. Theme 20 \u2192 24; Ethereum 9.1, Robinhood 7.5.' },
+  { name: 'Monetary',        tag: 'Bitcoin leads',     blurb: 'Bitcoin 12.3, the largest holding. Gold 8.0 and silver 7.2 rated lower \u2014 \u201cthis is not a liquidity debasement trade.\u201d' },
 ]
 
 interface Holding { ticker?: string; category?: string }

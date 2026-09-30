@@ -25,8 +25,8 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-09-28T22:53:07.885Z",
-  "commit": "4c19845",
+  "generatedAt": "2026-09-30T14:02:48.039Z",
+  "commit": "7be4501",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
@@ -77,10 +77,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 94046,
-    "mtime": "2026-09-28",
-    "lastCommit": "2026-09-22",
-    "lastMessage": "FREEZE 2026-09-22-v3.6-ethabind: ETHA working->binding (Visser 9/20 'we are finally at the point'). 11 names unchanged. "
+    "sizeBytes": 94138,
+    "mtime": "2026-09-30",
+    "lastCommit": "2026-09-28",
+    "lastMessage": "FREEZE 2026-09-28-v3.7-ibitsoxx: IBIT binding->working (Visser 9/26 'Bitcoin doesn't fit in that fundamental argument'),"
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
@@ -104,16 +104,16 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 12493,
-    "mtime": "2026-09-28",
+    "sizeBytes": 12341,
+    "mtime": "2026-09-30",
     "imports": 0,
     "importedBy": [
       "src/components/SignalRecap.tsx",
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-23",
-    "lastMessage": "voiceCards: restore ZaStocks name in subtitle (dropped in 7698265)"
+    "lastCommit": "2026-09-28",
+    "lastMessage": "voiceCards: rewrite 2026-09-28 cards in plain language"
   },
   "Weekly_Workflow_v34_section.md": {
     "exists": true,
@@ -121,10 +121,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 13675,
-    "mtime": "2026-09-14",
-    "lastCommit": "2026-09-14",
-    "lastMessage": "workflow: protocol correction - transcripts are Project-files only, Claude runs the nomination sweep"
+    "sizeBytes": 16203,
+    "mtime": "2026-09-29",
+    "lastCommit": "2026-09-29",
+    "lastMessage": "Workflow 5.11: theme-derived book changes. cycle_scan v2 (theme-first, ZaStocks tickers excluded), theme_map.json, book_"
   },
   "pull_candidates.cjs": {
     "exists": true,
@@ -132,10 +132,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 11331,
-    "mtime": "2026-09-07",
-    "lastCommit": "2026-09-07",
-    "lastMessage": "voiceCards 2026-09-07 cycle: Visser 9/5-9/6, ZaStocks 9/1-9/7. Camillo stale, untouched. Add BSOL/GSOL to correlation + "
+    "sizeBytes": 12468,
+    "mtime": "2026-09-29",
+    "lastCommit": "2026-09-29",
+    "lastMessage": "Workflow 5.11: theme-derived book changes. cycle_scan v2 (theme-first, ZaStocks tickers excluded), theme_map.json, book_"
   },
   "conviction_tags.sql": {
     "exists": true,
@@ -195,15 +195,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 3949,
-    "mtime": "2026-09-28",
+    "sizeBytes": 3852,
+    "mtime": "2026-09-30",
     "imports": 1,
     "importedBy": [
       "src/components/SignalRecap.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-22",
-    "lastMessage": "FREEZE 2026-09-22-v3.6-ethabind: ETHA working->binding (Visser 9/20 'we are finally at the point'). 11 names unchanged. "
+    "lastCommit": "2026-09-28",
+    "lastMessage": "FREEZE 2026-09-28-v3.7-ibitsoxx: IBIT binding->working (Visser 9/26 'Bitcoin doesn't fit in that fundamental argument'),"
   },
   "src/components/Portfolio.tsx": {
     "exists": true,
@@ -282,10 +282,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 17331,
-    "mtime": "2026-09-07",
-    "lastCommit": "2026-09-07",
-    "lastMessage": "corr: 19 symbols/252 sessions, GSOL as SOL proxy (BSOL 215 closes truncated all series). Reinject worksheet"
+    "sizeBytes": 42685,
+    "mtime": "2026-09-29",
+    "lastCommit": "2026-09-29",
+    "lastMessage": "pull_correlations: pairwise alignment (closes queue 20), theme_map candidate universe, corr_meta.json session sidecar. M"
   },
   "pull_correlations.py": {
     "exists": true,
@@ -293,10 +293,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 2762,
-    "mtime": "2026-09-07",
-    "lastCommit": "2026-09-07",
-    "lastMessage": "corr: 19 symbols/252 sessions, GSOL as SOL proxy (BSOL 215 closes truncated all series). Reinject worksheet"
+    "sizeBytes": 4752,
+    "mtime": "2026-09-29",
+    "lastCommit": "2026-09-29",
+    "lastMessage": "pull_correlations: pairwise alignment (closes queue 20), theme_map candidate universe, corr_meta.json session sidecar. M"
   },
   "v34_worksheet.html": {
     "exists": true,
@@ -304,10 +304,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 86717,
-    "mtime": "2026-09-28",
-    "lastCommit": "2026-09-22",
-    "lastMessage": "FREEZE 2026-09-22-v3.6-ethabind: ETHA working->binding (Visser 9/20 'we are finally at the point'). 11 names unchanged. "
+    "sizeBytes": 111917,
+    "mtime": "2026-09-30",
+    "lastCommit": "2026-09-29",
+    "lastMessage": "pull_correlations: pairwise alignment (closes queue 20), theme_map candidate universe, corr_meta.json session sidecar. M"
   },
   "probe_source.textClipping": {
     "exists": true,
@@ -325,14 +325,14 @@ export const FILE_STATUS: Record<string, FileState> = {
     "ignored": false,
     "kind": "file",
     "sizeBytes": 28883,
-    "mtime": "2026-09-28",
+    "mtime": "2026-09-30",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-22",
-    "lastMessage": "FREEZE 2026-09-22-v3.6-ethabind: ETHA working->binding (Visser 9/20 'we are finally at the point'). 11 names unchanged. "
+    "lastCommit": "2026-09-28",
+    "lastMessage": "FREEZE 2026-09-28-v3.7-ibitsoxx: IBIT binding->working (Visser 9/26 'Bitcoin doesn't fit in that fundamental argument'),"
   },
   "system_changelog": {
     "exists": false,
@@ -416,15 +416,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 13790,
-    "mtime": "2026-09-09",
+    "sizeBytes": 18456,
+    "mtime": "2026-09-28",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-09",
-    "lastMessage": "System tab live: holdings from BASE_PORTFOLIO, voices from voiceCards, v3.4 cascade replaces v3.3 composite"
+    "lastCommit": "2026-09-28",
+    "lastMessage": "FREEZE 2026-09-28-v3.7-ibitsoxx: IBIT binding->working (Visser 9/26 'Bitcoin doesn't fit in that fundamental argument'),"
   },
   "src/data/bookSnapshot.ts": {
     "exists": true,
@@ -432,15 +432,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 2101,
-    "mtime": "2026-09-28",
+    "sizeBytes": 2220,
+    "mtime": "2026-09-30",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-22",
-    "lastMessage": "FREEZE 2026-09-22-v3.6-ethabind: ETHA working->binding (Visser 9/20 'we are finally at the point'). 11 names unchanged. "
+    "lastCommit": "2026-09-28",
+    "lastMessage": "FREEZE 2026-09-28-v3.7-ibitsoxx: IBIT binding->working (Visser 9/26 'Bitcoin doesn't fit in that fundamental argument'),"
   },
   "src/components/TradingTab.tsx": {
     "exists": true,
@@ -649,7 +649,7 @@ export const DECLARED_BUT_MISSING: string[] = [
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "v34_worksheet_2026-09-28.html"
+  "v34_worksheet_2026-09-30.html"
 ]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */

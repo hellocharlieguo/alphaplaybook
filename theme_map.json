@@ -1,6 +1,6 @@
 {
  "_doc": "Theme -> asset derivation. Voices name themes (any voice); tickers are DERIVED here, never taken from a voice directly (ZaStocks tickers are never inputs). Engine decides whether and how much. Maintained each cycle by Weekly Workflow 5.11. 'lex' is a case-insensitive regex matched on cleaned transcript text. Vehicle status: held | in_etf (look-through, verified pct + as_of) | candidate | watch | private | none.",
- "_revised": "2026-09-29",
+ "_revised": "2026-09-30",
  "themes": {
   "power_grid": {
    "trend": "1 AI buildout",
@@ -8,10 +8,11 @@
    "lex": "\\bpower (?:grid|constraint|demand)|\\belectricity\\b|\\bthe grid\\b|\\bnuclear\\b|\\bphysical world\\b|\\belectrons\\b",
    "vehicles": {
     "AIPO": "held",
-    "VST": "candidate",
-    "BE": "candidate",
+    "VST": "in_etf:AIPO:1.59:2026-09-24",
+    "BE": "in_etf:AIPO:5.10:2026-09-24",
     "FLNC": "candidate"
-   }
+   },
+   "note": "AIPO look-through verified 2026-09-24 (stockanalysis.com): ETN 8.58%, GEV 8.13%, BE 5.10%, VST 1.59%. FLNC not in top 25."
   },
   "semis_compute": {
    "trend": "1 AI buildout",
@@ -117,7 +118,7 @@
    "lex": "\\btokeni[sz]\\w*\\b|\\bstock tokens\\b|\\bon-?chain\\b|\\breal.world assets\\b|\\bRWA\\b",
    "vehicles": {
     "HOOD": "held",
-    "COIN": "candidate"
+    "COIN": "held"
    }
   },
   "speed_layer": {
@@ -136,7 +137,7 @@
    "lex": "\\bstable ?coins?\\b|\\bagentic payments?\\b|\\bpayment protocols?\\b|\\bprogrammable money\\b|\\bguard ?rails\\b",
    "vehicles": {
     "CRCL": "candidate",
-    "COIN": "candidate",
+    "COIN": "held",
     "PRIV:STRIPE": "private"
    }
   },
