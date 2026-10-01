@@ -2,6 +2,12 @@
 // AlphaPlaybook — voice ledger cards. Extracted from SignalRecap.tsx 2026-08-17
 // so the weekly cycle is a one-file edit. Render logic stays in the component.
 //
+// 10/01: cards rewritten as pure summaries of what each voice said — no portfolio weights,
+// no 'we' reactions (C). Book changes live in the worksheet and Portfolio tab, not here.
+// Visser card headline 10/01: 'LONG SCARCITY, SHORT ABUNDANCE' -> 'LONG SPEED, SHORT FRICTION'
+// (his framing at the DC Freedom Tech talk, repeated 9/26 Pomp and 9/27 solo). Added a
+// 'The framework' entry explaining it in plain language; scarcity kept as the compute half.
+//
 // 2026-10-01 mid-week freeze — '2026-10-01-v3.9-glwmu'. GLW out, MU in (memory as part of
 // compute: 'chips and power'). AI Buildout held at 27.1. Book: IBIT 12.3, LLY 12.4, ETHA 9.1,
 // AMZN 9.0, AIPO 8.1, GLDM 8.0, COIN 7.5, HOOD 7.5, SLV 7.2, SOXX 6.7, MU 6.3, COPX 5.9.
@@ -65,32 +71,37 @@ export interface VoiceSection {
 export const VOICES: VoiceSection[] = [
   {
     name: 'Visser',
-    headline: 'LONG SCARCITY, SHORT ABUNDANCE',
-    subtitle: 'Jordi Visser — macro framework for the physical AI upgrade',
+    headline: 'LONG SPEED, SHORT FRICTION',
+    subtitle: 'Jordi Visser — macro framework for the AI and crypto economy',
     asOf: 'September 27, 2026',
     active: true,
     themes: [
       {
+        name: 'The framework',
+        editorial: `"You want to be long speed. You want to be short friction." That was the theme of Visser's talk in Washington in late September, and he repeated it on both podcasts that week. His argument is that AI has made the world move at machine speed while much of the economy still runs at human speed. Speed means the things AI agents need and use: computing power, meaning chips, memory and the electricity to run them, and crypto, which he sees as how agents will pay each other. Friction means businesses that sit in the middle and charge for it, such as payment networks and software subscriptions, along with companies that depend on cheap borrowing. He calls the result "a bear market inside a bull market": the fast side keeps rising while the slow side gets squeezed. It updates his earlier framing of long scarcity, short abundance. The physical bottlenecks of building AI still matter and are the compute half of speed, but crypto now sits alongside compute, and gold and silver matter less because, in his words, this is "not a liquidity debasement trade."`,
+        tickers: [],
+      },
+      {
         name: 'AI Buildout',
-        editorial: `For the first time since he called a mid-cycle slowdown in AI hardware over the summer, Visser said the slowdown looks finished. His view is that consumer AI assistants like Meta's Muse will use far more computing power than anyone planned for. That is why chipmakers like Intel and AMD jumped this week, and he expects the group to get back to its highs. We raised our view on chips as a result, and now rate them at the top of their cycle. Our chip fund already holds Intel and AMD as its two largest positions, so the point Camillo and ZaStocks also made, that processors are becoming the bottleneck for AI assistants, is already covered. One caution: Visser is still moving some of his own smaller AI holdings into crypto. Power, fiber optics and copper got no direct mention; his closest comment was that the physical world is now the limiting factor for AI. He has also been clear that the trade people missed last year was memory, and that "this trade is still the same: you want to be long compute speed." So we replaced our fiber-optics holding (Corning), a theme no one has discussed since mid-August, with Micron, giving the portfolio direct exposure to the memory chips AI assistants depend on. AI Buildout stays at about 27%: power 8.1%, chips 6.7%, Micron 6.3% and copper 5.9%. Micron has risen about fivefold in a year, so it is also the most volatile holding in this theme.`,
-        tickers: ['AIPO', 'GLW', 'SOXX', 'COPX'],
+        editorial: `Visser said the mid-cycle slowdown he called in AI hardware over the summer looks finished. Pointing to his own basket of AI infrastructure stocks, he said it just had its best week in months, more of its names are trending up, and "the infrastructure trade has a catalyst." The catalyst is consumer AI assistants like Meta's Muse, which he expects to use far more computing power than anyone planned for: "the compute needs just went up exponentially." That is why he says Intel and AMD jumped, and he expects the group to get back to its highs. He tied it back to memory chips, the trade he says the smartest investors missed last year because they did not understand compute: "This trade is still the same. You want to be long compute speed." On the physical side, he cited Blackstone's John Gray that the limiting factor for AI is now the physical world. One caution: he is still moving some of his own smaller AI holdings into crypto, which he sees as the bigger story.`,
+        tickers: ['AIPO', 'SOXX', 'MU', 'COPX'],
         bucket: 'AI Buildout',
       },
       {
         name: 'AI Applied',
-        editorial: `This was the week Meta launched Muse, its personal AI assistant. Visser calls it the biggest market driver right now and expects it to set the tone for the next year. He has handed his own assistant his cards, bank accounts, fraud alerts and paperwork. He is more cautious about what it means for the big tech stocks. He expects excitement in the short run, but thinks competition from AI and tokenization will push their valuations down over time, and he reads Amazon's dispute with Meta over Muse as the start of that competition. Camillo remains Amazon's strongest supporter, but with AI assistants now sitting between shoppers and stores, we no longer treat Amazon as the clear leader of this theme, and we take Visser's view that big tech valuations will shrink over time. Amazon falls from 13.9% to 9.0%. We are also less sure how investors will profit from AI applications overall, so the theme shrinks from about 26% to 21% of the portfolio. Eli Lilly, which Visser backed again on healthcare and drug discovery, is 12.4%.`,
+        editorial: `This was the week Meta launched Muse, its personal AI assistant. Visser calls it the biggest market driver right now and expects it to set the tone for the next twelve months. He has handed his own assistant his cards, bank accounts, fraud alerts and paperwork, and says people who have not used one cannot judge it yet. He is more cautious about what it means for the big tech stocks. He expects excitement in the short run but not outperformance, and believes competition from AI and tokenization will push their valuations down over time: "in the end, I believe all of them will go through multiple compression." He reads Amazon's standoff with Meta over Muse as the start of that competition. He was positive on healthcare, saying drug discovery and biology will be among the biggest beneficiaries of AI and citing Insilico Medicine's work with Eli Lilly. He also doubts the advertising model will survive, because AI agents will choose on price and reviews rather than ads.`,
         tickers: ['LLY', 'AMZN'],
         bucket: 'AI Applied',
       },
       {
         name: 'Tokenized Rails',
-        editorial: `Visser's framing this week: AI assistants are to crypto what the iPhone was to the internet. The payment rails were built over fifteen years, and assistants are finally the users who need them. He thinks crypto is early in a long bull market, partly because Wall Street still doesn't cover it, and says managers of very large funds are now calling him about tokenization. His 46-name crypto index is up 31% this month, with 44 of the 46 names in uptrends. BlackRock published a paper on AI and digital assets and moved some of its portfolios onto the blockchain, and the New York Stock Exchange announced a tokenization partnership. We added Coinbase at 7.5%. Visser's index holds it, you can already trade it through Meta's new assistant, and he expects AI assistants to pay each other in crypto and stablecoins. We also raised our confidence in the theme as a whole, so it grows from about 20% to 24% of the portfolio. Ethereum is 9.1% (down from 13.2%, now sharing the role with Solana in our view) and Robinhood 7.5%. He spoke well of Robinhood's blockchain work, but its hint that "something big is coming" is only an announcement. He mentioned Solana again; we are tracking it but not buying.`,
-        tickers: ['ETHA', 'HOOD'],
+        editorial: `Visser's framing: AI assistants are to crypto what the iPhone was to the internet. The payment rails were built over fifteen years, and agents are finally the users who need them. He thinks crypto is early in a long bull market, partly because Wall Street still does not cover it, and says managers of very large funds are now calling him about tokenization. "This, my friends, is a bull market." He pointed to BlackRock's paper on AI and digital assets and its move to put model portfolios on the blockchain, the New York Stock Exchange's tokenization partnership, and Coinbase being tradable through Muse. He spoke well of Robinhood's blockchain and pointed listeners to its CEO as the clearest voice on tokenization. He mentioned Solana moving independently, and highlighted Stripe and payment protocols built for machine-to-machine transactions.`,
+        tickers: ['ETHA', 'HOOD', 'COIN'],
         bucket: 'Tokenized Rails',
       },
       {
         name: 'Monetary',
-        editorial: `This theme got the week's clearest downgrade. Visser says crypto has moved past a trade driven by easy money and into one driven by real use, and that Bitcoin doesn't fit that story the way the rest of crypto does. It is also why gold isn't rising even as interest rates climb. His advice was to stop watching Bitcoin and watch the broader crypto index instead, which rose 31% this month against Bitcoin's 6.5%. Two weeks ago he called Bitcoin the one thing he was certain of for thirty years. Now he ranks it behind the rest of crypto, much as he ranked gold behind other assets in late August. We lowered our view on Bitcoin on Monday, then restored it on Wednesday: he still expects Bitcoin to rise as crypto grows, and it is 12.3% of the portfolio, the largest single holding. His test stands: Bitcoin below $80,000 by the end of October would be a problem. Gold and silver are the ones we now rate lower, at 8.0% and 7.2%, since his view is that this is not a money-printing trade. Both are well off their highs, and we are not adding to either for now.`,
+        editorial: `Visser says crypto has moved from a trade driven by easy money to one driven by real use, and that Bitcoin does not fit that story the way the rest of crypto does: "Bitcoin doesn't fit in that fundamental argument." His advice was to watch the broader crypto index rather than Bitcoin, which rose 6.5% this month against the index's 31%. He still expects Bitcoin to benefit as the ecosystem grows, and noted it rose about 60% in a quarter when interest rates also rose. He set a test the week before: Bitcoin below $80,000 by the end of October would be a problem. On gold he was blunt: "gold's not going higher. This is not a liquidity debasement trade. This is a fundamental trade." Silver got only a passing mention, in the context of investors being rattled by the recent selloff in precious metals.`,
         tickers: ['IBIT', 'GLDM', 'SLV'],
         bucket: 'Monetary',
       },
@@ -105,13 +116,13 @@ export const VOICES: VoiceSection[] = [
     themes: [
       {
         name: 'AI Applied',
-        editorial: `Amazon is still his biggest holding, and he says he would rather see it fall so he can buy more at a lower price. His case is that Amazon wins either way from Muse: Meta will pay Amazon a lot to run it on Amazon's cloud, and Amazon's warehouses and delivery network still matter when an AI assistant does the shopping. He thinks it is too early to crown a winner in AI shopping and expects companies to partner rather than compete. That support matters more this week, because Visser is more doubtful about big tech. His biggest trade of the week was a short-term options bet on Meta around the Muse launch, which he calls his second most profitable single day in twenty years. He keeps it separate from his long-term holdings.`,
+        editorial: `Amazon is still his biggest holding, and he says he would rather see it fall so he can buy more at a lower price. His case is that Amazon wins either way from Muse: Meta will pay Amazon a lot to run it on Amazon's cloud, and Amazon's warehouses and delivery network still matter when an AI assistant does the shopping. He thinks it is too early to crown a winner in AI shopping and expects companies to partner rather than compete. His biggest trade of the week was a short-term options bet on Meta around the Muse launch, which he calls his second most profitable single day in twenty years. He keeps it separate from his long-term holdings.`,
         tickers: ['AMZN', 'META'],
         curated: true,
       },
       {
         name: 'Agentic AI / CPU',
-        editorial: `On Monday he grouped AMD and Intel with Amazon and Meta: "what a time to be in the agentic AI / CPU biz." It was a theme rather than a detailed case, but it points at the same chipmakers Visser highlighted. Both are already the two largest positions in our chip fund, so we are not adding them separately. His lesson for the week: spend the weekend researching a catalyst you can act on now, rather than debating what AI might look like years from now.`,
+        editorial: `On Monday he grouped AMD and Intel with Amazon and Meta: "what a time to be in the agentic AI / CPU biz." It was a theme rather than a detailed case. His lesson for the week: spend the weekend researching a catalyst you can act on now, rather than debating what AI might look like years from now, and remember that taking considered risks is how big returns are made.`,
         tickers: ['AMD', 'INTC'],
         curated: true,
       },
@@ -120,19 +131,19 @@ export const VOICES: VoiceSection[] = [
   {
     name: 'ZaStocks',
     headline: 'SURVIVE THE CHOP, THEN PRESS',
-    subtitle: 'ZaStocks (@ZaStocks) — chart-based trade ideas, gathered weekly; ideas to check, never buys on their own',
+    subtitle: 'ZaStocks (@ZaStocks) — chart-based trade ideas, gathered weekly',
     asOf: 'wk of Sep 21 – 27 · via Grok',
     active: true,
     themes: [
       {
         name: 'Leaders getting tight',
-        editorial: `His charts this week were market leaders holding just below their highs, which he reads as a sign of strength. Nvidia is trading in an unusually tight range for a stock that has defined this bull market. Palantir is acting like a leader again as it nears $200. Nebius is raising prices on strong demand while 21% of its shares are sold short. He also posted Arm, arguing that processors are becoming the bottleneck for AI assistants. That matches what Camillo and Visser said about chipmakers this week, and it supports our view on chips without adding a new holding. He called Meta's Muse the best consumer AI product since ChatGPT. None of these are portfolio holdings; we count them only when another voice agrees.`,
+        editorial: `His charts this week were market leaders holding just below their highs, which he reads as a sign of strength. Nvidia is trading in an unusually tight range for a stock that has defined this bull market. Palantir is acting like a leader again as it nears $200. Nebius is raising prices on strong demand while 21% of its shares are sold short. He also posted Arm, arguing that processors are becoming the bottleneck for AI assistants. He called Meta's Muse the best consumer AI product since ChatGPT, and compared the gloom around Oracle to the sentiment on Meta in 2022.`,
         tickers: ['NVDA', 'PLTR', 'NBIS', 'ARM'],
         curated: true,
       },
       {
         name: 'One more rally',
-        editorial: `His market view stayed bullish. He expects one more strong rally into year-end, like April to June, and notes that tech stocks are holding near their highs despite worries about Iran, interest rates, oil and an AI slowdown. A real resolution with Iran, he says, could set off a second dot-com-style run. He flagged space stocks as an overlooked group if the market strengthens: he is watching Rocket Lab and owns a space fund. His discipline this week was to follow price over headlines, and to step aside when conditions aren't right. His full Sunday report is paywalled again.`,
+        editorial: `His market view stayed bullish. He expects one more strong rally into year-end, like April to June, and notes that tech stocks are holding near their highs despite worries about Iran, interest rates, oil and an AI slowdown. A real resolution with Iran, he says, could set off a second dot-com-style run. He flagged space stocks as an overlooked group if the market strengthens, with Rocket Lab basing after its pullback. His discipline this week was to follow price over headlines, and to step aside when conditions are not right. His full Sunday report is paywalled again.`,
         tickers: ['RKLB', 'SPCX'],
         curated: true,
       },

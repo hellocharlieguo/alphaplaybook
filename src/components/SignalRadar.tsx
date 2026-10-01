@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'Micron in',          blurb: '\u201cThis trade is still the same \u2014 long compute speed.\u201d Micron replaces Corning: memory is part of compute. Theme held at 27.', binding: true },
-  { name: 'AI Applied',      tag: 'Amazon cut to 9.0',  blurb: 'AI assistants contest Amazon\u2019s lead and Visser expects big-tech valuations to shrink. Theme 21; Eli Lilly 12.4.' },
-  { name: 'Tokenized Rails', tag: 'Coinbase added',    blurb: 'Coinbase joins at 7.5 on Visser\u2019s tokenization and agent-payments themes. Theme 20 \u2192 24; Ethereum 9.1, Robinhood 7.5.' },
-  { name: 'Monetary',        tag: 'Bitcoin leads',     blurb: 'Bitcoin 12.3, the largest holding. Gold 8.0 and silver 7.2 rated lower \u2014 \u201cthis is not a liquidity debasement trade.\u201d' },
+  { name: 'AI Buildout',     tag: 'Compute has a catalyst', blurb: 'Visser: AI assistants will use far more computing power than planned \u2014 \u201cthe infrastructure trade has a catalyst.\u201d Memory is part of it: \u201cthis trade is still the same.\u201d', binding: true },
+  { name: 'AI Applied',      tag: 'Assistants arrive',     blurb: 'Meta\u2019s Muse launched. Visser expects excitement but shrinking big-tech valuations over time; positive on healthcare and drug discovery.' },
+  { name: 'Tokenized Rails', tag: 'Crypto bull market',    blurb: '\u201cThis, my friends, is a bull market.\u201d AI agents are crypto\u2019s iPhone moment, and Wall Street is starting to pay attention.' },
+  { name: 'Monetary',        tag: 'Not a debasement trade', blurb: '\u201cGold\u2019s not going higher.\u201d Bitcoin trails the wider crypto index; his line in the sand is $80,000 by end of October.' },
 ]
 
 interface Holding { ticker?: string; category?: string }
