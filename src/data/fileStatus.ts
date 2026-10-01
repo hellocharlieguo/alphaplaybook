@@ -25,8 +25,8 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-09-30T14:02:48.039Z",
-  "commit": "7be4501",
+  "generatedAt": "2026-10-01T13:32:25.316Z",
+  "commit": "19dffa7",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
@@ -77,10 +77,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 94138,
-    "mtime": "2026-09-30",
-    "lastCommit": "2026-09-28",
-    "lastMessage": "FREEZE 2026-09-28-v3.7-ibitsoxx: IBIT binding->working (Visser 9/26 'Bitcoin doesn't fit in that fundamental argument'),"
+    "sizeBytes": 94137,
+    "mtime": "2026-10-01",
+    "lastCommit": "2026-09-30",
+    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
@@ -104,16 +104,16 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 12341,
-    "mtime": "2026-09-30",
+    "sizeBytes": 13081,
+    "mtime": "2026-10-01",
     "imports": 0,
     "importedBy": [
       "src/components/SignalRecap.tsx",
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-28",
-    "lastMessage": "voiceCards: rewrite 2026-09-28 cards in plain language"
+    "lastCommit": "2026-09-30",
+    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
   },
   "Weekly_Workflow_v34_section.md": {
     "exists": true,
@@ -195,15 +195,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 3852,
-    "mtime": "2026-09-30",
+    "sizeBytes": 3838,
+    "mtime": "2026-10-01",
     "imports": 1,
     "importedBy": [
       "src/components/SignalRecap.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-28",
-    "lastMessage": "FREEZE 2026-09-28-v3.7-ibitsoxx: IBIT binding->working (Visser 9/26 'Bitcoin doesn't fit in that fundamental argument'),"
+    "lastCommit": "2026-09-30",
+    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
   },
   "src/components/Portfolio.tsx": {
     "exists": true,
@@ -304,10 +304,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 111917,
-    "mtime": "2026-09-30",
-    "lastCommit": "2026-09-29",
-    "lastMessage": "pull_correlations: pairwise alignment (closes queue 20), theme_map candidate universe, corr_meta.json session sidecar. M"
+    "sizeBytes": 110319,
+    "mtime": "2026-10-01",
+    "lastCommit": "2026-09-30",
+    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
   },
   "probe_source.textClipping": {
     "exists": true,
@@ -324,15 +324,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 28883,
-    "mtime": "2026-09-30",
+    "sizeBytes": 28880,
+    "mtime": "2026-10-01",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-28",
-    "lastMessage": "FREEZE 2026-09-28-v3.7-ibitsoxx: IBIT binding->working (Visser 9/26 'Bitcoin doesn't fit in that fundamental argument'),"
+    "lastCommit": "2026-09-30",
+    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
   },
   "system_changelog": {
     "exists": false,
@@ -416,15 +416,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18456,
-    "mtime": "2026-09-28",
+    "sizeBytes": 18504,
+    "mtime": "2026-09-30",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-28",
-    "lastMessage": "FREEZE 2026-09-28-v3.7-ibitsoxx: IBIT binding->working (Visser 9/26 'Bitcoin doesn't fit in that fundamental argument'),"
+    "lastCommit": "2026-09-30",
+    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
   },
   "src/data/bookSnapshot.ts": {
     "exists": true,
@@ -432,15 +432,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 2220,
-    "mtime": "2026-09-30",
+    "sizeBytes": 2214,
+    "mtime": "2026-10-01",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-28",
-    "lastMessage": "FREEZE 2026-09-28-v3.7-ibitsoxx: IBIT binding->working (Visser 9/26 'Bitcoin doesn't fit in that fundamental argument'),"
+    "lastCommit": "2026-09-30",
+    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
   },
   "src/components/TradingTab.tsx": {
     "exists": true,
@@ -649,7 +649,7 @@ export const DECLARED_BUT_MISSING: string[] = [
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "v34_worksheet_2026-09-30.html"
+  "v34_worksheet_2026-10-01.html"
 ]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */

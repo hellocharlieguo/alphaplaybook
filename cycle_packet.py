@@ -29,7 +29,7 @@ SYSMAP = "src/data/systemMap.ts"
 CORRJSON = "corr_matrix.json"
 
 BOOK_TRENDS = {
-    "1 AI buildout": ["AIPO", "SOXX", "GLW", "COPX"],   # ASML cut 2026-09-14
+    "1 AI buildout": ["AIPO", "SOXX", "MU", "COPX"],   # ASML cut 2026-09-14; GLW -> MU 2026-10-01
     "2 AI applied": ["AMZN", "LLY"],
     "3 Tokenized rails": ["HOOD", "ETHA", "COIN"],   # COIN added 2026-09-30
     "4 Monetary": ["GLDM", "IBIT", "SLV"],

@@ -1,6 +1,6 @@
 {
  "_doc": "Theme -> asset derivation. Voices name themes (any voice); tickers are DERIVED here, never taken from a voice directly (ZaStocks tickers are never inputs). Engine decides whether and how much. Maintained each cycle by Weekly Workflow 5.11. 'lex' is a case-insensitive regex matched on cleaned transcript text. Vehicle status: held | in_etf (look-through, verified pct + as_of) | candidate | watch | private | none.",
- "_revised": "2026-09-30",
+ "_revised": "2026-10-01",
  "themes": {
   "power_grid": {
    "trend": "1 AI buildout",
@@ -33,7 +33,7 @@
    "sub": "memory",
    "lex": "\\bmemory\\b(?! of)|\\bHBM\\b|\\bDRAM\\b|\\bNAND\\b|\\bmicron\\b",
    "vehicles": {
-    "MU": "in_etf:SOXX:8.08:2026-09-24",
+    "MU": "held",
     "SKHY": "in_etf:SOXX:3.11:2026-09-24"
    },
    "note": "DRAM/HBM only - pure vehicles MU and SK hynix are both inside SOXX; Samsung has no US listing. SNDK is NAND (post-spin) and sits under storage. Max-demand WAVE_DEMAND row with no direct holding. 'memory' also matches agent-memory talk - read the quote."
@@ -53,7 +53,7 @@
    "sub": "optical",
    "lex": "\\boptical\\b|\\bfiber\\b|\\bphotonics?\\b|\\bco-?packaged\\b",
    "vehicles": {
-    "GLW": "held",
+    "GLW": "candidate",
     "LITE": "candidate",
     "COHR": "candidate",
     "AAOI": "candidate"
@@ -118,7 +118,7 @@
    "lex": "\\btokeni[sz]\\w*\\b|\\bstock tokens\\b|\\bon-?chain\\b|\\breal.world assets\\b|\\bRWA\\b",
    "vehicles": {
     "HOOD": "held",
-    "COIN": "held"
+    "COIN": "candidate"
    }
   },
   "speed_layer": {
@@ -137,7 +137,7 @@
    "lex": "\\bstable ?coins?\\b|\\bagentic payments?\\b|\\bpayment protocols?\\b|\\bprogrammable money\\b|\\bguard ?rails\\b",
    "vehicles": {
     "CRCL": "candidate",
-    "COIN": "held",
+    "COIN": "candidate",
     "PRIV:STRIPE": "private"
    }
   },

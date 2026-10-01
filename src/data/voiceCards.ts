@@ -2,7 +2,12 @@
 // AlphaPlaybook — voice ledger cards. Extracted from SignalRecap.tsx 2026-08-17
 // so the weekly cycle is a one-file edit. Render logic stays in the component.
 //
-// 2026-09-30 mid-week freeze — '2026-09-30-v3.8-coinamzn'. TICKER SET 11 -> 12: COIN added
+// 2026-10-01 mid-week freeze — '2026-10-01-v3.9-glwmu'. GLW out, MU in (memory as part of
+// compute: 'chips and power'). AI Buildout held at 27.1. Book: IBIT 12.3, LLY 12.4, ETHA 9.1,
+// AMZN 9.0, AIPO 8.1, GLDM 8.0, COIN 7.5, HOOD 7.5, SLV 7.2, SOXX 6.7, MU 6.3, COPX 5.9.
+// asOf unchanged: no new transcripts since 9/27.
+//
+// Superseded: 2026-09-30 mid-week freeze — '2026-09-30-v3.8-coinamzn'. TICKER SET 11 -> 12: COIN added
 // (workflow 5.11, derived from Visser's tokenization and agent-payment themes, 9/26-27).
 // AMZN quality leader -> contested. No new transcripts since 9/27, so every asOf stays put;
 // only the portfolio figures quoted in the editorials were refreshed.
@@ -67,13 +72,13 @@ export const VOICES: VoiceSection[] = [
     themes: [
       {
         name: 'AI Buildout',
-        editorial: `For the first time since he called a mid-cycle slowdown in AI hardware over the summer, Visser said the slowdown looks finished. His view is that consumer AI assistants like Meta's Muse will use far more computing power than anyone planned for. That is why chipmakers like Intel and AMD jumped this week, and he expects the group to get back to its highs. We raised our view on chips as a result, and now rate them at the top of their cycle. Our chip fund already holds Intel and AMD as its two largest positions, so the point Camillo and ZaStocks also made, that processors are becoming the bottleneck for AI assistants, is already covered. One caution: Visser is still moving some of his own smaller AI holdings into crypto. Power, fiber optics and copper got no direct mention; his closest comment was that the physical world is now the limiting factor for AI. With chips upgraded, AI Buildout rises to about 27% of the portfolio: power 8.5%, chips 7.0%, copper 6.1% and fiber optics 5.5%.`,
+        editorial: `For the first time since he called a mid-cycle slowdown in AI hardware over the summer, Visser said the slowdown looks finished. His view is that consumer AI assistants like Meta's Muse will use far more computing power than anyone planned for. That is why chipmakers like Intel and AMD jumped this week, and he expects the group to get back to its highs. We raised our view on chips as a result, and now rate them at the top of their cycle. Our chip fund already holds Intel and AMD as its two largest positions, so the point Camillo and ZaStocks also made, that processors are becoming the bottleneck for AI assistants, is already covered. One caution: Visser is still moving some of his own smaller AI holdings into crypto. Power, fiber optics and copper got no direct mention; his closest comment was that the physical world is now the limiting factor for AI. He has also been clear that the trade people missed last year was memory, and that "this trade is still the same: you want to be long compute speed." So we replaced our fiber-optics holding (Corning), a theme no one has discussed since mid-August, with Micron, giving the portfolio direct exposure to the memory chips AI assistants depend on. AI Buildout stays at about 27%: power 8.1%, chips 6.7%, Micron 6.3% and copper 5.9%. Micron has risen about fivefold in a year, so it is also the most volatile holding in this theme.`,
         tickers: ['AIPO', 'GLW', 'SOXX', 'COPX'],
         bucket: 'AI Buildout',
       },
       {
         name: 'AI Applied',
-        editorial: `This was the week Meta launched Muse, its personal AI assistant. Visser calls it the biggest market driver right now and expects it to set the tone for the next year. He has handed his own assistant his cards, bank accounts, fraud alerts and paperwork. He is more cautious about what it means for the big tech stocks. He expects excitement in the short run, but thinks competition from AI and tokenization will push their valuations down over time, and he reads Amazon's dispute with Meta over Muse as the start of that competition. Camillo remains Amazon's strongest supporter, but with AI assistants now sitting between shoppers and stores, we no longer treat Amazon as the clear leader of this theme, and we take Visser's view that big tech valuations will shrink over time. Amazon falls from 13.9% to 9.5%. We are also less sure how investors will profit from AI applications overall, so the theme shrinks from about 26% to 21% of the portfolio. Eli Lilly, which Visser backed again on healthcare and drug discovery, is 11.8%.`,
+        editorial: `This was the week Meta launched Muse, its personal AI assistant. Visser calls it the biggest market driver right now and expects it to set the tone for the next year. He has handed his own assistant his cards, bank accounts, fraud alerts and paperwork. He is more cautious about what it means for the big tech stocks. He expects excitement in the short run, but thinks competition from AI and tokenization will push their valuations down over time, and he reads Amazon's dispute with Meta over Muse as the start of that competition. Camillo remains Amazon's strongest supporter, but with AI assistants now sitting between shoppers and stores, we no longer treat Amazon as the clear leader of this theme, and we take Visser's view that big tech valuations will shrink over time. Amazon falls from 13.9% to 9.0%. We are also less sure how investors will profit from AI applications overall, so the theme shrinks from about 26% to 21% of the portfolio. Eli Lilly, which Visser backed again on healthcare and drug discovery, is 12.4%.`,
         tickers: ['LLY', 'AMZN'],
         bucket: 'AI Applied',
       },

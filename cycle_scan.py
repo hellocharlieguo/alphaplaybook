@@ -31,7 +31,7 @@ from datetime import date
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # The book as of 2026-09-30-v3.8-coinamzn. ASML removed 9/14; COIN added 9/30.
-BOOK = {"AIPO", "SOXX", "GLW", "COPX", "AMZN", "LLY", "HOOD", "ETHA", "COIN", "GLDM", "IBIT", "SLV"}
+BOOK = {"AIPO", "SOXX", "MU", "COPX", "AMZN", "LLY", "HOOD", "ETHA", "COIN", "GLDM", "IBIT", "SLV"}   # v3.9: GLW -> MU 10/01
 
 # Name aliases: HINTS only (Visser/Camillo). Garbled forms observed in transcripts.
 ALIASES = [

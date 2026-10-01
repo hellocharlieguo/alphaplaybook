@@ -12,8 +12,8 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'Chips at the top',   blurb: 'Visser: \u201cthe infrastructure trade has a catalyst.\u201d Chips (SOXX, led by Intel and AMD) now rated at peak demand; theme 25 \u2192 27.', binding: true },
-  { name: 'AI Applied',      tag: 'Amazon cut to 9.5',  blurb: 'AI assistants contest Amazon\u2019s lead and Visser expects big-tech valuations to shrink. Theme 26 \u2192 21; Eli Lilly 11.8.' },
+  { name: 'AI Buildout',     tag: 'Micron in',          blurb: '\u201cThis trade is still the same \u2014 long compute speed.\u201d Micron replaces Corning: memory is part of compute. Theme held at 27.', binding: true },
+  { name: 'AI Applied',      tag: 'Amazon cut to 9.0',  blurb: 'AI assistants contest Amazon\u2019s lead and Visser expects big-tech valuations to shrink. Theme 21; Eli Lilly 12.4.' },
   { name: 'Tokenized Rails', tag: 'Coinbase added',    blurb: 'Coinbase joins at 7.5 on Visser\u2019s tokenization and agent-payments themes. Theme 20 \u2192 24; Ethereum 9.1, Robinhood 7.5.' },
   { name: 'Monetary',        tag: 'Bitcoin leads',     blurb: 'Bitcoin 12.3, the largest holding. Gold 8.0 and silver 7.2 rated lower \u2014 \u201cthis is not a liquidity debasement trade.\u201d' },
 ]
