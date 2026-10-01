@@ -32,6 +32,11 @@ const TICKER_META: Record<string, { name: string; color: string }> = {
   COHR: { name: 'Coherent (Optical / Photonics)',    color: '#fb923c' },
   ENTG: { name: 'Entegris (Semi Chemicals)',         color: '#ec4899' },
   MU:   { name: 'Micron (Memory)',                   color: '#3b82f6' },
+  SOXX: { name: 'iShares Semiconductor ETF',         color: '#64748b' },
+  // Tokenization / agent payments
+  COIN: { name: 'Coinbase (Exchange / Agent Payments)', color: '#2563eb' },
+  // AI Application (distribution)
+  AMZN: { name: 'Amazon (Distribution / AWS)',       color: '#f59e0b' },
   // Power & Infrastructure
   AIPO: { name: 'Defiance AI & Power Infra ETF',     color: '#14b8a6' },
   // Physical Scarcity
@@ -184,6 +189,9 @@ export default function Portfolio({ snapshot, theme: t, portfolioValue }: Portfo
   const totalActualCost = allocations.reduce((s, a) => s + a.actualCost, 0)
   const cashRemainder = Math.max(0, portfolioValue - totalActualCost)
   const totalWeight = allocations.reduce((s, a) => s + a.weight, 0)
+  // Display order: highest current (drifted) weight first; cash last. (2026-10-01)
+  const rows = [...allocations].sort((a, b) =>
+    (a.symbol === 'SGOV' ? 1 : 0) - (b.symbol === 'SGOV' ? 1 : 0) || b.weight - a.weight)
 
   if (modelHoldings.length === 0) {
     return (
@@ -219,7 +227,7 @@ export default function Portfolio({ snapshot, theme: t, portfolioValue }: Portfo
               </tr>
             </thead>
             <tbody>
-              {allocations.map((a, i) => {
+              {rows.map((a, i) => {
                 const tech = technicals[a.symbol]
                 const pill = trendPill(a.symbol, a.price, tech)
                 const rsi = tech?.rsi14
@@ -227,7 +235,7 @@ export default function Portfolio({ snapshot, theme: t, portfolioValue }: Portfo
                 const momDown = !!tech?.mom?.down
                 const drift = a.weight - a.target
                 return (
-                  <tr key={a.symbol} style={{ borderBottom: i < allocations.length - 1 ? `1px solid ${t.border}` : 'none' }}>
+                  <tr key={a.symbol} style={{ borderBottom: i < rows.length - 1 ? `1px solid ${t.border}` : 'none' }}>
                     <td style={{ padding: '8px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 8, height: 8, borderRadius: 2, background: tickerColor(a.symbol) }} />
