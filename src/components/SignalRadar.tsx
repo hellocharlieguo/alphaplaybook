@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'Compute has a catalyst', blurb: 'Visser: AI assistants will use far more computing power than planned \u2014 \u201cthe infrastructure trade has a catalyst.\u201d Memory is part of it: \u201cthis trade is still the same.\u201d', binding: true },
-  { name: 'AI Applied',      tag: 'Assistants arrive',     blurb: 'Meta\u2019s Muse launched. Visser expects excitement but shrinking big-tech valuations over time; positive on healthcare and drug discovery.' },
-  { name: 'Tokenized Rails', tag: 'Crypto bull market',    blurb: '\u201cThis, my friends, is a bull market.\u201d AI agents are crypto\u2019s iPhone moment, and Wall Street is starting to pay attention.' },
-  { name: 'Monetary',        tag: 'Not a debasement trade', blurb: '\u201cGold\u2019s not going higher.\u201d Bitcoin trails the wider crypto index; his line in the sand is $80,000 by end of October.' },
+  { name: 'AI Buildout',     tag: 'Not enough compute',     blurb: 'Micron sees no point where memory supply catches up with demand. Visser: \u201cThe usage is going to skyrocket and we don\u2019t have enough compute.\u201d AI is also moving to phones, PCs and robots.', binding: true },
+  { name: 'AI Applied',      tag: 'Assistant wars',         blurb: 'Personal AI assistants are launching all at once, and Visser expects billions of users. He doubts big tech wins: they now fight over the same customers, which he calls \u201cvery, very difficult.\u201d' },
+  { name: 'Tokenized Rails', tag: 'Speed is safety',        blurb: 'AI agents need instant settlement \u2014 money stuck in transit is a target for hackers. Ethereum is \u201ceffectively the internet,\u201d and Wall Street banks are building crypto labs.' },
+  { name: 'Monetary',        tag: 'Bitcoin over gold',      blurb: 'Bitcoin above $82,000 \u201cwas the confirmation of the bull trend.\u201d Gold \u201cbroke down\u201d and bitcoin did not follow; he says the commodities trade is not working.' },
 ]
 
 interface Holding { ticker?: string; category?: string }
