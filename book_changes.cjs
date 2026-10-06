@@ -9,18 +9,24 @@
  *   node book_changes.cjs                                   # newest packet/candidates_*.txt
  *   node book_changes.cjs packet/candidates_2026-09-28.txt
  *   node book_changes.cjs --with COIN,BE                     # JOINT projection: all added at once
+ *   node book_changes.cjs --with MU --drop GLW               # swap: add and remove in one projection
  *   node book_changes.cjs --with COIN:working/leader,BE@power_grid
  *        SYM[:timing/quality][@theme] — overrides default timing/quality; @theme picks the row
  *        when a vehicle maps to more than one theme (COIN: tokenization, agent_payments).
  *
  * Read-only. Verdicts: ADD · ADD-WHEN · NOT WORTH IT · ALREADY HELD · NO DATA.
+ *
+ * ALREADY HELD is a LOOK-THROUGH test (2026-10-01, replaces the '>2% of an ETF' rule):
+ * a name inside a held ETF counts as held only when (its % of the ETF) x (the ETF's
+ * book weight) >= LOOK_MIN of the whole book. Below that it is scored like any other
+ * candidate, and correlation decides how much breadth it really adds.
  * A name with no measured correlation is PROVISIONAL: the engine drops it from
  * N_eff, so its trend-level effect is understated until pull_correlations.py covers it.
  * Defaults (workflow 5.11): timing 'forward' unless the theme carries a Visser
  * stage call ("timing" in theme_map); quality 'leader' unless set ("quality").
  */
 const fs = require('fs'), path = require('path')
-const MIN_ADD = 3.0, MAX_STRETCH = 25, DUP_CORR = 0.90
+const MIN_ADD = 3.0, MAX_STRETCH = 25, DUP_CORR = 0.90, LOOK_MIN = 1.5   // LOOK_MIN: % of the whole book
 
 const html = fs.readFileSync('v34_worksheet.html', 'utf8')
 const js = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n')
@@ -36,6 +42,9 @@ const argv = process.argv.slice(2)
 const wi = argv.indexOf('--with')
 const WITH = wi >= 0 ? (argv[wi + 1] || '').split(',').filter(Boolean) : null
 if (wi >= 0) argv.splice(wi, 2)
+const di = argv.indexOf('--drop')
+const DROP = di >= 0 ? (argv[di + 1] || '').split(',').filter(Boolean) : []
+if (di >= 0) argv.splice(di, 2)
 let capFile = argv[0]
 if (!capFile) {
   const c = fs.readdirSync('packet').filter(f => /^candidates_.*\.txt$/.test(f)).sort()
@@ -51,9 +60,15 @@ for (const line of fs.readFileSync(capFile, 'utf8').split('\n')) {
 // baseline
 const B = engine(); B.calc(); const R0 = B.R(); const CORR = B.CORR
 const held = new Set(Object.keys(R0))
+// look-through share of the whole book for an 'in_etf:ETF:pct:asof' status (null if the ETF is not held)
+function lookThrough(st) {
+  const [, etf, pct, asof] = String(st).split(':')
+  return R0[etf] ? { etf, pct: +pct, asof, book: (+pct / 100) * R0[etf].w } : { etf, pct: +pct, asof, book: 0 }
+}
+const isHeldLT = st => String(st).startsWith('in_etf') && lookThrough(st).book >= LOOK_MIN
 const f1 = x => x.toFixed(1), sg = x => (x >= 0 ? '+' : '') + x.toFixed(1)
 
-if (WITH) { joint(WITH); process.exit(0) }
+if (WITH || DROP.length) { joint(WITH || []); process.exit(0) }
 
 function joint(specs) {
   const W = engine(); const D = W.getD(); const added = []
@@ -62,7 +77,7 @@ function joint(specs) {
     if (!m) { console.error(`Bad --with entry: ${spec}`); process.exit(1) }
     const [, sym, tOv, qOv, thOv] = m
     const hits = Object.entries(TM).filter(([k, t]) => (!thOv || k === thOv) && t.vehicles && t.vehicles[sym]
-      && !String(t.vehicles[sym]).startsWith('in_etf') && t.vehicles[sym] !== 'held')
+      && !isHeldLT(t.vehicles[sym]) && t.vehicles[sym] !== 'held')
     if (!hits.length) { console.error(`${sym}: not a candidate in theme_map.json${thOv ? ' under ' + thOv : ''}`); process.exit(1) }
     const [key, th] = hits[0]
     if (!th.trend) { console.error(`${sym}: theme ${key} has no trend assigned`); process.exit(1) }
@@ -75,8 +90,13 @@ function joint(specs) {
                  entryOK: st <= MAX_STRETCH && px >= d200, corr: !!CORR['1y'][sym] })
     if (hits.length > 1 && !thOv) console.log(`note: ${sym} maps to ${hits.map(h => h[0]).join(', ')} — using ${key} (override with ${sym}@theme)`)
   }
+  for (const sym of DROP) {
+    let found = false
+    for (const t of D) { const i = t[4].findIndex(s => s[1] === sym); if (i >= 0) { t[4].splice(i, 1); found = true } }
+    if (!found) { console.error(`--drop ${sym}: not a holding`); process.exit(1) }
+  }
   W.calc(); const R = W.R()
-  console.log(`## H+ · Joint projection — ${specs.join(' + ')}\n`)
+  console.log(`## H+ · Joint projection — ${[...specs.map(s => '+' + s), ...DROP.map(s => '−' + s)].join(' ')}\n`)
   console.log(`Engine: v34_worksheet.html · technicals: ${capFile}\n`)
   console.log('| added | theme | timing/quality | stretch | vs 200 | entry | corr measured |')
   console.log('|---|---|---|---:|---:|---|---|')
@@ -95,6 +115,7 @@ function joint(specs) {
     const now = R0[r.tkr] ? R0[r.tkr].w : 0; turn += Math.abs(r.w - now)
     console.log(`| ${R0[r.tkr] ? r.tkr : '**' + r.tkr + '** (new)'} | ${R0[r.tkr] ? f1(now) : '—'} | ${f1(r.w)} | ${sg(r.w - now)} |`)
   }
+  for (const sym of DROP) { turn += R0[sym].w; console.log(`| ~~${sym}~~ (removed) | ${f1(R0[sym].w)} | — | ${sg(-R0[sym].w)} |`) }
   const small = added.filter(a => R[a.sym].w < MIN_ADD).map(a => `${a.sym} ${f1(R[a.sym].w)}%`)
   console.log(`\nTurnover vs current engine book: **${f1(turn)}pp** (Σ|Δ|). Names: ${Object.keys(R0).length} → ${Object.keys(R).length}.`)
   if (small.length) console.log(`**Below the ${MIN_ADD}% ADD line in the joint book:** ${small.join(', ')}.`)
@@ -106,14 +127,19 @@ function joint(specs) {
 }
 
 console.log(`## H · Book changes — derived candidates (workflow 5.11)\n`)
-console.log(`Engine: v34_worksheet.html · technicals: ${capFile} · ADD needs >= ${MIN_ADD}% · entry: stretch <= ${MAX_STRETCH}% and above 200-DMA · duplicate: 1y corr > ${DUP_CORR}\n`)
+console.log(`Engine: v34_worksheet.html · technicals: ${capFile} · ADD needs >= ${MIN_ADD}% · entry: stretch <= ${MAX_STRETCH}% and above 200-DMA · duplicate: 1y corr > ${DUP_CORR} · already held: look-through >= ${LOOK_MIN}% of book\n`)
 console.log('| theme | vehicle | status | stretch | vs 200 | nearest holding (1y / 3m) | projected | funded from | trend Δ | verdict |')
 console.log('|---|---|---|---:|---:|---|---:|---|---:|---|')
 const needCorr = new Set(), rows = []
 for (const [key, th] of Object.entries(TM)) {
   for (const [sym, st] of Object.entries(th.vehicles || {})) {
     if (st === 'held' || held.has(sym)) continue
-    if (st.startsWith('in_etf')) { const [, etf, pct] = st.split(':'); rows.push(`| ${key} | ${sym} | inside ${etf} ${pct}% | | | | | | | ALREADY HELD |`); continue }
+    let ltNote = ''
+    if (st.startsWith('in_etf')) {
+      const lt = lookThrough(st)
+      if (lt.book >= LOOK_MIN) { rows.push(`| ${key} | ${sym} | ${lt.pct}% of ${lt.etf} = ${lt.book.toFixed(2)}% of book | | | | | | | ALREADY HELD |`); continue }
+      ltNote = ` · ${lt.book.toFixed(2)}% via ${lt.etf}`
+    }
     if (st === 'private' || st === 'none' || sym.startsWith('PRIV:')) continue
     if (!th.trend) { rows.push(`| ${key} | ${sym} | ${st} | | | | | | | TREND UNASSIGNED — assign first |`); continue }
     const td = TD[sym]
@@ -144,7 +170,8 @@ for (const [key, th] of Object.entries(TM)) {
     else if (!entryOK) verdict = `ADD-WHEN ${px < d200 ? 'it reclaims its 200-DMA' : `stretch < ${MAX_STRETCH}%`}`
     else verdict = 'ADD'
     if (!near) verdict = verdict.startsWith('ADD') ? 'PROVISIONAL ' + verdict + ' — measure corr first' : verdict + ' · corr not measured'
-    rows.push(`| ${key} | ${sym} | ${st} · ${timing}/${quality} | ${f1(stretch)}% | ${sg(v200)}% | ${near ? `${near.m} ${near.c1.toFixed(2)} / ${near.c3 == null ? '—' : near.c3.toFixed(2)}` : '—'} | ${f1(w)}% | ${fund || '—'} | ${sg(tΔ)} | **${verdict}** |`)
+    if (st === 'watch') verdict = `WATCH ONLY — not eligible (theme_map note) · engine alone: ${verdict}`
+    rows.push(`| ${key} | ${sym} | ${st.startsWith('in_etf') ? 'look-through' + ltNote : st} · ${timing}/${quality} | ${f1(stretch)}% | ${sg(v200)}% | ${near ? `${near.m} ${near.c1.toFixed(2)} / ${near.c3 == null ? '—' : near.c3.toFixed(2)}` : '—'} | ${f1(w)}% | ${fund || '—'} | ${sg(tΔ)} | **${verdict}** |`)
   }
 }
 rows.forEach(r => console.log(r))

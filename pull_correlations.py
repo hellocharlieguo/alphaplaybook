@@ -27,7 +27,8 @@ def theme_map_syms(path="theme_map.json"):
     except Exception as e:
         print(f"  theme_map.json not read ({e}) - base universe only"); return []
     return sorted({s for t in tm.values() for s, st in t.get("vehicles", {}).items()
-                   if st in ("candidate", "watch") and not s.startswith("PRIV:")})
+                   if (st in ("candidate", "watch") or str(st).startswith("in_etf"))
+                   and not s.startswith("PRIV:")})   # 10/05: in_etf look-through names join (5.11 step 3)
 
 SYMS = list(dict.fromkeys(BASE_SYMS + theme_map_syms()))
 MIN_PAIR = 200            # common sessions below this = flagged, still written

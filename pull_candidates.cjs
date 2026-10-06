@@ -71,7 +71,7 @@ function themeMapTickers(path = 'theme_map.json') {
     const s = new Set()
     for (const t of Object.values(tm))
       for (const [sym, st] of Object.entries(t.vehicles || {}))
-        if ((st === 'candidate' || st === 'watch') && !sym.startsWith('PRIV:')) s.add(sym.toUpperCase())
+        if ((st === 'candidate' || st === 'watch' || String(st).startsWith('in_etf')) && !sym.startsWith('PRIV:')) s.add(sym.toUpperCase())  // 10/05: look-through names join
     return [...s]
   } catch (e) { console.error(`theme_map.json not read (${e.message}) — derived vehicles not pulled.`); return [] }
 }

@@ -25,13 +25,13 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-10-01T13:32:25.316Z",
-  "commit": "19dffa7",
+  "generatedAt": "2026-10-06T01:22:17.911Z",
+  "commit": "e001ea3",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
   "ignored": 3,
-  "modified": 6,
+  "modified": 8,
   "undeclared": 1,
   "orphanedSource": 0,
   "undeclaredSource": 0
@@ -77,10 +77,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 94137,
-    "mtime": "2026-10-01",
-    "lastCommit": "2026-09-30",
-    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
+    "sizeBytes": 94126,
+    "mtime": "2026-10-06",
+    "lastCommit": "2026-10-01",
+    "lastMessage": "FREEZE 2026-10-01-v3.9-glwmu: GLW -> MU (memory as part of compute; optical silent 46d). AI buildout held 27.1. Look-thr"
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
@@ -104,16 +104,16 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 13081,
-    "mtime": "2026-10-01",
+    "sizeBytes": 14008,
+    "mtime": "2026-10-06",
     "imports": 0,
     "importedBy": [
       "src/components/SignalRecap.tsx",
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-30",
-    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
+    "lastCommit": "2026-10-01",
+    "lastMessage": "Voice cards + theme chips: summaries of what each voice said only, no weights or portfolio reactions; Visser headline LO"
   },
   "Weekly_Workflow_v34_section.md": {
     "exists": true,
@@ -129,11 +129,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "pull_candidates.cjs": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 12468,
-    "mtime": "2026-09-29",
+    "sizeBytes": 12538,
+    "mtime": "2026-10-06",
     "lastCommit": "2026-09-29",
     "lastMessage": "Workflow 5.11: theme-derived book changes. cycle_scan v2 (theme-first, ZaStocks tickers excluded), theme_map.json, book_"
   },
@@ -192,18 +192,18 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/SignalRadar.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 3838,
+    "sizeBytes": 3942,
     "mtime": "2026-10-01",
     "imports": 1,
     "importedBy": [
       "src/components/SignalRecap.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-30",
-    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
+    "lastCommit": "2026-10-01",
+    "lastMessage": "Voice cards + theme chips: summaries of what each voice said only, no weights or portfolio reactions; Visser headline LO"
   },
   "src/components/Portfolio.tsx": {
     "exists": true,
@@ -211,15 +211,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 17696,
-    "mtime": "2026-08-25",
+    "sizeBytes": 18195,
+    "mtime": "2026-10-01",
     "imports": 2,
     "importedBy": [
       "src/components/Dashboard.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-08-24",
-    "lastMessage": "UI: retheme signal cards for v3.4 trend names"
+    "lastCommit": "2026-10-01",
+    "lastMessage": "Portfolio: sort holdings by current weight (cash last), names for COIN/SOXX/AMZN; voice cards drop crypto-index referenc"
   },
   "Signal_Engine_Reference.md": {
     "exists": true,
@@ -279,22 +279,22 @@ export const FILE_STATUS: Record<string, FileState> = {
   "corr_matrix.json": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 42685,
-    "mtime": "2026-09-29",
+    "sizeBytes": 61410,
+    "mtime": "2026-10-06",
     "lastCommit": "2026-09-29",
     "lastMessage": "pull_correlations: pairwise alignment (closes queue 20), theme_map candidate universe, corr_meta.json session sidecar. M"
   },
   "pull_correlations.py": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 4752,
-    "mtime": "2026-09-29",
+    "sizeBytes": 4861,
+    "mtime": "2026-10-06",
     "lastCommit": "2026-09-29",
     "lastMessage": "pull_correlations: pairwise alignment (closes queue 20), theme_map candidate universe, corr_meta.json session sidecar. M"
   },
@@ -304,10 +304,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 110319,
-    "mtime": "2026-10-01",
-    "lastCommit": "2026-09-30",
-    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
+    "sizeBytes": 130102,
+    "mtime": "2026-10-06",
+    "lastCommit": "2026-10-01",
+    "lastMessage": "FREEZE 2026-10-01-v3.9-glwmu: GLW -> MU (memory as part of compute; optical silent 46d). AI buildout held 27.1. Look-thr"
   },
   "probe_source.textClipping": {
     "exists": true,
@@ -324,15 +324,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 28880,
-    "mtime": "2026-10-01",
+    "sizeBytes": 29176,
+    "mtime": "2026-10-06",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-30",
-    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
+    "lastCommit": "2026-10-01",
+    "lastMessage": "FREEZE 2026-10-01-v3.9-glwmu: GLW -> MU (memory as part of compute; optical silent 46d). AI buildout held 27.1. Look-thr"
   },
   "system_changelog": {
     "exists": false,
@@ -416,15 +416,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18504,
-    "mtime": "2026-09-30",
+    "sizeBytes": 18570,
+    "mtime": "2026-10-01",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-30",
-    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
+    "lastCommit": "2026-10-01",
+    "lastMessage": "FREEZE 2026-10-01-v3.9-glwmu: GLW -> MU (memory as part of compute; optical silent 46d). AI buildout held 27.1. Look-thr"
   },
   "src/data/bookSnapshot.ts": {
     "exists": true,
@@ -432,15 +432,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 2214,
-    "mtime": "2026-10-01",
+    "sizeBytes": 2221,
+    "mtime": "2026-10-06",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-30",
-    "lastMessage": "FREEZE 2026-09-30-v3.8-coinamzn: COIN added (workflow 5.11), AMZN cooling/contested, C 9/30 worksheet edits (timing, qua"
+    "lastCommit": "2026-10-01",
+    "lastMessage": "FREEZE 2026-10-01-v3.9-glwmu: GLW -> MU (memory as part of compute; optical silent 46d). AI buildout held 27.1. Look-thr"
   },
   "src/components/TradingTab.tsx": {
     "exists": true,
@@ -649,7 +649,7 @@ export const DECLARED_BUT_MISSING: string[] = [
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "v34_worksheet_2026-10-01.html"
+  "v34_worksheet_2026-10-05.html"
 ]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */

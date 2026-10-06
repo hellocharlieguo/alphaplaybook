@@ -8,7 +8,13 @@
 // (his framing at the DC Freedom Tech talk, repeated 9/26 Pomp and 9/27 solo). Added a
 // 'The framework' entry explaining it in plain language; scarcity kept as the compute half.
 //
-// 2026-10-01 mid-week freeze — '2026-10-01-v3.9-glwmu'. GLW out, MU in (memory as part of
+// 2026-10-05 weekly cycle — '2026-10-05-v3.10-stageflip'. GLDM cooling -> exhausted, COPX
+// working -> cooling (Visser 10/4). No add: NVDA is inside SOXX, same sub-theme (C 10/05).
+// New transcripts: Visser 10/3 (Pomp), 10/4 (solo); back-fills 9/10 (Raoul Pal), 9/18 (Brunell),
+// 9/22 (Substack). Camillo capture 9/28-10/5 has new items only through 9/29. ZaStocks 9/28-10/4.
+// Cards stay pure summaries of what each voice said — no weights, no portfolio reactions.
+//
+// Superseded: 2026-10-01 mid-week freeze — '2026-10-01-v3.9-glwmu'. GLW out, MU in (memory as part of
 // compute: 'chips and power'). AI Buildout held at 27.1. Book: IBIT 12.3, LLY 12.4, ETHA 9.1,
 // AMZN 9.0, AIPO 8.1, GLDM 8.0, COIN 7.5, HOOD 7.5, SLV 7.2, SOXX 6.7, MU 6.3, COPX 5.9.
 // asOf unchanged: no new transcripts since 9/27.
@@ -73,35 +79,35 @@ export const VOICES: VoiceSection[] = [
     name: 'Visser',
     headline: 'LONG SPEED, SHORT FRICTION',
     subtitle: 'Jordi Visser — macro framework for the AI and crypto economy',
-    asOf: 'September 27, 2026',
+    asOf: 'October 4, 2026',
     active: true,
     themes: [
       {
         name: 'The framework',
-        editorial: `"You want to be long speed. You want to be short friction." That was the theme of Visser's talk in Washington in late September, and he repeated it on both podcasts that week. His argument is that AI has made the world move at machine speed while much of the economy still runs at human speed. Speed means the things AI agents need and use: computing power, meaning chips, memory and the electricity to run them, and crypto, which he sees as how agents will pay each other. Friction means businesses that sit in the middle and charge for it, such as payment networks and software subscriptions, along with companies that depend on cheap borrowing. He calls the result "a bear market inside a bull market": the fast side keeps rising while the slow side gets squeezed. It updates his earlier framing of long scarcity, short abundance. The physical bottlenecks of building AI still matter and are the compute half of speed, but crypto now sits alongside compute, and gold and silver matter less because, in his words, this is "not a liquidity debasement trade."`,
+        editorial: `"You want to be long speed. You want to be short friction." Speed means what AI agents need and use: computing power, meaning chips, memory and the electricity to run them, and crypto, which he sees as how agents will pay each other. Friction means businesses that sit in the middle and charge for it. This week he took on the worry about rising interest rates and weak market breadth head-on and called the doom talk overdone. His case: this is a different economy. Nvidia and Micron alone now take in more revenue than Ford, GM and the four largest homebuilders combined, which were about twenty times their size in 2015, and technology companies make up roughly 56% of the S&P 500. Those companies do not depend on cheap borrowing. The stocks hitting new lows are the rate-sensitive ones, such as consumer staples, utilities and real estate, which he says have been losing to AI for years. Ten-year yields, in his view, are returning to normal rather than breaking: nominal growth is about 6.5%, and he would only worry if yields moved well above 7%. A weaker jobs report, softer inflation and the New York Fed's John Williams ruling out an October hike could let rates settle.`,
         tickers: [],
       },
       {
         name: 'AI Buildout',
-        editorial: `Visser said the mid-cycle slowdown he called in AI hardware over the summer looks finished. Pointing to his own basket of AI infrastructure stocks, he said it just had its best week in months, more of its names are trending up, and "the infrastructure trade has a catalyst." The catalyst is consumer AI assistants like Meta's Muse, which he expects to use far more computing power than anyone planned for: "the compute needs just went up exponentially." That is why he says Intel and AMD jumped, and he expects the group to get back to its highs. He tied it back to memory chips, the trade he says the smartest investors missed last year because they did not understand compute: "This trade is still the same. You want to be long compute speed." On the physical side, he cited Blackstone's John Gray that the limiting factor for AI is now the physical world. One caution: he is still moving some of his own smaller AI holdings into crypto, which he sees as the bigger story.`,
+        editorial: `Micron's results were his centerpiece. He read from the company's call that it sees no point at which supply catches up with demand, because larger models, longer context and more AI agents keep raising the need for memory. He called this "the micron moment": a reminder of how badly people underestimate how fast this moves. He said the next stage is about efficiency and power use as Nvidia's Vera Rubin chips arrive, and pointed to Marvell and to Rogers, a materials company that raised its long-term targets sharply because heat and power density are becoming problems inside data centers. He also said AI is moving to the edge: phones, laptops, wearables and, sooner than people expect, robots and self-driving cars, all of which need more computing power. The founder of the personal-assistant app Instinct said his compute needs are doubling roughly every week and that he spends much of his time just finding capacity. Visser's summary: "The usage is going to skyrocket and we don't have enough compute."`,
         tickers: ['AIPO', 'SOXX', 'MU', 'COPX'],
         bucket: 'AI Buildout',
       },
       {
         name: 'AI Applied',
-        editorial: `This was the week Meta launched Muse, its personal AI assistant. Visser calls it the biggest market driver right now and expects it to set the tone for the next twelve months. He has handed his own assistant his cards, bank accounts, fraud alerts and paperwork, and says people who have not used one cannot judge it yet. He is more cautious about what it means for the big tech stocks. He expects excitement in the short run but not outperformance, and believes competition from AI and tokenization will push their valuations down over time: "in the end, I believe all of them will go through multiple compression." He reads Amazon's standoff with Meta over Muse as the start of that competition. He was positive on healthcare, saying drug discovery and biology will be among the biggest beneficiaries of AI and citing Insilico Medicine's work with Eli Lilly. He also doubts the advertising model will survive, because AI agents will choose on price and reviews rather than ads.`,
+        editorial: `Visser says personal AI assistants are as important a turning point as the arrival of coding agents last November. Meta's Muse, Grok's assistant, OpenAI's new Dots and apps like Instinct, which already handles about a billion dollars of annual transactions, are launching at once, and he expects billions of people to use them within five years. He is less sure the big tech companies win: they used to have their own lanes and will now fight over the same customers, which he calls "very, very difficult." Meta "didn't win anything," and he would trust Apple more on security. On OpenAI and Anthropic, he agreed their fastest growth is behind them but said they will keep growing, and that their combined revenue this year should exceed the entire software industry's. He also expects banks to go through what software companies went through, with AI agents moving money to wherever fees are lowest.`,
         tickers: ['LLY', 'AMZN'],
         bucket: 'AI Applied',
       },
       {
         name: 'Tokenized Rails',
-        editorial: `Visser's framing: AI assistants are to crypto what the iPhone was to the internet. The payment rails were built over fifteen years, and agents are finally the users who need them. He thinks crypto is early in a long bull market, partly because Wall Street still does not cover it, and says managers of very large funds are now calling him about tokenization. "This, my friends, is a bull market." He pointed to BlackRock's paper on AI and digital assets and its move to put model portfolios on the blockchain, the New York Stock Exchange's tokenization partnership, and Coinbase being tradable through Muse. He spoke well of Robinhood's blockchain and pointed listeners to its CEO as the clearest voice on tokenization. He mentioned Solana moving independently, and highlighted Stripe and payment protocols built for machine-to-machine transactions.`,
+        editorial: `His argument this week was about trust. AI agents will move money at machine speed, and he says slow settlement is now a safety risk as well as a cost: a wire sent Friday afternoon sits somewhere until Monday, which leaves time for hackers and rogue agents. Instant settlement on crypto rails is the defense. He sees no chance that Visa and Mastercard are the long-run winners, comparing them to the BlackBerry. He leaned on three people he spoke with: NEAR's founder, who in 2023 described agents as "the economic actors of the future"; William Mougayar; and SharpLink's Joseph Chalom, who calls Ethereum the trust and settlement layer for future finance. Visser described Ethereum as "effectively the internet." He listed Goldman Sachs, Morgan Stanley's new digital-asset lab, Citi's Coinbase partnership and Franklin Templeton's tokenized money funds as signs Wall Street is moving, along with Robinhood's agent-driven trading. He says big money is coming to Ethereum, Solana and Bitcoin, and that asset managers are now calling him about crypto.`,
         tickers: ['ETHA', 'HOOD', 'COIN'],
         bucket: 'Tokenized Rails',
       },
       {
         name: 'Monetary',
-        editorial: `Visser says crypto has moved from a trade driven by easy money to one driven by real use, and that Bitcoin does not fit that story the way the rest of crypto does: "Bitcoin doesn't fit in that fundamental argument." His advice was to watch the broader crypto index rather than Bitcoin, which rose 6.5% this month against the index's 31%. He still expects Bitcoin to benefit as the ecosystem grows, and noted it rose about 60% in a quarter when interest rates also rose. He set a test the week before: Bitcoin below $80,000 by the end of October would be a problem. On gold he was blunt: "gold's not going higher. This is not a liquidity debasement trade. This is a fundamental trade." Silver got only a passing mention, in the context of investors being rattled by the recent selloff in precious metals.`,
+        editorial: `Visser said Bitcoin moving above $82,000 confirmed its bull trend, "I think we're in that," and that it is "about to kind of take off." He expects new buyers to arrive in the fourth quarter, when large investors set their plans for the next year. His crypto index is up about 50% this year against a small loss for Bitcoin, which he reads as the wider ecosystem leading. On gold he was negative: it "broke down," and if this were a money-printing trade Bitcoin would have fallen with it, but it did not, because agents are what is driving crypto now. He also said the commodities trade is not working, calling copper an "obvious trade" where you "can't make any money." He did not mention silver by name this week. Earlier, he argued that robots working in mines could eventually make commodities more plentiful.`,
         tickers: ['IBIT', 'GLDM', 'SLV'],
         bucket: 'Monetary',
       },
@@ -111,40 +117,46 @@ export const VOICES: VoiceSection[] = [
     name: 'Camillo',
     headline: 'INFORMATION EDGE, NOT VIBES',
     subtitle: 'Chris Camillo — social arbitrage; a supporting voice that can point to ideas but not change themes',
-    asOf: 'September 27, 2026',
+    asOf: 'September 29, 2026',
     active: true,
     themes: [
       {
-        name: 'AI Applied',
-        editorial: `Amazon is still his biggest holding, and he says he would rather see it fall so he can buy more at a lower price. His case is that Amazon wins either way from Muse: Meta will pay Amazon a lot to run it on Amazon's cloud, and Amazon's warehouses and delivery network still matter when an AI assistant does the shopping. He thinks it is too early to crown a winner in AI shopping and expects companies to partner rather than compete. His biggest trade of the week was a short-term options bet on Meta around the Muse launch, which he calls his second most profitable single day in twenty years. He keeps it separate from his long-term holdings.`,
-        tickers: ['AMZN', 'META'],
+        name: 'The two he keeps buying',
+        editorial: `Amazon and Robinhood are the core of his portfolio. Amazon is his highest-conviction holding, and he says a drop would make it more attractive, not less, because AI shopping assistants still need Amazon's warehouses, delivery network and cloud. He expects partnerships rather than one winner. Robinhood is the second, with crypto and tokenization as a possible new engine of growth.`,
+        tickers: ['AMZN', 'HOOD'],
         curated: true,
       },
       {
-        name: 'Agentic AI / CPU',
-        editorial: `On Monday he grouped AMD and Intel with Amazon and Meta: "what a time to be in the agentic AI / CPU biz." It was a theme rather than a detailed case. His lesson for the week: spend the weekend researching a catalyst you can act on now, rather than debating what AI might look like years from now, and remember that taking considered risks is how big returns are made.`,
-        tickers: ['AMD', 'INTC'],
+        name: 'Human data is running out',
+        editorial: `His new trade was Reddit. His case is that AI companies are running short of real human writing to train on, and Reddit owns a large, licensed archive of real conversations. Licensing deals and their renewals are the thesis.`,
+        tickers: ['RDDT'],
+        curated: true,
+      },
+      {
+        name: 'Lessons',
+        editorial: `His most-shared post argued that Wall Street sells people on low volatility by treating price swings as risk, when the real risk for a long-term investor is losing money for good. Smoothing the ride gives up compounding: "The goal isn't the smoothest path." He also warned that investors have never had more information and done less work with it: "The confidence-to-effort ratio is off the charts."`,
+        tickers: [],
         curated: true,
       },
     ],
   },
   {
     name: 'ZaStocks',
-    headline: 'SURVIVE THE CHOP, THEN PRESS',
+    headline: 'STAY WITH THE TREND',
     subtitle: 'ZaStocks (@ZaStocks) — chart-based trade ideas, gathered weekly',
-    asOf: 'wk of Sep 21 – 27 · via Grok',
+    asOf: 'wk of Sep 28 – Oct 4 · via Grok',
     active: true,
     themes: [
       {
-        name: 'Leaders getting tight',
-        editorial: `His charts this week were market leaders holding just below their highs, which he reads as a sign of strength. Nvidia is trading in an unusually tight range for a stock that has defined this bull market. Palantir is acting like a leader again as it nears $200. Nebius is raising prices on strong demand while 21% of its shares are sold short. He also posted Arm, arguing that processors are becoming the bottleneck for AI assistants. He called Meta's Muse the best consumer AI product since ChatGPT, and compared the gloom around Oracle to the sentiment on Meta in 2022.`,
-        tickers: ['NVDA', 'PLTR', 'NBIS', 'ARM'],
+        name: 'Compute is not slowing',
+        editorial: `He called Micron's results "monster earnings yet again" and thinks forecasts are still too low, since robots and self-driving cars need memory too. He calls Nvidia cheap with no sign of slowing: "If the AI trade is going to work Nvidia is going to work." He posted CoreWeave coiled in an unusually tight range, Ouster's long base ("the robots and autonomous vehicles need to see somehow"), and insider and political buying in Vistra. He bought SpaceX after it launched Google's AI chips into orbit, calling it expensive but one of a kind.`,
+        tickers: ['MU', 'NVDA', 'CRWV', 'OUST', 'VST', 'SPCX'],
         curated: true,
       },
       {
-        name: 'One more rally',
-        editorial: `His market view stayed bullish. He expects one more strong rally into year-end, like April to June, and notes that tech stocks are holding near their highs despite worries about Iran, interest rates, oil and an AI slowdown. A real resolution with Iran, he says, could set off a second dot-com-style run. He flagged space stocks as an overlooked group if the market strengthens, with Rocket Lab basing after its pullback. His discipline this week was to follow price over headlines, and to step aside when conditions are not right. His full Sunday report is paywalled again.`,
-        tickers: ['RKLB', 'SPCX'],
+        name: 'New highs, no reason to turn bearish',
+        editorial: `The Nasdaq made new all-time highs despite war, high oil, rising yields and rate fears, and he wants oil and yields to ease so the market can run. He refuses to turn bearish just to look balanced. His lessons: in a choppy market, buy pullbacks rather than chase breakouts; holding a big winner means sitting through shakeouts; and newer traders should stick to shares rather than options. His Sunday report was paywalled again.`,
+        tickers: ['QQQ'],
         curated: true,
       },
     ],
