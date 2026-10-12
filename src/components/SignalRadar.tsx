@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'Not enough compute',     blurb: 'Micron sees no point where memory supply catches up with demand. Visser: \u201cThe usage is going to skyrocket and we don\u2019t have enough compute.\u201d AI is also moving to phones, PCs and robots.', binding: true },
-  { name: 'AI Applied',      tag: 'Assistant wars',         blurb: 'Personal AI assistants are launching all at once, and Visser expects billions of users. He doubts big tech wins: they now fight over the same customers, which he calls \u201cvery, very difficult.\u201d' },
-  { name: 'Tokenized Rails', tag: 'Speed is safety',        blurb: 'AI agents need instant settlement \u2014 money stuck in transit is a target for hackers. Ethereum is \u201ceffectively the internet,\u201d and Wall Street banks are building crypto labs.' },
-  { name: 'Monetary',        tag: 'Bitcoin over gold',      blurb: 'Bitcoin above $82,000 \u201cwas the confirmation of the bull trend.\u201d Gold \u201cbroke down\u201d and bitcoin did not follow; he says the commodities trade is not working.' },
+  { name: 'AI Buildout',     tag: 'Agents eat compute',     blurb: 'Visser: AI agents are a new kind of demand that will number in the billions. \u201cWe will not have enough compute for the agents.\u201d Lumentum, an optical-parts maker, says it is sold out through 2029.', binding: true },
+  { name: 'AI Applied',      tag: 'Don\u2019t pick the assistant', blurb: 'Big tech now fights over the same customers with personal AI assistants. Visser: \u201cI don\u2019t know how these guys are going to make money off of it.\u201d He would rather own the computing power they all need.' },
+  { name: 'Tokenized Rails', tag: 'Crypto is about agents', blurb: '\u201cWhen it comes to crypto, this is 100% for me about agents.\u201d Stripe, Samsung and OKX are building stablecoin and tokenized-stock rails, and he named privacy as a new theme.' },
+  { name: 'Monetary',        tag: 'Be patient on bitcoin',  blurb: 'Bitcoin is in a bull market that needs patience: \u201cFor Christ\u2019s sake, be patient.\u201d Crypto rose this year even as rates climbed and gold fell.' },
 ]
 
 interface Holding { ticker?: string; category?: string }

@@ -79,7 +79,7 @@ export const SYS_NODES: SysNode[] = [
   { id: 'zastocks', x: 10,  y: 194, kind: 'input',  ref: 'A3 · INPUT L2', title: 'ZaStocks',       sub: 'verify only',          history: true },
 
   { id: 'approval', x: 536, y: 106, kind: 'human',  ref: 'C1 · GATE',     title: 'Approval',       sub: 'no auto-build' },
-  { id: 'freeze',   x: 732, y: 106, kind: 'write',  ref: 'C2 · WRITE',    title: 'Freeze',         sub: 'v3.10',                 history: true },
+  { id: 'freeze',   x: 732, y: 106, kind: 'write',  ref: 'C2 · WRITE',    title: 'Freeze',         sub: 'v3.11',                 history: true },
   { id: 'push',     x: 928, y: 106, kind: 'write',  ref: 'C3 · DEPLOY',   title: 'git push',       sub: '→ Vercel' },
 
   { id: 'cron',     x: 10,  y: 344, kind: 'input',  ref: 'D1 · TRIGGER',  title: 'GitHub Actions', sub: '23:17 UTC' },
@@ -336,9 +336,10 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     source: 'phase 2: system_changelog · PORTFOLIO_VERSION drives P&L drift',
     blocks: [
       { t: 'sec', label: 'Current' },
-      { t: 'kv', k: 'Version string', v: '2026-10-05-v3.10-stageflip' },
-      { t: 'kv', k: 'Names', v: '12' },
+      { t: 'kv', k: 'Version string', v: '2026-10-12-v3.11-gldm-litecopx' },
+      { t: 'kv', k: 'Names', v: '11' },
       { t: 'sec', label: 'Changelog' },
+      { t: 'row', date: '10/12', pill: 'book', tone: 'book', title: 'v3.11 freeze: gold out, copper swapped for optical', quote: 'GLDM removed (exhausted since 10/05). COPX -> LITE, the unseated max-demand optical row Visser voiced 10/11. SLV working -> cooling (C discretionary). AI Buildout 27.1 pin retired; trend order set by conviction, not weight overrides: Buildout 29.4, Rails 27.2, Monetary 23.2, Applied 20.1. 11 names, 26.7pp turnover.' },
       { t: 'row', date: '10/05', pill: 'book', tone: 'book', title: 'v3.10 freeze: gold to exhausted, copper to cooling', quote: 'No add: NVDA is inside SOXX, same sub-theme (correlation is not coverage). GLDM 6.1% at the exhausted floor, removal review open. 12 names, 6.2pp turnover.' },
       { t: 'row', date: '8/11', pill: 'engine', tone: 'engine', title: 'Memory stage exhausted → working', quote: '×0.60 → ×0.92. Applied by raising SKHY S2 into the 65–89 band — the engine derives stage from S2 thresholds computationally, there is no stage config field. Standing wiring trap: contract is not spot. SK Hynix sells bilateral contracts to hyperscalers, so feeding spot into severity_probe.cjs produces a false negative on SKHY.' },
       { t: 'row', date: '8/11', pill: 'data', tone: 'data', title: 'Null-DMA coercion patched', quote: 'JS null coerced to 0 produced a fabricated S5 of 52 for SKHY. Three of four patches applied.' },

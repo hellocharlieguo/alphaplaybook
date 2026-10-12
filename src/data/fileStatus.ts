@@ -25,14 +25,14 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-10-12T21:13:54.812Z",
-  "commit": "d92d4bb",
+  "generatedAt": "2026-10-12T21:25:49.118Z",
+  "commit": "a26d279",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
   "ignored": 3,
-  "modified": 0,
-  "undeclared": 3,
+  "modified": 5,
+  "undeclared": 2,
   "orphanedSource": 0,
   "undeclaredSource": 0
 } as const
@@ -74,11 +74,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "server/daily-cron.cjs": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 94126,
-    "mtime": "2026-10-06",
+    "sizeBytes": 94215,
+    "mtime": "2026-10-12",
     "lastCommit": "2026-10-05",
     "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
   },
@@ -101,11 +101,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/voiceCards.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 14008,
-    "mtime": "2026-10-06",
+    "sizeBytes": 11304,
+    "mtime": "2026-10-12",
     "imports": 0,
     "importedBy": [
       "src/components/SignalRecap.tsx",
@@ -192,11 +192,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/SignalRadar.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 4107,
-    "mtime": "2026-10-06",
+    "sizeBytes": 4108,
+    "mtime": "2026-10-12",
     "imports": 1,
     "importedBy": [
       "src/components/SignalRecap.tsx"
@@ -301,10 +301,10 @@ export const FILE_STATUS: Record<string, FileState> = {
   "v34_worksheet.html": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 130102,
+    "sizeBytes": 131865,
     "mtime": "2026-10-12",
     "lastCommit": "2026-10-05",
     "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
@@ -321,11 +321,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/systemMap.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 29176,
-    "mtime": "2026-10-06",
+    "sizeBytes": 29631,
+    "mtime": "2026-10-12",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
@@ -416,15 +416,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18643,
-    "mtime": "2026-10-06",
+    "sizeBytes": 18654,
+    "mtime": "2026-10-12",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-05",
-    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
+    "lastCommit": "2026-10-12",
+    "lastMessage": "FREEZE 2026-10-12-v3.11-gldm-litecopx: GLDM out (exhausted), COPX -> LITE (optical, Visser 10/11), SLV working->cooling "
   },
   "src/data/bookSnapshot.ts": {
     "exists": true,
@@ -439,8 +439,8 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-05",
-    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
+    "lastCommit": "2026-10-12",
+    "lastMessage": "FREEZE 2026-10-12-v3.11-gldm-litecopx: GLDM out (exhausted), COPX -> LITE (optical, Visser 10/11), SLV working->cooling "
   },
   "src/components/TradingTab.tsx": {
     "exists": true,
@@ -650,7 +650,6 @@ export const DECLARED_BUT_MISSING: string[] = [
 
 export const UNDECLARED_UNTRACKED: string[] = [
   "freeze_2026-10-12.py",
-  "v34_worksheet_2026-10-12.html",
   "voiceCards_2026-10-12.ts"
 ]
 

@@ -1,6 +1,6 @@
 {
  "_doc": "Theme -> asset derivation. Voices name themes (any voice); tickers are DERIVED here, never taken from a voice directly (ZaStocks tickers are never inputs). Engine decides whether and how much. Maintained each cycle by Weekly Workflow 5.11. 'lex' is a case-insensitive regex matched on cleaned transcript text. Vehicle status: held | in_etf (look-through, verified pct + as_of) | candidate | watch | private | none.",
- "_revised": "2026-10-05",
+ "_revised": "2026-10-12",
  "themes": {
   "power_grid": {
    "trend": "1 AI buildout",
@@ -54,10 +54,11 @@
    "lex": "\\boptical\\b|\\bfiber\\b|\\bphotonics?\\b|\\bco-?packaged\\b",
    "vehicles": {
     "GLW": "candidate",
-    "LITE": "candidate",
+    "LITE": "held",
     "COHR": "candidate",
     "AAOI": "candidate"
-   }
+   },
+   "note": "LITE seated 10/12 (v3.11), replacing COPX. Visser 10/11 agentic-portfolio slide: Lumentum CEO 'We are completely sold out through 2029' (00:40:10). Chosen on merits: pure-play lasers/transceivers, the name Visser pointed at, entry passes. GLW/COHR/AAOI under their 200-DMA on 10/12 (ADD-WHEN)."
   },
   "lithography": {
    "trend": "1 AI buildout",
@@ -72,8 +73,9 @@
    "sub": "copper input",
    "lex": "\\bcopper\\b|\\belectrification\\b|\\bphysical world\\b",
    "vehicles": {
-    "COPX": "held"
-   }
+    "COPX": "watch"
+   },
+   "note": "Removed 10/12 (v3.11, C discretionary): Visser 10/4 'Obvious trade. Can't make any money'; 9/10 humanoid mining -> 'abundance of cheaper commodities'. Watch, not eligible."
   },
   "distribution": {
    "trend": "2 AI applied",
@@ -118,7 +120,7 @@
    "lex": "\\btokeni[sz]\\w*\\b|\\bstock tokens\\b|\\bon-?chain\\b|\\breal.world assets\\b|\\bRWA\\b",
    "vehicles": {
     "HOOD": "held",
-    "COIN": "candidate"
+    "COIN": "held"
    }
   },
   "speed_layer": {
@@ -137,7 +139,7 @@
    "lex": "\\bstable ?coins?\\b|\\bagentic payments?\\b|\\bpayment protocols?\\b|\\bprogrammable money\\b|\\bguard ?rails\\b",
    "vehicles": {
     "CRCL": "candidate",
-    "COIN": "candidate",
+    "COIN": "held",
     "PRIV:STRIPE": "private"
    }
   },
@@ -155,8 +157,9 @@
    "sub": "gold",
    "lex": "\\bgold\\b(?!man)",
    "vehicles": {
-    "GLDM": "held"
-   }
+    "GLDM": "watch"
+   },
+   "note": "Removed 10/12 (v3.11): exhausted since 10/05 (5.11 trigger); Visser 10/10 gold 'going down'. Watch, not eligible."
   },
   "silver": {
    "trend": "4 Monetary",
