@@ -16,7 +16,7 @@ export const BOOK = {
   version: "2026-10-05-v3.10-stageflip",
   count: 12,
   total: 100,
-  generatedAt: "2026-10-06T01:22:17.912Z",
+  generatedAt: "2026-10-12T21:13:54.957Z",
   sleeves: [
   {
     "name": "AI Buildout",

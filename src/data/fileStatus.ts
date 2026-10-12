@@ -25,14 +25,14 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-10-06T01:22:17.911Z",
-  "commit": "e001ea3",
+  "generatedAt": "2026-10-12T21:13:54.812Z",
+  "commit": "d92d4bb",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
   "ignored": 3,
-  "modified": 8,
-  "undeclared": 1,
+  "modified": 0,
+  "undeclared": 3,
   "orphanedSource": 0,
   "undeclaredSource": 0
 } as const
@@ -74,13 +74,13 @@ export const FILE_STATUS: Record<string, FileState> = {
   "server/daily-cron.cjs": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 94126,
     "mtime": "2026-10-06",
-    "lastCommit": "2026-10-01",
-    "lastMessage": "FREEZE 2026-10-01-v3.9-glwmu: GLW -> MU (memory as part of compute; optical silent 46d). AI buildout held 27.1. Look-thr"
+    "lastCommit": "2026-10-05",
+    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
@@ -101,7 +101,7 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/voiceCards.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 14008,
@@ -112,8 +112,8 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-01",
-    "lastMessage": "Voice cards + theme chips: summaries of what each voice said only, no weights or portfolio reactions; Visser headline LO"
+    "lastCommit": "2026-10-05",
+    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
   },
   "Weekly_Workflow_v34_section.md": {
     "exists": true,
@@ -129,13 +129,13 @@ export const FILE_STATUS: Record<string, FileState> = {
   "pull_candidates.cjs": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 12538,
     "mtime": "2026-10-06",
-    "lastCommit": "2026-09-29",
-    "lastMessage": "Workflow 5.11: theme-derived book changes. cycle_scan v2 (theme-first, ZaStocks tickers excluded), theme_map.json, book_"
+    "lastCommit": "2026-10-05",
+    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
   },
   "conviction_tags.sql": {
     "exists": true,
@@ -195,15 +195,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 3942,
-    "mtime": "2026-10-01",
+    "sizeBytes": 4107,
+    "mtime": "2026-10-06",
     "imports": 1,
     "importedBy": [
       "src/components/SignalRecap.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-01",
-    "lastMessage": "Voice cards + theme chips: summaries of what each voice said only, no weights or portfolio reactions; Visser headline LO"
+    "lastCommit": "2026-10-05",
+    "lastMessage": "SignalRadar: 10/05 theme chips (summaries of what Visser said only)"
   },
   "src/components/Portfolio.tsx": {
     "exists": true,
@@ -279,35 +279,35 @@ export const FILE_STATUS: Record<string, FileState> = {
   "corr_matrix.json": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 61410,
     "mtime": "2026-10-06",
-    "lastCommit": "2026-09-29",
-    "lastMessage": "pull_correlations: pairwise alignment (closes queue 20), theme_map candidate universe, corr_meta.json session sidecar. M"
+    "lastCommit": "2026-10-05",
+    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
   },
   "pull_correlations.py": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 4861,
     "mtime": "2026-10-06",
-    "lastCommit": "2026-09-29",
-    "lastMessage": "pull_correlations: pairwise alignment (closes queue 20), theme_map candidate universe, corr_meta.json session sidecar. M"
+    "lastCommit": "2026-10-05",
+    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
   },
   "v34_worksheet.html": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 130102,
-    "mtime": "2026-10-06",
-    "lastCommit": "2026-10-01",
-    "lastMessage": "FREEZE 2026-10-01-v3.9-glwmu: GLW -> MU (memory as part of compute; optical silent 46d). AI buildout held 27.1. Look-thr"
+    "mtime": "2026-10-12",
+    "lastCommit": "2026-10-05",
+    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
   },
   "probe_source.textClipping": {
     "exists": true,
@@ -321,7 +321,7 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/systemMap.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 29176,
@@ -331,8 +331,8 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-01",
-    "lastMessage": "FREEZE 2026-10-01-v3.9-glwmu: GLW -> MU (memory as part of compute; optical silent 46d). AI buildout held 27.1. Look-thr"
+    "lastCommit": "2026-10-05",
+    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
   },
   "system_changelog": {
     "exists": false,
@@ -416,31 +416,31 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18570,
-    "mtime": "2026-10-01",
-    "imports": 0,
-    "importedBy": [
-      "src/components/SystemTab.tsx"
-    ],
-    "reachable": true,
-    "lastCommit": "2026-10-01",
-    "lastMessage": "FREEZE 2026-10-01-v3.9-glwmu: GLW -> MU (memory as part of compute; optical silent 46d). AI buildout held 27.1. Look-thr"
-  },
-  "src/data/bookSnapshot.ts": {
-    "exists": true,
-    "tracked": true,
-    "dirty": true,
-    "ignored": false,
-    "kind": "file",
-    "sizeBytes": 2221,
+    "sizeBytes": 18643,
     "mtime": "2026-10-06",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-01",
-    "lastMessage": "FREEZE 2026-10-01-v3.9-glwmu: GLW -> MU (memory as part of compute; optical silent 46d). AI buildout held 27.1. Look-thr"
+    "lastCommit": "2026-10-05",
+    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
+  },
+  "src/data/bookSnapshot.ts": {
+    "exists": true,
+    "tracked": true,
+    "dirty": false,
+    "ignored": false,
+    "kind": "file",
+    "sizeBytes": 2221,
+    "mtime": "2026-10-12",
+    "imports": 0,
+    "importedBy": [
+      "src/components/SystemTab.tsx"
+    ],
+    "reachable": true,
+    "lastCommit": "2026-10-05",
+    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
   },
   "src/components/TradingTab.tsx": {
     "exists": true,
@@ -649,7 +649,9 @@ export const DECLARED_BUT_MISSING: string[] = [
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "v34_worksheet_2026-10-05.html"
+  "freeze_2026-10-12.py",
+  "v34_worksheet_2026-10-12.html",
+  "voiceCards_2026-10-12.ts"
 ]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */

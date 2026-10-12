@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlphaPlaybook v3.11 — 2026-10-12 cycle worksheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0e0f11; --panel:#16181c; --rule:#24272d; --rule2:#31353d;
+  --text:#e8e6e3; --dim:#9aa0a8; --faint:#666c75;
+  --derived:#e0915c;      /* computed by the engine */
+  --input:#5fb3c9;        /* you can change this */
+  --pin:#c9a05f;          /* human override */
+  --neg:#c9705a; --pos:#7dba6a;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --sans:'Archivo',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5}
+.wrap{max-width:1800px;margin:0 auto;padding:34px 18px 90px}
+
+header{border-bottom:2px solid var(--rule2);padding-bottom:18px;margin-bottom:26px}
+h1{font-size:23px;font-weight:700;letter-spacing:-.2px;margin:0 0 6px}
+.sub{color:var(--dim);font-size:13px;max-width:70ch}
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;font-family:var(--mono);font-size:11px}
+.legend span{display:flex;align-items:center;gap:6px;color:var(--dim)}
+.dot{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:11.5px}
+thead th{position:sticky;top:0;background:#1b1e23;z-index:2}
+th{text-align:right;padding:7px 5px;font-weight:500;font-size:10px;letter-spacing:.3px;vertical-align:bottom;
+   text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--rule2);white-space:nowrap}
+th.l,td.l{text-align:left}
+th .f{display:block;font-size:9px;color:var(--faint);text-transform:none;letter-spacing:0;margin-top:3px;font-weight:400;white-space:normal;max-width:84px;margin-left:auto}
+td{padding:5px 5px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+tbody tr:hover td{background:#1a1d22}
+td.grp{border-left:1px solid var(--rule2)}
+th.grp{border-left:1px solid var(--rule2)}
+.tname{font-family:var(--sans);font-weight:600;font-size:12.5px;vertical-align:top;border-right:1px solid var(--rule2);min-width:118px;max-width:140px;white-space:normal}
+.sname{font-family:var(--sans);color:var(--dim);font-size:11.5px;white-space:normal;min-width:70px;max-width:96px}
+.tkr{font-weight:700;letter-spacing:.3px}
+.derived{color:var(--derived)}
+.final{color:var(--derived);font-weight:700;font-size:13px;background:rgba(120,200,190,.06)}
+.faint{color:var(--faint)}
+input.n{width:52px;background:#101317;border:1px solid #2c3038;color:var(--input);
+  font-family:var(--mono);font-size:11.5px;text-align:right;padding:2px 3px;border-radius:4px}
+input.n:focus{outline:none;border-color:var(--input);background:#0c1418}
+input.n.pin{color:var(--pin);border-color:#3a3324}
+tr.trendstart td{border-top:2px solid var(--rule2)}
+.stage{background:#101317;border:1px solid #2c3038;color:var(--input);font-family:var(--mono);
+  font-size:11px;padding:2px 2px;border-radius:4px;max-width:92px}
+tfoot td{border-top:2px solid var(--rule2);font-weight:700;padding-top:10px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px;margin-top:26px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:16px 18px}
+.card h3{margin:0 0 10px;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--dim);font-weight:600}
+.card p{margin:0 0 9px;font-size:12.5px;color:var(--dim)}
+.eq{font-family:var(--mono);font-size:12px;color:var(--text);background:#101317;
+    border-left:2px solid var(--derived);padding:7px 10px;border-radius:0 5px 5px 0;margin:7px 0;overflow-x:auto}
+.kv{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;padding:3px 0;border-bottom:1px solid var(--rule)}
+.kv:last-child{border-bottom:none}
+.kv b{color:var(--derived);font-weight:500}
+.dead{opacity:.55}
+.dead .eq{border-left-color:var(--faint)}
+.warn{color:var(--neg)}
+.trendbar{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;padding:4px 0;border-bottom:1px solid var(--rule)}
+.bar{height:3px;background:var(--derived);border-radius:2px;margin-top:3px}
+button.rst{background:none;border:1px solid var(--rule2);color:var(--dim);font-family:var(--mono);
+  font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer}
+button.rst:hover{border-color:var(--input);color:var(--input)}
+
+input.tn{background:transparent;border:1px solid transparent;color:inherit;font-family:inherit;
+  font-size:inherit;font-weight:inherit;width:100%;padding:2px 4px;border-radius:4px}
+input.tn:hover{border-color:var(--rule2)}
+input.tn:focus{outline:none;border-color:var(--input);background:#0c1418;color:var(--input)}
+input.tn.sub{font-size:12.5px;color:var(--dim)}
+select.mv{background:transparent;border:none;color:var(--faint);font-size:10px;cursor:pointer;margin-left:4px}
+select.mv:hover{color:var(--input)}
+.ins{position:fixed;z-index:50;max-width:400px;background:#1b1e23;border:1px solid var(--rule2);
+  border-radius:9px;box-shadow:0 18px 44px rgba(0,0,0,.6);padding:15px 17px;font-size:12.5px;display:none}
+.ins h4{margin:0 0 4px;font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--derived);font-weight:600}
+.ins .who{font-family:var(--mono);font-size:11px;color:var(--faint);margin-bottom:9px}
+.ins p{margin:8px 0 0;color:var(--dim);font-size:12px;line-height:1.55}
+.ins .step{font-family:var(--mono);font-size:12.5px;background:#101317;border-left:2px solid var(--derived);
+  padding:7px 10px;border-radius:0 5px 5px 0;margin:6px 0;color:var(--text);overflow-x:auto}
+.ins .src{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:10px;
+  border-top:1px solid var(--rule);padding-top:8px}
+.ins .warn{color:var(--neg);font-size:11.5px}
+.ins x{position:absolute;top:9px;right:12px;color:var(--faint);cursor:pointer;font-family:var(--mono);font-size:14px}
+.ins x:hover{color:var(--text)}
+td.q,th.q{cursor:pointer}
+td.q:hover{background:#20242a;box-shadow:inset 0 0 0 1px var(--rule2)}
+th.q:hover{color:var(--derived)}
+th.q::after{content:' ?';color:var(--faint);font-size:9px}
+@media(max-width:640px){.wrap{padding:18px 12px 60px}h1{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>v3.11 — trend-first weighting worksheet <span style="color:var(--dim);font-weight:400">&middot; 2026-10-12 &middot; CYCLE (pre-freeze) &middot; 11 names</span></h1>
+  <div class="sub">Trend weight is the top-level decision. Sub-theme share comes from severity &times; stage. Name weight is the sub-theme's share adjusted for entry quality. No <code>target_top</code>, no per-name pin. Edit any blue or gold field; everything downstream recomputes.</div>
+<div class="sub" style="border-left:3px solid var(--pin);padding-left:10px;margin-top:10px;color:var(--dim)"><b style="color:var(--text)">2026-10-12 &mdash; CYCLE v3.11 (pre-freeze). GLDM removed; COPX &rarr; LITE; SLV working&rarr;cooling (C discretionary); AI buildout 27.1 pin retired. 11 names.</b><br><br><b>Removals.</b> GLDM: 5.11 trigger fired (exhausted since 10/05); Visser 10/10 fresh negative: &ldquo;with gold going down as much as it has gone down, crypto somehow has been distancing itself&rdquo; (00:30:42). COPX: no rule trigger &mdash; C 10/12 discretionary on the commodities-to-abundance thesis (10/4 &ldquo;Can&rsquo;t make any money&rdquo;; 9/10 humanoid mining &ldquo;abundance of cheaper commodities&rdquo;).<br><br><b>Add.</b> LITE seats optical, the unseated max-demand row, voiced 10/11 (Lumentum &ldquo;completely sold out through 2029&rdquo;). forward/leader. Breadth-neutral swap (N_eff 1.615&rarr;1.617); dropping COPX with no replacement would cut it to 1.324.<br><br><b>Trend weights.</b> C 10/12: Jordi&rsquo;s two themes are agentic compute and financial guardrails (10/10 00:17:24), so AI buildout and Tokenized rails should be largest, Monetary (mostly bitcoin) next, AI applied lowest. Pin retired; set any overrides in the Trend wt boxes and export. Silver at cooling because removing gold raised Monetary&rsquo;s mean timing and pushed SLV 7.4&rarr;10.3 at working.<br><br><b>Not acted on (pending C):</b> AMZN cooling&rarr;forward (Visser 10/10 &ldquo;their business to me is being disrupted&rdquo;, 10/11 &ldquo;I don&rsquo;t know how these guys are going to make money&rdquo;); GSOL (rule-valid ADD 4.8%, speed layer); CRCL (agent payments, ADD-WHEN reclaim of 86.04); theme_map additions (privacy, robotics, space, human data). Logged only: AI buildout look-through ADDs, TEM/ABCL breadth artefact, MSTR duplicate.<br><br>Deployed (comparison column): v3.10 &mdash; LLY 12.8, IBIT 12.6, ETHA 9.7, AMZN 9.2, HOOD 8.0, AIPO 7.8, SLV 7.4, SOXX 7.1, COIN 7.1, MU 6.8, GLDM 6.1, COPX 5.4. Technicals: pull_candidates.cjs 2026-10-12 20:34 UTC. Correlations: 10/05 matrix (36 names; worksheet CORR matches).</div>
+  <div class="sub" style="border-left:3px solid var(--pin);padding-left:10px;margin-top:10px;color:var(--dim)"><b style="color:var(--text)">2026-10-05 &mdash; FREEZE v3.10. GLDM cooling&rarr;exhausted; COPX working&rarr;cooling. 12 names, 6.2pp turnover vs v3.9.</b><br><br><b>Stage flips.</b> Visser 10/4 on gold: it &ldquo;broke down&rdquo;, and bitcoin did not follow because &ldquo;we have a different stage&rdquo;; on copper: &ldquo;Obvious trade. Can&rsquo;t make any money.&rdquo; GLDM at <code>exhausted</code> opens a 5.11 removal review: dropping it would put IBIT at 17.5% and cost Monetary breadth (1.903&rarr;1.834), so it is held at the floor and revisited next cycle. IBIT <code>binding</code> is now sourced (10/3: above 82,000 &ldquo;was the confirmation of the bull trend&rdquo;).<br><br><b>Compute add.</b> Measured 10/05: BE, ARM, MRVL, INTC and NVDA all clear 3%. NVDA showed the most breadth (SOXX 0.60 1y), but C 10/05: NVDA is one of SOXX&rsquo;s largest holdings and the same sub-theme - its low correlation is behaviour (+25.9% 1y vs SOXX +109.8%), not coverage (correlation &ne; coverage). Unlike MU on 10/01, it is not a distinct sub-theme. Raising SOXX directly would be a weight override (fix scores, not weights). No add this freeze; candidates logged. Not acted on: the remaining compute ADDs; GSOL 0.3pp over its stretch trigger; CRCL and VST under the 200-DMA; TEM, ABCL, MSTR stretched; META on watch; optical, storage and ASML silent. SLV: no 5.11 trigger (voiced 9/20; GLDM corr 0.83 at 1y, 0.91 at 3m - watch the 1y).<br><br>Book: LLY 12.8, IBIT 12.6, ETHA 9.7, AMZN 9.2, HOOD 8.0, AIPO 7.8, SLV 7.4, SOXX 7.1, COIN 7.1, MU 6.8, GLDM 6.1, COPX 5.4. Technicals: pull_candidates.cjs 2026-10-05. Correlations refreshed 10/05 (36 names).</div>
+  <div class="sub" style="border-left:3px solid var(--pin);padding-left:10px;margin-top:10px;color:var(--dim)"><b style="color:var(--text)">2026-10-01 &mdash; FREEZE (mid-week). v3.9. GLW &rarr; MU. Ticker set unchanged at 12. AI buildout held at 27.1 (v3.8 deployed theme total; logged override).</b><br><br><b>Why MU.</b> Visser&rsquo;s speed trade is crypto and compute, and compute is chips and power (C, 10/01). Chips include memory, the one buildout row at maximum demand for the consumer-agent wave with no direct holding. Visser 9/26 ties Micron to the live trade: &ldquo;They missed it because they didn&rsquo;t understand compute. This trade is still the same. You want to be long compute speed.&rdquo; Seated at <code>binding</code> (the compute stage set for SOXX on 9/30) / <code>duopoly</code> (three firms control DRAM/HBM). The 2% look-through rule that blocked it was replaced 10/01: MU was 8.08% of SOXX but only 0.57% of the book.<br><br><b>Why GLW goes.</b> Optical is not in &ldquo;chips and power&rdquo;, and no voice has described it since 8/16 (46 days &mdash; past the 28-day removal review). Correlation was not the reason: GLW&ndash;SOXX 0.75 (1y). Marvell&rsquo;s optical chips stay in the book at 0.3% via SOXX.<br><br><b>Chosen over</b> splitting GLW equally into AIPO and SOXX (C 10/01): the swap adds about 6.9% memory exposure versus 0.8%, and keeps AI buildout breadth at 1.61 versus 1.48 (AIPO&ndash;SOXX 0.86 / 0.90). <b>Risk on the record:</b> MU is +537% over a year and 58% above its 200-DMA; the engine excludes trailing return by design, so the size of that run is not in its score. Middle path declined: MU at <code>working</code> (&asymp;5.9%).<br><br>Technicals: <code>pull_candidates.cjs</code> 2026-10-01 13:22 UTC (intraday). Comparison column = deployed v3.8. Prior notes (v3.8, 9/30) are in each row&rsquo;s PRIOR text.</div>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--derived)"></i>no cash line &mdash; the full 100 flows to the trends</span>
+    <span><i class="dot" style="background:var(--input)"></i>editable input</span>
+    <span><i class="dot" style="background:var(--pin)"></i>human override</span>
+    <span><i class="dot" style="background:var(--derived)"></i>engine-derived</span>
+    <span style="display:flex;gap:6px;align-items:center;font-family:var(--mono)">
+      <span style="color:var(--dim)">breadth</span>
+      <select class="stage" id="brsel" style="font-size:11px" onchange="BREADTH=this.value;render()"></select>
+      <select class="stage" id="cwsel" style="font-size:11px" onchange="CWIN=this.value;render()"></select>
+      <span class="q faint" onclick="hdr('breadth',event)" style="font-size:11px">?</span>
+    </span>
+    <span style="margin-left:auto"><button class="rst" onclick="addTrend()">+ trend</button><button class="rst" onclick="exportState()" style="margin-left:8px">export changes</button><button class="rst" onclick="reset()" style="margin-left:8px">reset to baseline</button></span>
+  </div>
+</header>
+
+<div class="scroll">
+<table>
+<thead><tr>
+  <th class="l">Trend</th>
+  <th class="q" onclick="hdr('trend',event)">Trend&nbsp;wt<span class="f">emergent &middot; override</span></th>
+  <th class="l grp">Sub-theme</th>
+  <th class="l">Ticker</th>
+  <th class="grp">timing<span class="f">where in the cycle</span></th>
+  <th>quality<span class="f">odds of capturing it</span></th>
+  <th class="q" onclick="hdr('wave',event)">wave<span class="f">demand at this stage</span></th>
+  <th class="q" onclick="hdr('sev',event)">S1<span class="f">100 &times; t &times; q</span></th>
+  <th>raw<span class="f">(100&minus;45) &times; t &times; q</span></th>
+  <th class="grp">price</th><th>50-DMA</th><th>200-DMA</th>
+  <th class="q" onclick="hdr('s5',event)">S5<span class="f">derived</span></th>
+  <th>mult<span class="f">band(S5)</span></th>
+  <th>score<span class="f">raw &times; mult</span></th>
+  <th class="grp">share<span class="f">score / &Sigma;trend</span></th>
+  <th>FINAL<span class="f">trend wt &times; share</span></th>
+  <th>live<span class="f">v3.8 deployed</span></th>
+  <th>&Delta;</th>
+</tr></thead>
+<tbody id="tb"></tbody>
+<tfoot><tr>
+  <td class="l" colspan="16">TOTAL</td>
+  <td class="final" id="tot">—</td><td class="faint">100.0</td><td></td>
+</tr></tfoot>
+</table>
+</div>
+
+<div class="card" id="exp" style="display:none;margin-top:16px">
+  <h3>Export — paste this into chat, or use it to patch the repo</h3>
+  <p id="expnote" style="margin-bottom:8px"></p>
+  <textarea id="exptxt" readonly style="width:100%;height:230px;background:#101317;border:1px solid var(--rule2);
+    border-radius:6px;color:var(--text);font-family:var(--mono);font-size:11.5px;padding:11px;resize:vertical"></textarea>
+  <div style="margin-top:9px;display:flex;gap:8px;align-items:center">
+    <button class="rst" onclick="copyExp()">copy</button>
+    <span id="copied" style="font-family:var(--mono);font-size:11px;color:var(--pos);opacity:0;transition:opacity .2s">copied</span>
+    <button class="rst" style="margin-left:auto" onclick="document.getElementById('exp').style.display='none'">close</button>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Cascade — the whole algorithm</h3>
+    <div class="eq">S1&nbsp;&nbsp;&nbsp;&nbsp;= 100 &times; timing &times; quality</div>
+    <div class="eq">raw&nbsp;&nbsp;&nbsp;= (100 &minus; floor_score) &times; timing &times; quality&nbsp;&nbsp;<span class="faint">floor_score = 45</span></div>
+    <div class="eq">S5&nbsp;&nbsp;&nbsp;&nbsp;= DMA base &minus; stretch penalty&nbsp;&nbsp;<span class="faint">no RSI</span></div>
+    <div class="eq">mult&nbsp;&nbsp;= entry_band(S5)</div>
+    <div class="eq">score = raw &times; mult</div>
+    <div class="eq">weight = trend_wt &times; score / &Sigma;(score in trend)</div>
+    <p>Both S1 inputs are discrete ladders — no free-form numbers. A name below <code>floor_score</code> scores zero and drops out. If it is the only name in its trend, the trend collapses — this is what ETHA's monetary severity of 40 did before it was re-set.</p>
+  </div>
+
+  <div class="card">
+    <h3>Quality — odds of capturing the trend</h3>
+    <div class="kv"><span>sole &nbsp;no substitute exists</span><b>&times;1.00</b></div>
+    <div class="kv"><span>basket &nbsp;you own every winner</span><b>&times;0.92</b></div>
+    <div class="kv"><span>duopoly &nbsp;2-3 control supply</span><b>&times;0.80</b></div>
+    <div class="kv"><span>leader &nbsp;moat, substitutable at cost</span><b>&times;0.72</b></div>
+    <div class="kv"><span>contested &nbsp;one bet, fragmented field</span><b>&times;0.60</b></div>
+    <div class="kv"><span style="color:var(--neg)">remove &nbsp;drop from the book</span><b style="color:var(--neg)">&times;0</b></div>
+    <p style="font-size:11.5px">Same five rungs as timing. Accelerating gaps &mdash; 0.08, 0.12, 0.08, 0.12 &mdash; so the bottom of each ladder costs more than the top. 0.60 is a floor: fade, never zero.</p>
+    <p>A monopoly and a whole-theme basket both score high for opposite reasons. That is the breadth term the old severity scale never had — and why SOXX no longer needs a hand-set floor.</p>
+  </div>
+
+  <div class="card">
+    <h3>Entry bands — S5 &rarr; multiplier</h3>
+    <div class="kv"><span>85–100 &nbsp;pullback, thesis intact</span><b>&times;1.00</b></div>
+    <div class="kv"><span>70–84 &nbsp;&nbsp;off-highs, hasn't run</span><b>&times;0.95</b></div>
+    <div class="kv"><span>55–69 &nbsp;&nbsp;steady early-stage grind</span><b>&times;0.85</b></div>
+    <div class="kv"><span>45–54 &nbsp;&nbsp;near highs, stage peaked</span><b>&times;0.75</b></div>
+    <div class="kv"><span>&lt;45 &nbsp;&nbsp;&nbsp;&nbsp;vertical blowoff</span><b>&times;0.60</b></div>
+    <p class="warn">These five multipliers are not from config. They were set in this session and are the least-validated numbers on the page.</p>
+  </div>
+
+  <div class="card">
+    <h3>Trend fill</h3>
+    <div id="fill"></div>
+    <p style="margin-top:10px">Entry quality is the weighted mean multiplier in the trend. Below ~0.70 means every expression is stretched and redistribution has nothing good to move weight toward — the discipline is inert there.</p>
+  </div>
+
+  <div class="card">
+    <h3>Trend weight — how it is derived</h3>
+    <div class="eq">trend_score = <span class="faint">derived</span>timing &times; conviction &times; breadth</div>
+    <div class="eq">breadth = N_eff, measured from return correlations</div>
+    <div class="eq">trend_wt = 100 &times; trend_score / &Sigma;(all trend scores)</div>
+    <p>Timing is the mean of the trend's sub-themes — derived, not set, so it cannot contradict them. Conviction is the one trend-level judgment left. Not summed from its names. Summing made weight a function of how many tickers happened to be seated — adding two names to a one-name trend took it from 4.7% to 11.6% with no change in conviction at all.</p>
+    <p>Breadth is now measured rather than counted. &radic;n assumed each sub-theme was an independent bet; the correlation matrix says the seven buildout names are worth 1.95, while two uncorrelated application names are worth 2.00.</p>
+    <p>Type in the weight box to override. The rest re-split what is left, so the book always totals 100.</p>
+  </div>
+
+  <div class="card">
+    <h3>Demand wave — what this trend serves</h3>
+    <div class="kv"><span>coding agents &nbsp;<span class="faint">now</span></span><b>&times;1.00</b></div>
+    <div class="kv"><span>macro / off-cycle &nbsp;<span class="faint">own clock</span></span><b>&times;1.00</b></div>
+    <div class="kv"><span>enterprise agents &nbsp;<span class="faint">2027</span></span><b>&times;0.92</b></div>
+    <div class="kv"><span>consumer agents &nbsp;<span class="faint">late 2027</span></span><b>&times;0.80</b></div>
+    <div class="kv"><span>embodied &nbsp;<span class="faint">2028</span></span><b>&times;0.72</b></div>
+    <div class="kv"><span>chatbots &nbsp;<span class="faint">superseded</span></span><b>&times;0.60</b></div>
+    <p>Replaced an abstract conviction ladder (certain / strong / forming) on 8/22. Same multipliers, so no weight changed &mdash; but each rung now names a wave from Visser's own sequencing rather than asking how sure you feel.</p>
+    <p>Nearer wave, higher multiplier. Monetary sits off the AI curve entirely and runs on debasement, which is live now.</p>
+  </div>
+
+  <div class="card">
+    <h3>Sleeve caps — standing rules</h3>
+    <div id="sleeves"></div>
+    <p style="margin-top:10px">A cap spans trends, so it can hold total hard-money exposure even once silver has a second seat in AI buildout. It fires by itself when breached — set once, no weekly re-decision.</p>
+    <p>That is what separates it from a per-trend override: the override is a number you re-type each cycle, which is where version drift comes from. The cap is a rule.</p>
+    <div class="kv" style="margin-top:8px"><span>trends + cash</span><b id="budget">100.0%</b></div>
+    <div class="kv"><span>status</span><b id="budgetnote">balanced</b></div>
+  </div>
+
+  <div class="card dead">
+    <h3>Retired — no longer in the path</h3>
+    <div class="eq">target_top_pct &nbsp;<span class="faint">pinned the #1 name to a constant</span></div>
+    <div class="eq">weight = min_floor + (composite &minus; floor)^k</div>
+    <div class="eq">composite = S1·.30 + S2·.30 + S5·.20 + S6·.10 + conv·.10</div>
+    <div class="eq">single_stock_cap &nbsp;<span class="faint">superseded 6/1/26 by Rule B</span></div>
+    <p>S2, S6 and the convergence bonus no longer size anything directly — with one name per sub-theme there is nothing for a composite to rank. They still gate <em>selection</em>: which candidate wins its sub-theme screen.</p>
+  </div>
+</div>
+
+</div>
+<div class="ins" id="ins"></div>
+<script>
+// [sub-theme, ticker, timing, quality, S5, LIVE deployed weight, why-this-quality]
+// Technicals below: pull_candidates.cjs capture 2026-10-12 20:34 UTC (cycle 2026-10-12). Prior: 2026-10-05.
+// Comparison column = the 2026-10-05-v3.10-stageflip freeze (deployed). LITE shows as new (0).
+// AI buildout 27.1 override RETIRED 10/12 (C). All four trends emergent unless C sets an override in the sheet.
+// AI Buildout override 24.70 RETIRED 9/28 (emergent 25.00 now exceeds it).
+const BASE = [
+ ["1 AI buildout",null,"binding","certain",[
+   ["power/grid","AIPO","binding","basket",[28.28,29.02,28.38,46.03],7.8,'9/27: no direct mention. Nearest line is Visser citing Blackstone’s John Gray: "The limiting factor is now the physical world... That’s why you invest in the physical world" (00:35:40). Rung held. 9/28: under its 50-DMA, only 0.3% over its 200-DMA (28.17 vs 28.08) — S5 58-&gt;72, band 0.85-&gt;0.95; a 200-DMA break drops it to 0.75. PRIOR: Visser 8/16: "impossible to get enough compute for all of the billions of agents." Power is his top-rated binding bottleneck.',1],
+   ["semis basket","SOXX","binding","basket",[544.74,538.16,463.39,45.79],7.1,'C 9/30 DISCRETIONARY working-&gt;binding (second move in two days). Support cited: Visser 9/26 "The compute needs just went up exponentially"; 9/27 "the infrastructure trade has a catalyst" — the same lines that moved it cooling-&gt;working on 9/28. STAGE FLIP 9/28 cooling-&gt;working. First call since his mid-cycle slowdown that compute has a catalyst. Visser 9/27: "this is the area where I was doing my midcycle slowdown... the structure of what’s going on is really good... I think the infrastructure trade has a catalyst. I think that is the recognition that the consumer agent stuff is going to drive not only numbers now... the token numbers are going to go up significantly. And that’s the reason why you’ve seen Intel, AMD" (00:33:10-00:33:51); "I think we’re at the beginning, and I think these things are going to get back to the highs" (00:34:14). 9/26: "The compute needs just went up exponentially" (00:34:13); "for the next 12 months, if you want to make money, you’re going to have to make it on compute and on the guard rails for these agents" (00:22:50). L2 on the same names: Camillo 9/21 AMD/INTC "what a time to be in the agentic AI / CPU biz"; ZaStocks 9/21 ARM "CPUs are a legit bottleneck with the rise of agents". Coverage VERIFIED: SOXX top two holdings INTC 10.20%, AMD 9.58% (stockanalysis.com, as of 9/24) — the CPU bottleneck is inside this seat. Counter-evidence: "I’ve been moving out of some of the tinier ones and moving all of that in the crypto" (00:34:27) — allocation, not stage. One rung, x0.80-&gt;x0.92. PRIOR: No direct call. Visser 8/16 argues AGAINST the basket: "Marvell is not the same semiconductor as Infineon, as Nvidia, as Intel." Live objection to the basket rating.',1],
+   ["memory","MU","binding","duopoly",[988.93,979.50,705.24,44.64],6.8,'ADDED 10/01 (v3.9), replacing GLW. Memory is part of COMPUTE — C 10/01: Visser’s compute is chips and power, and chips include memory. Visser 9/26: "We talked about Micron almost all of last year... They missed it because they didn’t understand compute. This trade is still the same. You want to be long compute speed" (00:12:35-00:12:52); "The compute needs just went up exponentially" (00:34:13). 9/27: "I think the infrastructure trade has a catalyst" (00:33:30). Timing binding = the compute stage C set for SOXX on 9/30. Quality duopoly: Micron, SK hynix and Samsung control DRAM/HBM supply. Look-through before the add: 8.08% of SOXX = 0.57% of the book (10/01 rule: already held only at >= 1.5%). Correlations measured 9/29: SOXX 0.82 (1y) / 0.88 (3m), AIPO 0.69 / 0.79, COPX 0.50 / 0.55. RISK the engine does not see: +537% over 1y and 58% above its 200-DMA (trailing return is excluded from S5 by design). Entry 11.9% over the 50-DMA.',1],
+      ["optical","LITE","forward","leader",[995.22,925.96,767.23,50.87],0,'ADDED 10/12 (v3.11), replacing COPX. Optical is the unseated AI buildout row at max demand (1.00) for the consumer-agent wave (packet D coverage block). Voiced: Visser 10/11 showed one slide from his agentic portfolio, the Lumentum CEO on TV: \u201cWe are completely sold out through 2029\u201d (00:40:10). One line, so timing enters at forward (no stage call); quality leader. Chosen on merits over MRVL / GLW / COHR / AAOI (C 10/12: best optical name only): pure-play lasers/transceivers vs MRVL blended custom XPU + electro-optics (no optics breakout); the only optical name Visser pointed at; entry passes (7.5% over 50-DMA, +29.7% over 200-DMA) while GLW (-3.5%), COHR (-1.7%), AAOI (-9.5%) are under their 200-DMA; nearest holding AIPO 0.63 (1y) / 0.79 (3m) vs MRVL-SOXX 0.76 / 0.85. RISK the engine does not see: +565% over 1y (trailing return excluded from S5 by design). Swap is breadth-neutral: AI buildout N_eff 1.615 -> 1.617 (book_changes 10/12).',1]]],
+ ["2 AI applied",null,"working","speculative",[
+   ["distribution","AMZN","cooling","contested",[259.44,258.85,242.29,55.48],9.2,'C 9/30 timing working-&gt;cooling on top of quality -&gt;contested. Support cited: Visser 9/27 "in the end, I believe all of them will go through multiple compression" (00:20:22); 9/26 "I don’t think they’re going to outperform the S&amp;P" (00:34:44) — previously logged as a restatement. QUALITY 9/30 leader-&gt;contested (mid-week freeze v3.8). Market structure changed: consumer agents shipped and sit between shopper and store; Amazon blocked Meta’s Muse (Visser 9/27 "standoff over Muse", 00:21:32). Visser: friction and eventual multiple compression ("in the end, I believe all of them will go through multiple compression", 00:20:22). Camillo 9/21-27: Amazon wins through AWS either way. Contested, not a leader. Timing HELD at working — the compression view restates his standing position; a rung move needs a repeat. Only current voice on the seat is Camillo. PRIOR (9/28): Camillo 9/21-27: still heavily concentrated in AMZN and wants it lower to add; Muse is bullish for Amazon because Meta will run a large AWS Bedrock / Graviton bill (L2 leg refreshed). Visser 9/27 is NEGATIVE on Mag 7 multiples over time: "in the end, I believe all of them will go through multiple compression" (00:20:22); Amazon’s "standoff over Muse" read as competition (00:21:32); 9/26 "I don’t think they’re going to outperform the S&amp;P" (00:34:44). His standing hyperscaler view restated, not a stage call — rung held at working. L1 support is now neutral-to-negative; the seat leans on Camillo. 9/28: 3.9% under its 50-DMA, only 2.2% over its 200-DMA (240.94) — S5 72, band 0.95; a 200-DMA break drops the band to 0.75, about -1.6pp. PRIOR: Camillo 9/18: "my biggest position is $AMZN by a wide margin" (fresh L2 leg; Camillo dark 8/31-9/13). Visser 9/20 on the Mag 7 near highs: "they all benefit from AI agents. All of them" — restates the 9/07 consumer-agent wave, no rung. PRIOR: Camillo 8/9, heaviest coverage in the month (~90 mentions): "mainly Bloom and Amazon"; distribution-moat framing — "intelligence is going to bring cost down massively", the edge accrues to distribution.',2],
+   ["proprietary data","LLY","working","leader",[1182.05,1174.63,1077.05,54.97],12.8,'Visser 9/27: "healthcare and drug pharmaceuticals will be a major part of the agentic side" (00:40:55); Insilico Medicine’s relationship with Eli Lilly cited on AI drug discovery (00:40:46); "this is going to be a better thing for the biology side" (00:41:21). Supportive, restated — rung held at working. 9/28: reclaimed its 50-DMA (+0.7%) — S5 72-&gt;58, band 0.95-&gt;0.85; that is the whole -0.7pp. PRIOR: Visser 9/20: "Eli Lilly, which I consider an AI name, is a big position" (00:28:41); "biotech is part of the consumer agent trade that Eli Lilly is part of" (00:44:40); buying IP, TuneLab. Supportive, no rung — "that is starting" still reads working. VOICE FLAG CLEARED 8/24 (previously flagged unsupported). Visser 8/23: \"I moved into Eli Lilly, which made new all-time highs this week\" and \"Eli Lilly will be the biggest company in 5 years\"; names it with crypto and silver as what he rotated into. 8/22: pharma will be \"the biggest winners out of AI from the application side... I think that is starting\" — re-rating spec 5% growth to 10-12%, multiples 12-15 to 20-25. Timing HELD at working: \"that is starting\" is working, not binding. Quality HELD at leader: the sub-theme is proprietary data, and trial-data moats are not a duopoly even where GLP-1 is.',1],
+   ]],
+ ["3 Tokenized rails",null,"forward","certain",[
+   ["brokerage rails","HOOD","working","leader",[109.25,107.69,94.05,46.14],8.0,'C 9/30 DISCRETIONARY quality contested-&gt;leader. Visser 9/26: "Robin Hood chain is driving" (00:44:44); 9/27 points listeners to Vlad Tenev on Moonshots (00:44:30) and "Robin Hood said something big is coming in stock tokens soon" (00:52:54) — an announcement, not observable; rung held at working. ZaStocks: not named. Camillo: tracker-only this window (not his words). 9/28: stretch 11.4%, S5 56. PRIOR: 9/20 Visser: his 46-name crypto index holds "public stocks like Coinbase, like Robin Hood, like Circle" (00:51:27). Camillo 9/14-20: "perma heavy on $HOOD" (L2 leg). Rung held at working. MOVED 8/22 from AI applied to Tokenized rails. Visser 8/15 groups it with tokenization, not fintech: "the public companies like Figure, like Hood, like PayPal, like Coinbase."',1],
+   ["settlement layer","ETHA","binding","duopoly",[56.94,53.85,50.70,48.04],9.7,'C 9/30 DISCRETIONARY quality sole-&gt;duopoly (Solana as the second settlement/speed chain — Visser 9/07 three horsemen). 9/27: "44 of 46 names are above the 50-day, 96%... This, my friends, is a bull market" (00:50:58-00:51:09), up from 43 of 46; index +31% for the month vs Bitcoin +6.5% (00:50:45); "Crypto to me is at the beginning of a Peter Lynch style bull market" (00:49:57). Already binding — top rung. 9/28: stretch 26.5%-&gt;19.4%, back under the 25% line — S5 54-&gt;56, band 0.75-&gt;0.85. PRIOR: STAGE FLIP 9/22 working-&gt;binding. Rejected 8/31 and 9/07 as restatement; this week the inflection is stated as arrived and observed. Visser 9/20: "The story of the week and the story for the month is crypto... we are finally at the point" (00:01:24) — the Sep-Oct inflection he dated in May. Observable: his 46-name index at YTD highs, "43 of the 46 are above the 50-day... This is a beginning bull market" (00:52:43); QTD ETH +66%, BTC +53%, SOL +38% vs semis -14% (00:05:45). Allocation: "I keep adding to crypto. I am not adding to the AI names" (00:28:04). Regulatory action: five-year SEC exemption for tokenized stocks (00:49:21). 9/19: "tokenizing things is the most important step we are taking in this entire crypto place" (01:05:02). One rung. PRIOR — STAGE FLIP 8/31 forward-&gt;working. The 8/15-8/16 basis was "beginning in September, the next constraint is not physical, it is financial" — dated, not started. It is now started. Visser 8/30: "this is the catalyst point... that is why I am talking about this now", and tokenization is "the most important thing to be spending time on at this point." 8/29: "I have more money focused on crypto right now"; "I have more Ethereum than I have ever had"; "I actually think Ethereum should outperform Bitcoin." Observable corroboration, not assertion alone: ETH/BTC breakout confirmed, SOL +46% MTD, tokenized index broke out and is outperforming BTC YTD, Japan tokenization plans announced, Coinbase/Better BTC-backed mortgages to GA. Held at working rather than binding — "the next constraint is financial" argues binding, but one rung at a time.',1],
+   ["brokerage rails","COIN","working","leader",[180.39,175.25,183.47,48.51],7.1,'ADDED 9/30 (workflow 5.11, first derived add). Themes, not a ticker call: Visser 9/20: his 46-name index holds "public stocks like Coinbase, like Robin Hood, like Circle" (00:51:27). 9/27: "You can trade Coinbase on Muse" (00:53:36); a headline he read: "crypto and stable coins will be the go-to payment method for agents" (00:53:43); "machine native transactions require purpose-built agentic payment protocols" (00:46:33). Seated in brokerage rails beside HOOD, inheriting that sub-theme’s Visser stage (working). Quality leader: largest US regulated exchange and custodian; substitutable. Correlations measured 9/29: nearest holding HOOD 0.78 (1y) / 0.73 (3m). Entry 9.2% over 50-DMA, 0.9% over 200-DMA — near the line. Alternative: new agent-payments row at forward -&gt; 4.8%.',1]]],
+ ["4 Monetary",null,"binding","strong",[
+   ["bitcoin","IBIT","binding","sole",[46.85,43.29,41.86,55.02],12.6,'10/05: binding now SOURCED (was discretionary). Visser 10/3: "when Bitcoin got above 82,000, that was the confirmation of the bull trend. I think we\u2019re in that"; "this stuff is about to kind of take off"; asset managers "looking through the door." Clears his invalidation (below 80,000 by end of October). Already at the top rung - no move. PRIOR: C 9/30 DISCRETIONARY working-&gt;binding — reverses the 9/28 flip with no new transcript since. STAGE FLIP 9/28 binding-&gt;working. Relative de-rate, same shape as GLDM 8/30. Visser 9/26: "at some point in innovation you go from liquidity to fundamentals and I believe we’re at the fundamental stage now. Bitcoin doesn’t fit in that fundamental argument" (00:44:26); "This is not a liquidity debasement trade. This is a fundamental trade" (00:45:13). 9/27: "Bitcoin is not what you watch right now. You want to watch the index" (00:51:51); index +31% MTD vs Bitcoin +6.5% (00:50:45). New evidence, not restatement: on 9/19 he called Bitcoin his one 30-year certainty; this is the first time he places it below the ecosystem. Not cooling: "Bitcoin should be benefiting from the ecosystem benefiting" (00:44:20), and Bitcoin +60% for the quarter with rates higher is "good" (00:45:10) — direction intact. One rung, x1.00-&gt;x0.92. Invalidation unchanged: below 80,000 by end of October. PRIOR: Visser 9/19: "the only one I can say... with certainty for the next 30 years... is Bitcoin" (00:44:10). Dated L1 invalidation: "If Bitcoin is below 80,000... by the end of October, there is a problem" (00:48:49); above 82,000 is his breakout. Visser 8/16: same debasement instruction, plus the lagging-leg read — "Bitcoin has not moved yet... eventually it will."',1],
+   ["silver","SLV","cooling","leader",[54.35,57.98,65.72,41.81],7.4,'C 10/12 DISCRETIONARY working-&gt;cooling. Purpose: GLDM removal lifted Monetary timing (gold at exhausted was dragging the mean), which pushed SLV to 10.3% at working; C does not want silver larger after gold leaves. Lines cited: Visser 10/4 long commodities \u201cfor both the debasing side... [and] the buildout side. That\u2019s not working\u201d; 9/26 \u201cThis is not a liquidity debasement trade\u201d (00:45:13). CAVEAT on the record: neither line names silver; his last direct silver statement is 9/20, long (\u201ccrypto and silver now make up most\u201d of his book). Not mentioned 10/10 or 10/11. 28-day silence check lands 10/18 (from 9/20) or 10/25 (from the 9/27 passing mention). Engine at cooling with GLDM out and AI buildout pin at 27.1: 9.0% (book_changes 10/12). PRIOR: 10/05: rung HELD. Visser 10/4 on commodities: long "for both the debasing side... [and] the buildout side. That\u2019s not working" - describes silver\u2019s dual case but does not name silver; no named quote, no rung (5.4). 5.11 review: no trigger fires - voiced 9/20 (15 days); 1y corr GLDM 0.83 (6m 0.86, 3m 0.91 - converging; duplicate trigger fires at 1y &gt; 0.90). PRIOR: C 9/30 DISCRETIONARY binding-&gt;working. Consistent with Visser 9/26 "This is not a liquidity debasement trade", which names no metal. 9/27: passing mention only — "everyone’s freaked out in gold and silver" amid "a little bit of deleveraging" (00:26:26). No rung change. 9/28: 16.7% under its 200-DMA — entry-paused, S5 45. PRIOR: Visser 9/20: "crypto and silver now make up most" of his book (00:27:28) — first silver mention since 8/16; stated position, no rung change. Visser 8/16: named directly in the debasement instruction. Dual-axis (monetary + industrial) but only the monetary half has a seat here.',1]]],
+];
+const LADDER=[1.00,0.92,0.80,0.72,0.60];   // identical rungs, accelerating decay
+const STAGES={"binding":LADDER[0],"working":LADDER[1],"cooling":LADDER[2],"forward":LADDER[3],"exhausted":LADDER[4]};
+const QUAL  ={"sole":LADDER[0],"basket":LADDER[1],"duopoly":LADDER[2],"leader":LADDER[3],"contested":LADDER[4],"remove":0};
+const QORDER=["sole","basket","duopoly","leader","contested","remove"];
+// S5 — DMA position + stretch above the 50-DMA. RSI REMOVED 8/22.
+// Original s5score() (pull_candidates.cjs 79-93) also carried an RSI term:
+//   rsi>=70 -> -15, rsi>=60 -> -7, rsi<=35 -> +5
+// Dropped because it was a cliff, not a slope: one tick from 69.9 to 70.0 cost
+// 8 points of S5 and 25% of weight, and it was the only thing putting gold
+// above bitcoin when S1 said the reverse. Stretch keeps a velocity signal on
+// something structural instead of a momentum oscillator.
+// NEVER penalises DMA distance itself - that was the 5/27 proximity trap.
+function s5calc(px,d50,d200,rsi){
+  if(d50==null||d200==null) return {s5:null,base:null,st:null,pen:null,rp:null,nodma:true};
+  const base = px<d200 ? 45 : (px<d50 ? 72 : 58);
+  const st=(px-d50)/d50*100;
+  const rp = st>=50?12 : st>=25?8 : st>=10?4 : 0;
+  const pen = rp*0.5;   // working-theme discount, hardcoded 0.5 in the source
+  return {s5:Math.max(5,Math.min(95,base-pen)),base,st,pen,rp,nodma:false};
+}
+const QWHY={sole:"no substitute exists",basket:"you own every winner in the theme",
+  duopoly:"2-3 firms control supply",leader:"durable moat, substitutable at cost",
+  contested:"one bet in a fragmented field",remove:"REMOVED from the book — zero weight, excluded from the trend"};
+const FLOOR_SCORE=45;
+// Standing risk rule. Spans trends, unlike a per-trend override. Fires on its own
+// when breached; excess reflows pro-rata to everything outside the sleeve.
+let SLEEVES=[{name:"hard money", tickers:["GLDM","IBIT","SLV"], cap:15.0, on:false}];
+const CONV={"certain":LADDER[0],"strong":LADDER[1],"forming":LADDER[2],"speculative":LADDER[3],"watch":LADDER[4]};
+
+// ---- GLOBAL ADOPTION WAVE -------------------------------------------------
+// One timeline, one setting. Visser 8/16 sequencing: coding agents now ->
+// enterprise agents next year -> consumer agents the back half -> embodied 2028.
+// Different waves stress different parts of the buildout, so the sub-theme
+// demand multipliers below shift when the wave advances. Applies to AI buildout
+// ONLY - the other trends are not downstream of the AI adoption curve.
+const WAVES=["chatbots","coding agents","enterprise agents","consumer agents","embodied"];
+// WAVE ADVANCED 2026-09-07: coding agents -> consumer agents.
+// Visser 9/6/26: "Then we went to the coding agents, but now we're in the
+// personal and the workflow agents. That means we need financial agents and
+// that's what's beginning to happen now."
+// Observable, not announced: Grok/MoonPay crypto buy-and-lend shipped; Stripe
+// integrations; Grokbot-style agents as a new consumption shock (Gavin Baker,
+// cited 9/6). Consumer over enterprise on his own "personal workflow agent"
+// example; the rungs differ only on copper input, 0.92 vs 1.00.
+// NOT FROZEN - worksheet input only. Cron remains 2026-08-31-v3.4.1-stageflip.
+let WAVE="consumer agents";
+const WAVE_DEMAND={
+  //                chatbots coding enterprise consumer embodied
+  "power/grid":         [0.92, 1.00, 1.00, 1.00, 0.92],
+  "semis basket":       [0.92, 0.92, 0.92, 0.92, 1.00],
+  "memory":             [0.80, 1.00, 1.00, 1.00, 0.80],
+  "storage / nearline": [0.72, 0.80, 1.00, 0.80, 0.72],
+  "optical":            [0.72, 0.92, 1.00, 1.00, 0.72],
+  "lithography":        [0.92, 0.92, 0.92, 0.92, 0.92],
+  "copper input":       [0.80, 0.80, 0.92, 1.00, 1.00],
+};
+const WAVE_WHY={
+ "power/grid":"electrons gate every wave; eases slightly at the edge",
+ "semis basket":"constant through the stack, peaks when silicon goes everywhere",
+ "memory":"Elon: memory is the rate limiter of the agentic era. Binding for every agent wave",
+ "storage / nearline":"peaks at enterprise — data lakes, retrieval, persistent state. Consumer agents are more ephemeral",
+ "optical":"cluster interconnect; peaks once inference is distributed",
+ "lithography":"every wave needs leading edge — flat by construction",
+ "copper input":"rises through the waves; peaks at embodied, where motors and actuators are copper",
+};
+// ---- MEASURED CORRELATIONS -------------------------------------------------
+// Daily log returns, fetched 2026-08-23. Three windows so the window-sensitivity
+// is visible: correlations TIGHTEN as the window shortens (AIPO-SOXX 0.86 -> 0.91,
+// GLDM-IBIT 0.28 -> 0.59), i.e. the recent regime is more correlated.
+const CORR={"1y":{"AIPO":{"AIPO":1.0,"SOXX":0.8622,"GLW":0.7282,"ASML":0.7219,"COPX":0.6409,"AMZN":0.2839,"LLY":-0.0648,"HOOD":0.4437,"ETHA":0.4401,"GLDM":0.3724,"IBIT":0.3966,"SLV":0.3761,"GSOL":0.3914,"MU":0.692,"WDC":0.6707,"SNDK":0.6673,"COHR":0.718,"LITE":0.6332,"AAOI":0.5736,"ABCL":0.3716,"AMD":0.7166,"ARM":0.6187,"AVGO":0.6546,"BE":0.7619,"BSOL":0.3787,"COIN":0.3735,"CRCL":0.3374,"FLNC":0.5465,"INTC":0.5929,"META":0.1909,"MRVL":0.6569,"MSTR":0.3819,"NVDA":0.5893,"SKHY":0.6782,"TEM":0.3473,"VST":0.6098},"SOXX":{"AIPO":0.8622,"SOXX":1.0,"GLW":0.75,"ASML":0.8258,"COPX":0.6281,"AMZN":0.2639,"LLY":-0.08,"HOOD":0.3699,"ETHA":0.3802,"GLDM":0.3171,"IBIT":0.3479,"SLV":0.3491,"GSOL":0.3322,"MU":0.8228,"WDC":0.6977,"SNDK":0.6998,"COHR":0.7172,"LITE":0.601,"AAOI":0.5468,"ABCL":0.3162,"AMD":0.8029,"ARM":0.694,"AVGO":0.6747,"BE":0.6129,"BSOL":0.3079,"COIN":0.3214,"CRCL":0.2769,"FLNC":0.4623,"INTC":0.7471,"META":0.2043,"MRVL":0.7598,"MSTR":0.3227,"NVDA":0.5974,"SKHY":0.7668,"TEM":0.3161,"VST":0.4625},"GLW":{"AIPO":0.7282,"SOXX":0.75,"GLW":1.0,"ASML":0.6611,"COPX":0.4925,"AMZN":0.1574,"LLY":-0.0409,"HOOD":0.1689,"ETHA":0.2207,"GLDM":0.2286,"IBIT":0.1906,"SLV":0.2677,"GSOL":0.2133,"MU":0.584,"WDC":0.5546,"SNDK":0.5226,"COHR":0.7846,"LITE":0.6788,"AAOI":0.5685,"ABCL":0.2333,"AMD":0.5871,"ARM":0.5139,"AVGO":0.468,"BE":0.5137,"BSOL":0.1993,"COIN":0.1263,"CRCL":0.1629,"FLNC":0.3569,"INTC":0.522,"META":0.1066,"MRVL":0.5872,"MSTR":0.1802,"NVDA":0.4096,"SKHY":0.6728,"TEM":0.1626,"VST":0.3961},"ASML":{"AIPO":0.7219,"SOXX":0.8258,"GLW":0.6611,"ASML":1.0,"COPX":0.5625,"AMZN":0.1987,"LLY":-0.0277,"HOOD":0.2894,"ETHA":0.2757,"GLDM":0.2577,"IBIT":0.233,"SLV":0.3039,"GSOL":0.2164,"MU":0.6373,"WDC":0.5573,"SNDK":0.5639,"COHR":0.5697,"LITE":0.4623,"AAOI":0.4075,"ABCL":0.2932,"AMD":0.6117,"ARM":0.5623,"AVGO":0.5509,"BE":0.5008,"BSOL":0.1984,"COIN":0.1884,"CRCL":0.1472,"FLNC":0.4222,"INTC":0.562,"META":0.1453,"MRVL":0.5997,"MSTR":0.1908,"NVDA":0.5151,"SKHY":0.6453,"TEM":0.2408,"VST":0.4294},"COPX":{"AIPO":0.6409,"SOXX":0.6281,"GLW":0.4925,"ASML":0.5625,"COPX":1.0,"AMZN":0.2432,"LLY":0.0575,"HOOD":0.4287,"ETHA":0.4388,"GLDM":0.6903,"IBIT":0.3866,"SLV":0.7359,"GSOL":0.3624,"MU":0.5003,"WDC":0.4634,"SNDK":0.4306,"COHR":0.4881,"LITE":0.3722,"AAOI":0.3763,"ABCL":0.3331,"AMD":0.5497,"ARM":0.4532,"AVGO":0.4221,"BE":0.4131,"BSOL":0.3525,"COIN":0.3805,"CRCL":0.3057,"FLNC":0.406,"INTC":0.4051,"META":0.2361,"MRVL":0.4855,"MSTR":0.3281,"NVDA":0.4594,"SKHY":0.575,"TEM":0.3178,"VST":0.3511},"AMZN":{"AIPO":0.2839,"SOXX":0.2639,"GLW":0.1574,"ASML":0.1987,"COPX":0.2432,"AMZN":1.0,"LLY":0.0426,"HOOD":0.3153,"ETHA":0.2794,"GLDM":0.087,"IBIT":0.2681,"SLV":0.1421,"GSOL":0.2498,"MU":0.1667,"WDC":0.2095,"SNDK":0.1703,"COHR":0.1602,"LITE":0.0946,"AAOI":0.1577,"ABCL":0.1937,"AMD":0.2391,"ARM":0.2118,"AVGO":0.2384,"BE":0.2569,"BSOL":0.2217,"COIN":0.2291,"CRCL":0.2314,"FLNC":0.2119,"INTC":0.1867,"META":0.4014,"MRVL":0.1749,"MSTR":0.2348,"NVDA":0.2713,"SKHY":-0.0573,"TEM":0.2457,"VST":0.2091},"LLY":{"AIPO":-0.0648,"SOXX":-0.08,"GLW":-0.0409,"ASML":-0.0277,"COPX":0.0575,"AMZN":0.0426,"LLY":1.0,"HOOD":0.094,"ETHA":0.0268,"GLDM":0.1216,"IBIT":0.0696,"SLV":0.1343,"GSOL":0.0518,"MU":-0.0559,"WDC":-0.0884,"SNDK":-0.066,"COHR":-0.073,"LITE":-0.0406,"AAOI":-0.0233,"ABCL":0.2501,"AMD":-0.1284,"ARM":-0.0301,"AVGO":-0.1015,"BE":-0.1741,"BSOL":0.0459,"COIN":0.0844,"CRCL":0.0038,"FLNC":-0.0379,"INTC":-0.0516,"META":-0.0596,"MRVL":-0.0076,"MSTR":0.08,"NVDA":-0.0813,"SKHY":-0.3328,"TEM":0.165,"VST":-0.0977},"HOOD":{"AIPO":0.4437,"SOXX":0.3699,"GLW":0.1689,"ASML":0.2894,"COPX":0.4287,"AMZN":0.3153,"LLY":0.094,"HOOD":1.0,"ETHA":0.6215,"GLDM":0.3107,"IBIT":0.6427,"SLV":0.2924,"GSOL":0.5739,"MU":0.2563,"WDC":0.2133,"SNDK":0.2139,"COHR":0.2381,"LITE":0.1562,"AAOI":0.213,"ABCL":0.4334,"AMD":0.3614,"ARM":0.354,"AVGO":0.3602,"BE":0.2817,"BSOL":0.5664,"COIN":0.7842,"CRCL":0.5991,"FLNC":0.261,"INTC":0.2155,"META":0.2964,"MRVL":0.2869,"MSTR":0.658,"NVDA":0.4415,"SKHY":0.2982,"TEM":0.5108,"VST":0.2968},"ETHA":{"AIPO":0.4401,"SOXX":0.3802,"GLW":0.2207,"ASML":0.2757,"COPX":0.4388,"AMZN":0.2794,"LLY":0.0268,"HOOD":0.6215,"ETHA":1.0,"GLDM":0.3172,"IBIT":0.9194,"SLV":0.3235,"GSOL":0.8861,"MU":0.3076,"WDC":0.2414,"SNDK":0.203,"COHR":0.269,"LITE":0.2033,"AAOI":0.2459,"ABCL":0.2856,"AMD":0.321,"ARM":0.2717,"AVGO":0.3532,"BE":0.2875,"BSOL":0.884,"COIN":0.7495,"CRCL":0.6231,"FLNC":0.3162,"INTC":0.2577,"META":0.2324,"MRVL":0.2701,"MSTR":0.7849,"NVDA":0.3782,"SKHY":0.2487,"TEM":0.356,"VST":0.2482},"GLDM":{"AIPO":0.3724,"SOXX":0.3171,"GLW":0.2286,"ASML":0.2577,"COPX":0.6903,"AMZN":0.087,"LLY":0.1216,"HOOD":0.3107,"ETHA":0.3172,"GLDM":1.0,"IBIT":0.2896,"SLV":0.8318,"GSOL":0.2542,"MU":0.2807,"WDC":0.2609,"SNDK":0.2082,"COHR":0.24,"LITE":0.1356,"AAOI":0.1683,"ABCL":0.284,"AMD":0.275,"ARM":0.2269,"AVGO":0.1475,"BE":0.2664,"BSOL":0.2823,"COIN":0.2822,"CRCL":0.2255,"FLNC":0.2174,"INTC":0.2078,"META":0.1417,"MRVL":0.2618,"MSTR":0.2543,"NVDA":0.2444,"SKHY":0.3554,"TEM":0.2556,"VST":0.2064},"IBIT":{"AIPO":0.3966,"SOXX":0.3479,"GLW":0.1906,"ASML":0.233,"COPX":0.3866,"AMZN":0.2681,"LLY":0.0696,"HOOD":0.6427,"ETHA":0.9194,"GLDM":0.2896,"IBIT":1.0,"SLV":0.3007,"GSOL":0.8763,"MU":0.2791,"WDC":0.2035,"SNDK":0.1908,"COHR":0.245,"LITE":0.158,"AAOI":0.2333,"ABCL":0.2684,"AMD":0.3345,"ARM":0.2601,"AVGO":0.2926,"BE":0.2594,"BSOL":0.8745,"COIN":0.793,"CRCL":0.6342,"FLNC":0.2624,"INTC":0.2691,"META":0.2169,"MRVL":0.2167,"MSTR":0.8569,"NVDA":0.3547,"SKHY":0.2588,"TEM":0.3225,"VST":0.1942},"SLV":{"AIPO":0.3761,"SOXX":0.3491,"GLW":0.2677,"ASML":0.3039,"COPX":0.7359,"AMZN":0.1421,"LLY":0.1343,"HOOD":0.2924,"ETHA":0.3235,"GLDM":0.8318,"IBIT":0.3007,"SLV":1.0,"GSOL":0.2565,"MU":0.2898,"WDC":0.3224,"SNDK":0.203,"COHR":0.2762,"LITE":0.1739,"AAOI":0.2205,"ABCL":0.2847,"AMD":0.2975,"ARM":0.2092,"AVGO":0.1858,"BE":0.2435,"BSOL":0.271,"COIN":0.2887,"CRCL":0.2302,"FLNC":0.2857,"INTC":0.23,"META":0.1491,"MRVL":0.2661,"MSTR":0.2545,"NVDA":0.257,"SKHY":0.4828,"TEM":0.2427,"VST":0.2072},"GSOL":{"AIPO":0.3914,"SOXX":0.3322,"GLW":0.2133,"ASML":0.2164,"COPX":0.3624,"AMZN":0.2498,"LLY":0.0518,"HOOD":0.5739,"ETHA":0.8861,"GLDM":0.2542,"IBIT":0.8763,"SLV":0.2565,"GSOL":1.0,"MU":0.2508,"WDC":0.183,"SNDK":0.1738,"COHR":0.2364,"LITE":0.1537,"AAOI":0.2187,"ABCL":0.3185,"AMD":0.3228,"ARM":0.2517,"AVGO":0.3109,"BE":0.2224,"BSOL":0.9992,"COIN":0.726,"CRCL":0.5891,"FLNC":0.315,"INTC":0.2614,"META":0.1878,"MRVL":0.2083,"MSTR":0.761,"NVDA":0.3459,"SKHY":0.2154,"TEM":0.3141,"VST":0.223},"MU":{"AIPO":0.692,"SOXX":0.8228,"GLW":0.584,"ASML":0.6373,"COPX":0.5003,"AMZN":0.1667,"LLY":-0.0559,"HOOD":0.2563,"ETHA":0.3076,"GLDM":0.2807,"IBIT":0.2791,"SLV":0.2898,"GSOL":0.2508,"MU":1.0,"WDC":0.7113,"SNDK":0.7816,"COHR":0.5779,"LITE":0.5353,"AAOI":0.443,"ABCL":0.281,"AMD":0.6302,"ARM":0.4871,"AVGO":0.5054,"BE":0.5169,"BSOL":0.238,"COIN":0.2751,"CRCL":0.264,"FLNC":0.4133,"INTC":0.5926,"META":0.0971,"MRVL":0.5573,"MSTR":0.2244,"NVDA":0.4575,"SKHY":0.8216,"TEM":0.2507,"VST":0.4012},"WDC":{"AIPO":0.6707,"SOXX":0.6977,"GLW":0.5546,"ASML":0.5573,"COPX":0.4634,"AMZN":0.2095,"LLY":-0.0884,"HOOD":0.2133,"ETHA":0.2414,"GLDM":0.2609,"IBIT":0.2035,"SLV":0.3224,"GSOL":0.183,"MU":0.7113,"WDC":1.0,"SNDK":0.7275,"COHR":0.5469,"LITE":0.5257,"AAOI":0.4007,"ABCL":0.2089,"AMD":0.5162,"ARM":0.4269,"AVGO":0.4565,"BE":0.5448,"BSOL":0.1776,"COIN":0.199,"CRCL":0.2057,"FLNC":0.3949,"INTC":0.4952,"META":0.1025,"MRVL":0.5116,"MSTR":0.1859,"NVDA":0.3492,"SKHY":0.6975,"TEM":0.1742,"VST":0.4658},"SNDK":{"AIPO":0.6673,"SOXX":0.6998,"GLW":0.5226,"ASML":0.5639,"COPX":0.4306,"AMZN":0.1703,"LLY":-0.066,"HOOD":0.2139,"ETHA":0.203,"GLDM":0.2082,"IBIT":0.1908,"SLV":0.203,"GSOL":0.1738,"MU":0.7816,"WDC":0.7275,"SNDK":1.0,"COHR":0.5284,"LITE":0.5674,"AAOI":0.4317,"ABCL":0.2653,"AMD":0.5731,"ARM":0.4116,"AVGO":0.4517,"BE":0.5333,"BSOL":0.1503,"COIN":0.1965,"CRCL":0.168,"FLNC":0.4286,"INTC":0.5645,"META":0.0981,"MRVL":0.446,"MSTR":0.1584,"NVDA":0.3742,"SKHY":0.8084,"TEM":0.2375,"VST":0.4191},"COHR":{"AIPO":0.718,"SOXX":0.7172,"GLW":0.7846,"ASML":0.5697,"COPX":0.4881,"AMZN":0.1602,"LLY":-0.073,"HOOD":0.2381,"ETHA":0.269,"GLDM":0.24,"IBIT":0.245,"SLV":0.2762,"GSOL":0.2364,"MU":0.5779,"WDC":0.5469,"SNDK":0.5284,"COHR":1.0,"LITE":0.7992,"AAOI":0.6832,"ABCL":0.1797,"AMD":0.5365,"ARM":0.4783,"AVGO":0.5059,"BE":0.5365,"BSOL":0.2172,"COIN":0.2268,"CRCL":0.2207,"FLNC":0.3528,"INTC":0.5181,"META":0.1186,"MRVL":0.6144,"MSTR":0.2402,"NVDA":0.4747,"SKHY":0.5647,"TEM":0.1598,"VST":0.3665},"LITE":{"AIPO":0.6332,"SOXX":0.601,"GLW":0.6788,"ASML":0.4623,"COPX":0.3722,"AMZN":0.0946,"LLY":-0.0406,"HOOD":0.1562,"ETHA":0.2033,"GLDM":0.1356,"IBIT":0.158,"SLV":0.1739,"GSOL":0.1537,"MU":0.5353,"WDC":0.5257,"SNDK":0.5674,"COHR":0.7992,"LITE":1.0,"AAOI":0.6771,"ABCL":0.1563,"AMD":0.4133,"ARM":0.3787,"AVGO":0.451,"BE":0.5031,"BSOL":0.1347,"COIN":0.158,"CRCL":0.1698,"FLNC":0.315,"INTC":0.4682,"META":0.0687,"MRVL":0.4648,"MSTR":0.16,"NVDA":0.3876,"SKHY":0.6648,"TEM":0.1525,"VST":0.3463},"AAOI":{"AIPO":0.5736,"SOXX":0.5468,"GLW":0.5685,"ASML":0.4075,"COPX":0.3763,"AMZN":0.1577,"LLY":-0.0233,"HOOD":0.213,"ETHA":0.2459,"GLDM":0.1683,"IBIT":0.2333,"SLV":0.2205,"GSOL":0.2187,"MU":0.443,"WDC":0.4007,"SNDK":0.4317,"COHR":0.6832,"LITE":0.6771,"AAOI":1.0,"ABCL":0.2509,"AMD":0.4589,"ARM":0.3565,"AVGO":0.3779,"BE":0.3901,"BSOL":0.1858,"COIN":0.2257,"CRCL":0.2317,"FLNC":0.3614,"INTC":0.4646,"META":0.063,"MRVL":0.4585,"MSTR":0.2517,"NVDA":0.3472,"SKHY":0.6819,"TEM":0.2225,"VST":0.2749},"ABCL":{"AIPO":0.3716,"SOXX":0.3162,"GLW":0.2333,"ASML":0.2932,"COPX":0.3331,"AMZN":0.1937,"LLY":0.2501,"HOOD":0.4334,"ETHA":0.2856,"GLDM":0.284,"IBIT":0.2684,"SLV":0.2847,"GSOL":0.3185,"MU":0.281,"WDC":0.2089,"SNDK":0.2653,"COHR":0.1797,"LITE":0.1563,"AAOI":0.2509,"ABCL":1.0,"AMD":0.3243,"ARM":0.3032,"AVGO":0.1837,"BE":0.2522,"BSOL":0.3032,"COIN":0.3123,"CRCL":0.3132,"FLNC":0.3103,"INTC":0.2505,"META":0.0834,"MRVL":0.2331,"MSTR":0.2876,"NVDA":0.2141,"SKHY":0.2242,"TEM":0.525,"VST":0.2831},"AMD":{"AIPO":0.7166,"SOXX":0.8029,"GLW":0.5871,"ASML":0.6117,"COPX":0.5497,"AMZN":0.2391,"LLY":-0.1284,"HOOD":0.3614,"ETHA":0.321,"GLDM":0.275,"IBIT":0.3345,"SLV":0.2975,"GSOL":0.3228,"MU":0.6302,"WDC":0.5162,"SNDK":0.5731,"COHR":0.5365,"LITE":0.4133,"AAOI":0.4589,"ABCL":0.3243,"AMD":1.0,"ARM":0.6326,"AVGO":0.51,"BE":0.4808,"BSOL":0.315,"COIN":0.3084,"CRCL":0.2093,"FLNC":0.424,"INTC":0.6505,"META":0.209,"MRVL":0.5631,"MSTR":0.2938,"NVDA":0.5024,"SKHY":0.6837,"TEM":0.2753,"VST":0.4002},"ARM":{"AIPO":0.6187,"SOXX":0.694,"GLW":0.5139,"ASML":0.5623,"COPX":0.4532,"AMZN":0.2118,"LLY":-0.0301,"HOOD":0.354,"ETHA":0.2717,"GLDM":0.2269,"IBIT":0.2601,"SLV":0.2092,"GSOL":0.2517,"MU":0.4871,"WDC":0.4269,"SNDK":0.4116,"COHR":0.4783,"LITE":0.3787,"AAOI":0.3565,"ABCL":0.3032,"AMD":0.6326,"ARM":1.0,"AVGO":0.508,"BE":0.4205,"BSOL":0.2308,"COIN":0.2894,"CRCL":0.2781,"FLNC":0.3004,"INTC":0.5222,"META":0.1872,"MRVL":0.6019,"MSTR":0.3035,"NVDA":0.4271,"SKHY":0.4741,"TEM":0.2549,"VST":0.3069},"AVGO":{"AIPO":0.6546,"SOXX":0.6747,"GLW":0.468,"ASML":0.5509,"COPX":0.4221,"AMZN":0.2384,"LLY":-0.1015,"HOOD":0.3602,"ETHA":0.3532,"GLDM":0.1475,"IBIT":0.2926,"SLV":0.1858,"GSOL":0.3109,"MU":0.5054,"WDC":0.4565,"SNDK":0.4517,"COHR":0.5059,"LITE":0.451,"AAOI":0.3779,"ABCL":0.1837,"AMD":0.51,"ARM":0.508,"AVGO":1.0,"BE":0.4649,"BSOL":0.302,"COIN":0.2911,"CRCL":0.2527,"FLNC":0.3315,"INTC":0.4331,"META":0.1886,"MRVL":0.5079,"MSTR":0.2695,"NVDA":0.5358,"SKHY":0.4774,"TEM":0.249,"VST":0.3581},"BE":{"AIPO":0.7619,"SOXX":0.6129,"GLW":0.5137,"ASML":0.5008,"COPX":0.4131,"AMZN":0.2569,"LLY":-0.1741,"HOOD":0.2817,"ETHA":0.2875,"GLDM":0.2664,"IBIT":0.2594,"SLV":0.2435,"GSOL":0.2224,"MU":0.5169,"WDC":0.5448,"SNDK":0.5333,"COHR":0.5365,"LITE":0.5031,"AAOI":0.3901,"ABCL":0.2522,"AMD":0.4808,"ARM":0.4205,"AVGO":0.4649,"BE":1.0,"BSOL":0.2175,"COIN":0.2523,"CRCL":0.2424,"FLNC":0.4692,"INTC":0.4646,"META":0.1544,"MRVL":0.4332,"MSTR":0.2582,"NVDA":0.4111,"SKHY":0.6888,"TEM":0.2315,"VST":0.4383},"BSOL":{"AIPO":0.3787,"SOXX":0.3079,"GLW":0.1993,"ASML":0.1984,"COPX":0.3525,"AMZN":0.2217,"LLY":0.0459,"HOOD":0.5664,"ETHA":0.884,"GLDM":0.2823,"IBIT":0.8745,"SLV":0.271,"GSOL":0.9992,"MU":0.238,"WDC":0.1776,"SNDK":0.1503,"COHR":0.2172,"LITE":0.1347,"AAOI":0.1858,"ABCL":0.3032,"AMD":0.315,"ARM":0.2308,"AVGO":0.302,"BE":0.2175,"BSOL":1.0,"COIN":0.73,"CRCL":0.5842,"FLNC":0.3144,"INTC":0.2526,"META":0.1758,"MRVL":0.1876,"MSTR":0.7585,"NVDA":0.3455,"SKHY":0.2109,"TEM":0.2934,"VST":0.2109},"COIN":{"AIPO":0.3735,"SOXX":0.3214,"GLW":0.1263,"ASML":0.1884,"COPX":0.3805,"AMZN":0.2291,"LLY":0.0844,"HOOD":0.7842,"ETHA":0.7495,"GLDM":0.2822,"IBIT":0.793,"SLV":0.2887,"GSOL":0.726,"MU":0.2751,"WDC":0.199,"SNDK":0.1965,"COHR":0.2268,"LITE":0.158,"AAOI":0.2257,"ABCL":0.3123,"AMD":0.3084,"ARM":0.2894,"AVGO":0.2911,"BE":0.2523,"BSOL":0.73,"COIN":1.0,"CRCL":0.7538,"FLNC":0.266,"INTC":0.2327,"META":0.2063,"MRVL":0.2396,"MSTR":0.8026,"NVDA":0.358,"SKHY":0.2218,"TEM":0.4562,"VST":0.198},"CRCL":{"AIPO":0.3374,"SOXX":0.2769,"GLW":0.1629,"ASML":0.1472,"COPX":0.3057,"AMZN":0.2314,"LLY":0.0038,"HOOD":0.5991,"ETHA":0.6231,"GLDM":0.2255,"IBIT":0.6342,"SLV":0.2302,"GSOL":0.5891,"MU":0.264,"WDC":0.2057,"SNDK":0.168,"COHR":0.2207,"LITE":0.1698,"AAOI":0.2317,"ABCL":0.3132,"AMD":0.2093,"ARM":0.2781,"AVGO":0.2527,"BE":0.2424,"BSOL":0.5842,"COIN":0.7538,"CRCL":1.0,"FLNC":0.2156,"INTC":0.1923,"META":0.208,"MRVL":0.2097,"MSTR":0.6433,"NVDA":0.2979,"SKHY":0.2406,"TEM":0.29,"VST":0.2395},"FLNC":{"AIPO":0.5465,"SOXX":0.4623,"GLW":0.3569,"ASML":0.4222,"COPX":0.406,"AMZN":0.2119,"LLY":-0.0379,"HOOD":0.261,"ETHA":0.3162,"GLDM":0.2174,"IBIT":0.2624,"SLV":0.2857,"GSOL":0.315,"MU":0.4133,"WDC":0.3949,"SNDK":0.4286,"COHR":0.3528,"LITE":0.315,"AAOI":0.3614,"ABCL":0.3103,"AMD":0.424,"ARM":0.3004,"AVGO":0.3315,"BE":0.4692,"BSOL":0.3144,"COIN":0.266,"CRCL":0.2156,"FLNC":1.0,"INTC":0.3042,"META":0.0949,"MRVL":0.343,"MSTR":0.2244,"NVDA":0.3803,"SKHY":0.4905,"TEM":0.1922,"VST":0.3514},"INTC":{"AIPO":0.5929,"SOXX":0.7471,"GLW":0.522,"ASML":0.562,"COPX":0.4051,"AMZN":0.1867,"LLY":-0.0516,"HOOD":0.2155,"ETHA":0.2577,"GLDM":0.2078,"IBIT":0.2691,"SLV":0.23,"GSOL":0.2614,"MU":0.5926,"WDC":0.4952,"SNDK":0.5645,"COHR":0.5181,"LITE":0.4682,"AAOI":0.4646,"ABCL":0.2505,"AMD":0.6505,"ARM":0.5222,"AVGO":0.4331,"BE":0.4646,"BSOL":0.2526,"COIN":0.2327,"CRCL":0.1923,"FLNC":0.3042,"INTC":1.0,"META":0.1679,"MRVL":0.5045,"MSTR":0.2262,"NVDA":0.3863,"SKHY":0.6994,"TEM":0.1881,"VST":0.262},"META":{"AIPO":0.1909,"SOXX":0.2043,"GLW":0.1066,"ASML":0.1453,"COPX":0.2361,"AMZN":0.4014,"LLY":-0.0596,"HOOD":0.2964,"ETHA":0.2324,"GLDM":0.1417,"IBIT":0.2169,"SLV":0.1491,"GSOL":0.1878,"MU":0.0971,"WDC":0.1025,"SNDK":0.0981,"COHR":0.1186,"LITE":0.0687,"AAOI":0.063,"ABCL":0.0834,"AMD":0.209,"ARM":0.1872,"AVGO":0.1886,"BE":0.1544,"BSOL":0.1758,"COIN":0.2063,"CRCL":0.208,"FLNC":0.0949,"INTC":0.1679,"META":1.0,"MRVL":0.1068,"MSTR":0.152,"NVDA":0.2949,"SKHY":-0.0199,"TEM":0.2004,"VST":0.1732},"MRVL":{"AIPO":0.6569,"SOXX":0.7598,"GLW":0.5872,"ASML":0.5997,"COPX":0.4855,"AMZN":0.1749,"LLY":-0.0076,"HOOD":0.2869,"ETHA":0.2701,"GLDM":0.2618,"IBIT":0.2167,"SLV":0.2661,"GSOL":0.2083,"MU":0.5573,"WDC":0.5116,"SNDK":0.446,"COHR":0.6144,"LITE":0.4648,"AAOI":0.4585,"ABCL":0.2331,"AMD":0.5631,"ARM":0.6019,"AVGO":0.5079,"BE":0.4332,"BSOL":0.1876,"COIN":0.2396,"CRCL":0.2097,"FLNC":0.343,"INTC":0.5045,"META":0.1068,"MRVL":1.0,"MSTR":0.2442,"NVDA":0.3991,"SKHY":0.6794,"TEM":0.3125,"VST":0.2961},"MSTR":{"AIPO":0.3819,"SOXX":0.3227,"GLW":0.1802,"ASML":0.1908,"COPX":0.3281,"AMZN":0.2348,"LLY":0.08,"HOOD":0.658,"ETHA":0.7849,"GLDM":0.2543,"IBIT":0.8569,"SLV":0.2545,"GSOL":0.761,"MU":0.2244,"WDC":0.1859,"SNDK":0.1584,"COHR":0.2402,"LITE":0.16,"AAOI":0.2517,"ABCL":0.2876,"AMD":0.2938,"ARM":0.3035,"AVGO":0.2695,"BE":0.2582,"BSOL":0.7585,"COIN":0.8026,"CRCL":0.6433,"FLNC":0.2244,"INTC":0.2262,"META":0.152,"MRVL":0.2442,"MSTR":1.0,"NVDA":0.3573,"SKHY":0.2636,"TEM":0.3533,"VST":0.1472},"NVDA":{"AIPO":0.5893,"SOXX":0.5974,"GLW":0.4096,"ASML":0.5151,"COPX":0.4594,"AMZN":0.2713,"LLY":-0.0813,"HOOD":0.4415,"ETHA":0.3782,"GLDM":0.2444,"IBIT":0.3547,"SLV":0.257,"GSOL":0.3459,"MU":0.4575,"WDC":0.3492,"SNDK":0.3742,"COHR":0.4747,"LITE":0.3876,"AAOI":0.3472,"ABCL":0.2141,"AMD":0.5024,"ARM":0.4271,"AVGO":0.5358,"BE":0.4111,"BSOL":0.3455,"COIN":0.358,"CRCL":0.2979,"FLNC":0.3803,"INTC":0.3863,"META":0.2949,"MRVL":0.3991,"MSTR":0.3573,"NVDA":1.0,"SKHY":0.4648,"TEM":0.2891,"VST":0.3324},"SKHY":{"AIPO":0.6782,"SOXX":0.7668,"GLW":0.6728,"ASML":0.6453,"COPX":0.575,"AMZN":-0.0573,"LLY":-0.3328,"HOOD":0.2982,"ETHA":0.2487,"GLDM":0.3554,"IBIT":0.2588,"SLV":0.4828,"GSOL":0.2154,"MU":0.8216,"WDC":0.6975,"SNDK":0.8084,"COHR":0.5647,"LITE":0.6648,"AAOI":0.6819,"ABCL":0.2242,"AMD":0.6837,"ARM":0.4741,"AVGO":0.4774,"BE":0.6888,"BSOL":0.2109,"COIN":0.2218,"CRCL":0.2406,"FLNC":0.4905,"INTC":0.6994,"META":-0.0199,"MRVL":0.6794,"MSTR":0.2636,"NVDA":0.4648,"SKHY":1.0,"TEM":0.2494,"VST":0.4061},"TEM":{"AIPO":0.3473,"SOXX":0.3161,"GLW":0.1626,"ASML":0.2408,"COPX":0.3178,"AMZN":0.2457,"LLY":0.165,"HOOD":0.5108,"ETHA":0.356,"GLDM":0.2556,"IBIT":0.3225,"SLV":0.2427,"GSOL":0.3141,"MU":0.2507,"WDC":0.1742,"SNDK":0.2375,"COHR":0.1598,"LITE":0.1525,"AAOI":0.2225,"ABCL":0.525,"AMD":0.2753,"ARM":0.2549,"AVGO":0.249,"BE":0.2315,"BSOL":0.2934,"COIN":0.4562,"CRCL":0.29,"FLNC":0.1922,"INTC":0.1881,"META":0.2004,"MRVL":0.3125,"MSTR":0.3533,"NVDA":0.2891,"SKHY":0.2494,"TEM":1.0,"VST":0.2131},"VST":{"AIPO":0.6098,"SOXX":0.4625,"GLW":0.3961,"ASML":0.4294,"COPX":0.3511,"AMZN":0.2091,"LLY":-0.0977,"HOOD":0.2968,"ETHA":0.2482,"GLDM":0.2064,"IBIT":0.1942,"SLV":0.2072,"GSOL":0.223,"MU":0.4012,"WDC":0.4658,"SNDK":0.4191,"COHR":0.3665,"LITE":0.3463,"AAOI":0.2749,"ABCL":0.2831,"AMD":0.4002,"ARM":0.3069,"AVGO":0.3581,"BE":0.4383,"BSOL":0.2109,"COIN":0.198,"CRCL":0.2395,"FLNC":0.3514,"INTC":0.262,"META":0.1732,"MRVL":0.2961,"MSTR":0.1472,"NVDA":0.3324,"SKHY":0.4061,"TEM":0.2131,"VST":1.0}},"6m":{"AIPO":{"AIPO":1.0,"SOXX":0.8804,"GLW":0.7798,"ASML":0.7466,"COPX":0.6413,"AMZN":0.2447,"LLY":-0.1239,"HOOD":0.3045,"ETHA":0.3289,"GLDM":0.4458,"IBIT":0.3105,"SLV":0.4997,"GSOL":0.296,"MU":0.7292,"WDC":0.6928,"SNDK":0.6598,"COHR":0.7736,"LITE":0.6754,"AAOI":0.6088,"ABCL":0.2749,"AMD":0.737,"ARM":0.6819,"AVGO":0.6191,"BE":0.7276,"BSOL":0.3018,"COIN":0.241,"CRCL":0.2747,"FLNC":0.4285,"INTC":0.6416,"META":0.0521,"MRVL":0.7529,"MSTR":0.3134,"NVDA":0.5222,"SKHY":0.6782,"TEM":0.242,"VST":0.6162},"SOXX":{"AIPO":0.8804,"SOXX":1.0,"GLW":0.7984,"ASML":0.8366,"COPX":0.6364,"AMZN":0.1613,"LLY":-0.188,"HOOD":0.2292,"ETHA":0.2946,"GLDM":0.3843,"IBIT":0.2787,"SLV":0.4699,"GSOL":0.2662,"MU":0.8364,"WDC":0.7178,"SNDK":0.7473,"COHR":0.7551,"LITE":0.6402,"AAOI":0.603,"ABCL":0.2362,"AMD":0.8569,"ARM":0.7173,"AVGO":0.6796,"BE":0.6129,"BSOL":0.2705,"COIN":0.1848,"CRCL":0.2168,"FLNC":0.4502,"INTC":0.8029,"META":0.0895,"MRVL":0.8276,"MSTR":0.2632,"NVDA":0.5395,"SKHY":0.7668,"TEM":0.2135,"VST":0.4565},"GLW":{"AIPO":0.7798,"SOXX":0.7984,"GLW":1.0,"ASML":0.7107,"COPX":0.4929,"AMZN":0.1399,"LLY":-0.0964,"HOOD":0.1148,"ETHA":0.1621,"GLDM":0.2754,"IBIT":0.1493,"SLV":0.3733,"GSOL":0.1909,"MU":0.6453,"WDC":0.6009,"SNDK":0.5729,"COHR":0.8035,"LITE":0.7184,"AAOI":0.6423,"ABCL":0.2367,"AMD":0.6685,"ARM":0.5462,"AVGO":0.4617,"BE":0.5463,"BSOL":0.1915,"COIN":0.0629,"CRCL":0.1565,"FLNC":0.3825,"INTC":0.6029,"META":0.0472,"MRVL":0.6915,"MSTR":0.1292,"NVDA":0.371,"SKHY":0.6728,"TEM":0.1305,"VST":0.445},"ASML":{"AIPO":0.7466,"SOXX":0.8366,"GLW":0.7107,"ASML":1.0,"COPX":0.5777,"AMZN":0.1178,"LLY":-0.0939,"HOOD":0.1905,"ETHA":0.1902,"GLDM":0.3304,"IBIT":0.1497,"SLV":0.4005,"GSOL":0.1323,"MU":0.6437,"WDC":0.5507,"SNDK":0.6322,"COHR":0.6062,"LITE":0.5038,"AAOI":0.4776,"ABCL":0.2989,"AMD":0.6959,"ARM":0.5887,"AVGO":0.5437,"BE":0.4834,"BSOL":0.137,"COIN":0.0568,"CRCL":0.1047,"FLNC":0.4273,"INTC":0.628,"META":-0.0004,"MRVL":0.6877,"MSTR":0.111,"NVDA":0.466,"SKHY":0.6453,"TEM":0.1612,"VST":0.387},"COPX":{"AIPO":0.6413,"SOXX":0.6364,"GLW":0.4929,"ASML":0.5777,"COPX":1.0,"AMZN":0.1788,"LLY":0.0238,"HOOD":0.3896,"ETHA":0.5052,"GLDM":0.7219,"IBIT":0.4547,"SLV":0.8243,"GSOL":0.4485,"MU":0.56,"WDC":0.4261,"SNDK":0.4267,"COHR":0.5067,"LITE":0.4306,"AAOI":0.4494,"ABCL":0.3167,"AMD":0.5951,"ARM":0.5215,"AVGO":0.46,"BE":0.3908,"BSOL":0.4534,"COIN":0.374,"CRCL":0.342,"FLNC":0.3957,"INTC":0.4498,"META":0.1143,"MRVL":0.532,"MSTR":0.3886,"NVDA":0.4838,"SKHY":0.575,"TEM":0.3247,"VST":0.3378},"AMZN":{"AIPO":0.2447,"SOXX":0.1613,"GLW":0.1399,"ASML":0.1178,"COPX":0.1788,"AMZN":1.0,"LLY":0.0357,"HOOD":0.2057,"ETHA":0.2335,"GLDM":0.1938,"IBIT":0.1747,"SLV":0.1831,"GSOL":0.207,"MU":0.0297,"WDC":0.092,"SNDK":0.0431,"COHR":0.1299,"LITE":0.0548,"AAOI":0.1554,"ABCL":0.1563,"AMD":0.1809,"ARM":0.1568,"AVGO":0.172,"BE":0.2185,"BSOL":0.204,"COIN":0.0479,"CRCL":0.1797,"FLNC":0.1194,"INTC":0.1657,"META":0.3804,"MRVL":0.1141,"MSTR":0.2166,"NVDA":0.1945,"SKHY":-0.0573,"TEM":0.1757,"VST":0.2143},"LLY":{"AIPO":-0.1239,"SOXX":-0.188,"GLW":-0.0964,"ASML":-0.0939,"COPX":0.0238,"AMZN":0.0357,"LLY":1.0,"HOOD":0.1335,"ETHA":0.0622,"GLDM":0.1811,"IBIT":0.1137,"SLV":0.1227,"GSOL":0.1147,"MU":-0.1358,"WDC":-0.2331,"SNDK":-0.2171,"COHR":-0.1554,"LITE":-0.1939,"AAOI":-0.0695,"ABCL":0.2813,"AMD":-0.2251,"ARM":-0.1044,"AVGO":-0.2229,"BE":-0.2379,"BSOL":0.1196,"COIN":0.1358,"CRCL":0.1088,"FLNC":-0.1846,"INTC":-0.2123,"META":-0.0544,"MRVL":-0.1124,"MSTR":0.0804,"NVDA":-0.2464,"SKHY":-0.3328,"TEM":0.2124,"VST":-0.0644},"HOOD":{"AIPO":0.3045,"SOXX":0.2292,"GLW":0.1148,"ASML":0.1905,"COPX":0.3896,"AMZN":0.2057,"LLY":0.1335,"HOOD":1.0,"ETHA":0.4888,"GLDM":0.4368,"IBIT":0.514,"SLV":0.4327,"GSOL":0.4441,"MU":0.1998,"WDC":0.1562,"SNDK":0.149,"COHR":0.1719,"LITE":0.065,"AAOI":0.146,"ABCL":0.3647,"AMD":0.1912,"ARM":0.2836,"AVGO":0.2427,"BE":0.1388,"BSOL":0.4502,"COIN":0.7254,"CRCL":0.5785,"FLNC":0.1137,"INTC":0.1248,"META":0.2485,"MRVL":0.1813,"MSTR":0.6218,"NVDA":0.3187,"SKHY":0.2982,"TEM":0.4793,"VST":0.2297},"ETHA":{"AIPO":0.3289,"SOXX":0.2946,"GLW":0.1621,"ASML":0.1902,"COPX":0.5052,"AMZN":0.2335,"LLY":0.0622,"HOOD":0.4888,"ETHA":1.0,"GLDM":0.5219,"IBIT":0.8997,"SLV":0.523,"GSOL":0.7856,"MU":0.3247,"WDC":0.1909,"SNDK":0.1712,"COHR":0.2173,"LITE":0.2077,"AAOI":0.234,"ABCL":0.1629,"AMD":0.2339,"ARM":0.2264,"AVGO":0.2737,"BE":0.1477,"BSOL":0.7864,"COIN":0.7243,"CRCL":0.5956,"FLNC":0.1622,"INTC":0.215,"META":0.2179,"MRVL":0.2425,"MSTR":0.7684,"NVDA":0.3062,"SKHY":0.2487,"TEM":0.3761,"VST":0.1596},"GLDM":{"AIPO":0.4458,"SOXX":0.3843,"GLW":0.2754,"ASML":0.3304,"COPX":0.7219,"AMZN":0.1938,"LLY":0.1811,"HOOD":0.4368,"ETHA":0.5219,"GLDM":1.0,"IBIT":0.5171,"SLV":0.8679,"GSOL":0.5202,"MU":0.3493,"WDC":0.1999,"SNDK":0.2434,"COHR":0.2937,"LITE":0.1999,"AAOI":0.2091,"ABCL":0.3115,"AMD":0.3703,"ARM":0.3567,"AVGO":0.2369,"BE":0.2796,"BSOL":0.5233,"COIN":0.4679,"CRCL":0.3994,"FLNC":0.2149,"INTC":0.2519,"META":0.1538,"MRVL":0.35,"MSTR":0.4803,"NVDA":0.3764,"SKHY":0.3554,"TEM":0.3458,"VST":0.3284},"IBIT":{"AIPO":0.3105,"SOXX":0.2787,"GLW":0.1493,"ASML":0.1497,"COPX":0.4547,"AMZN":0.1747,"LLY":0.1137,"HOOD":0.514,"ETHA":0.8997,"GLDM":0.5171,"IBIT":1.0,"SLV":0.5145,"GSOL":0.7921,"MU":0.3196,"WDC":0.1772,"SNDK":0.218,"COHR":0.2085,"LITE":0.2207,"AAOI":0.2269,"ABCL":0.1259,"AMD":0.2483,"ARM":0.2347,"AVGO":0.2349,"BE":0.1399,"BSOL":0.7964,"COIN":0.7533,"CRCL":0.6181,"FLNC":0.0778,"INTC":0.238,"META":0.222,"MRVL":0.1632,"MSTR":0.8313,"NVDA":0.2678,"SKHY":0.2588,"TEM":0.3074,"VST":0.1268},"SLV":{"AIPO":0.4997,"SOXX":0.4699,"GLW":0.3733,"ASML":0.4005,"COPX":0.8243,"AMZN":0.1831,"LLY":0.1227,"HOOD":0.4327,"ETHA":0.523,"GLDM":0.8679,"IBIT":0.5145,"SLV":1.0,"GSOL":0.5234,"MU":0.4528,"WDC":0.3039,"SNDK":0.3121,"COHR":0.4005,"LITE":0.3311,"AAOI":0.3823,"ABCL":0.3595,"AMD":0.459,"ARM":0.4178,"AVGO":0.2587,"BE":0.3106,"BSOL":0.526,"COIN":0.4741,"CRCL":0.427,"FLNC":0.3251,"INTC":0.3395,"META":0.148,"MRVL":0.3959,"MSTR":0.4935,"NVDA":0.4346,"SKHY":0.4828,"TEM":0.3291,"VST":0.3057},"GSOL":{"AIPO":0.296,"SOXX":0.2662,"GLW":0.1909,"ASML":0.1323,"COPX":0.4485,"AMZN":0.207,"LLY":0.1147,"HOOD":0.4441,"ETHA":0.7856,"GLDM":0.5202,"IBIT":0.7921,"SLV":0.5234,"GSOL":1.0,"MU":0.2856,"WDC":0.1511,"SNDK":0.1696,"COHR":0.1998,"LITE":0.2114,"AAOI":0.2303,"ABCL":0.2688,"AMD":0.2792,"ARM":0.2259,"AVGO":0.2465,"BE":0.0732,"BSOL":0.9988,"COIN":0.6697,"CRCL":0.5476,"FLNC":0.2076,"INTC":0.2572,"META":0.1275,"MRVL":0.1465,"MSTR":0.7013,"NVDA":0.3024,"SKHY":0.2154,"TEM":0.2983,"VST":0.1423},"MU":{"AIPO":0.7292,"SOXX":0.8364,"GLW":0.6453,"ASML":0.6437,"COPX":0.56,"AMZN":0.0297,"LLY":-0.1358,"HOOD":0.1998,"ETHA":0.3247,"GLDM":0.3493,"IBIT":0.3196,"SLV":0.4528,"GSOL":0.2856,"MU":1.0,"WDC":0.7088,"SNDK":0.8286,"COHR":0.601,"LITE":0.5578,"AAOI":0.4978,"ABCL":0.2629,"AMD":0.6861,"ARM":0.5392,"AVGO":0.5258,"BE":0.5165,"BSOL":0.2869,"COIN":0.2313,"CRCL":0.2718,"FLNC":0.439,"INTC":0.6554,"META":-0.0087,"MRVL":0.6496,"MSTR":0.2315,"NVDA":0.4274,"SKHY":0.8216,"TEM":0.2051,"VST":0.4324},"WDC":{"AIPO":0.6928,"SOXX":0.7178,"GLW":0.6009,"ASML":0.5507,"COPX":0.4261,"AMZN":0.092,"LLY":-0.2331,"HOOD":0.1562,"ETHA":0.1909,"GLDM":0.1999,"IBIT":0.1772,"SLV":0.3039,"GSOL":0.1511,"MU":0.7088,"WDC":1.0,"SNDK":0.7188,"COHR":0.5276,"LITE":0.5234,"AAOI":0.4767,"ABCL":0.1431,"AMD":0.5903,"ARM":0.5061,"AVGO":0.4682,"BE":0.5722,"BSOL":0.15,"COIN":0.1179,"CRCL":0.1801,"FLNC":0.3559,"INTC":0.5358,"META":0.0147,"MRVL":0.598,"MSTR":0.1724,"NVDA":0.2898,"SKHY":0.6975,"TEM":0.098,"VST":0.4211},"SNDK":{"AIPO":0.6598,"SOXX":0.7473,"GLW":0.5729,"ASML":0.6322,"COPX":0.4267,"AMZN":0.0431,"LLY":-0.2171,"HOOD":0.149,"ETHA":0.1712,"GLDM":0.2434,"IBIT":0.218,"SLV":0.3121,"GSOL":0.1696,"MU":0.8286,"WDC":0.7188,"SNDK":1.0,"COHR":0.5298,"LITE":0.5472,"AAOI":0.4625,"ABCL":0.208,"AMD":0.6331,"ARM":0.4977,"AVGO":0.4447,"BE":0.481,"BSOL":0.1727,"COIN":0.1361,"CRCL":0.1658,"FLNC":0.3651,"INTC":0.6419,"META":-0.0204,"MRVL":0.5684,"MSTR":0.1594,"NVDA":0.3463,"SKHY":0.8084,"TEM":0.1624,"VST":0.3734},"COHR":{"AIPO":0.7736,"SOXX":0.7551,"GLW":0.8035,"ASML":0.6062,"COPX":0.5067,"AMZN":0.1299,"LLY":-0.1554,"HOOD":0.1719,"ETHA":0.2173,"GLDM":0.2937,"IBIT":0.2085,"SLV":0.4005,"GSOL":0.1998,"MU":0.601,"WDC":0.5276,"SNDK":0.5298,"COHR":1.0,"LITE":0.8488,"AAOI":0.7734,"ABCL":0.0911,"AMD":0.5908,"ARM":0.5234,"AVGO":0.4881,"BE":0.5594,"BSOL":0.2017,"COIN":0.1626,"CRCL":0.1981,"FLNC":0.3378,"INTC":0.557,"META":0.028,"MRVL":0.7278,"MSTR":0.2271,"NVDA":0.4404,"SKHY":0.5647,"TEM":0.1341,"VST":0.368},"LITE":{"AIPO":0.6754,"SOXX":0.6402,"GLW":0.7184,"ASML":0.5038,"COPX":0.4306,"AMZN":0.0548,"LLY":-0.1939,"HOOD":0.065,"ETHA":0.2077,"GLDM":0.1999,"IBIT":0.2207,"SLV":0.3311,"GSOL":0.2114,"MU":0.5578,"WDC":0.5234,"SNDK":0.5472,"COHR":0.8488,"LITE":1.0,"AAOI":0.8169,"ABCL":0.1167,"AMD":0.5017,"ARM":0.4497,"AVGO":0.4074,"BE":0.5211,"BSOL":0.2162,"COIN":0.139,"CRCL":0.2086,"FLNC":0.3713,"INTC":0.5155,"META":-0.0401,"MRVL":0.6126,"MSTR":0.2026,"NVDA":0.3599,"SKHY":0.6648,"TEM":0.1147,"VST":0.3606},"AAOI":{"AIPO":0.6088,"SOXX":0.603,"GLW":0.6423,"ASML":0.4776,"COPX":0.4494,"AMZN":0.1554,"LLY":-0.0695,"HOOD":0.146,"ETHA":0.234,"GLDM":0.2091,"IBIT":0.2269,"SLV":0.3823,"GSOL":0.2303,"MU":0.4978,"WDC":0.4767,"SNDK":0.4625,"COHR":0.7734,"LITE":0.8169,"AAOI":1.0,"ABCL":0.1841,"AMD":0.5087,"ARM":0.4732,"AVGO":0.3324,"BE":0.4276,"BSOL":0.2294,"COIN":0.1916,"CRCL":0.254,"FLNC":0.3411,"INTC":0.5242,"META":0.0342,"MRVL":0.5823,"MSTR":0.2382,"NVDA":0.3886,"SKHY":0.6819,"TEM":0.2196,"VST":0.2427},"ABCL":{"AIPO":0.2749,"SOXX":0.2362,"GLW":0.2367,"ASML":0.2989,"COPX":0.3167,"AMZN":0.1563,"LLY":0.2813,"HOOD":0.3647,"ETHA":0.1629,"GLDM":0.3115,"IBIT":0.1259,"SLV":0.3595,"GSOL":0.2688,"MU":0.2629,"WDC":0.1431,"SNDK":0.208,"COHR":0.0911,"LITE":0.1167,"AAOI":0.1841,"ABCL":1.0,"AMD":0.2535,"ARM":0.2515,"AVGO":0.0777,"BE":0.1508,"BSOL":0.2753,"COIN":0.2194,"CRCL":0.2808,"FLNC":0.2261,"INTC":0.1827,"META":-0.0357,"MRVL":0.2099,"MSTR":0.2022,"NVDA":0.1463,"SKHY":0.2242,"TEM":0.4959,"VST":0.3008},"AMD":{"AIPO":0.737,"SOXX":0.8569,"GLW":0.6685,"ASML":0.6959,"COPX":0.5951,"AMZN":0.1809,"LLY":-0.2251,"HOOD":0.1912,"ETHA":0.2339,"GLDM":0.3703,"IBIT":0.2483,"SLV":0.459,"GSOL":0.2792,"MU":0.6861,"WDC":0.5903,"SNDK":0.6331,"COHR":0.5908,"LITE":0.5017,"AAOI":0.5087,"ABCL":0.2535,"AMD":1.0,"ARM":0.7119,"AVGO":0.5417,"BE":0.4728,"BSOL":0.282,"COIN":0.1537,"CRCL":0.1524,"FLNC":0.3923,"INTC":0.7755,"META":0.1366,"MRVL":0.6361,"MSTR":0.2028,"NVDA":0.4395,"SKHY":0.6837,"TEM":0.1698,"VST":0.4138},"ARM":{"AIPO":0.6819,"SOXX":0.7173,"GLW":0.5462,"ASML":0.5887,"COPX":0.5215,"AMZN":0.1568,"LLY":-0.1044,"HOOD":0.2836,"ETHA":0.2264,"GLDM":0.3567,"IBIT":0.2347,"SLV":0.4178,"GSOL":0.2259,"MU":0.5392,"WDC":0.5061,"SNDK":0.4977,"COHR":0.5234,"LITE":0.4497,"AAOI":0.4732,"ABCL":0.2515,"AMD":0.7119,"ARM":1.0,"AVGO":0.5397,"BE":0.47,"BSOL":0.2261,"COIN":0.2223,"CRCL":0.2357,"FLNC":0.3419,"INTC":0.5703,"META":0.1324,"MRVL":0.6259,"MSTR":0.274,"NVDA":0.4081,"SKHY":0.4741,"TEM":0.2076,"VST":0.3404},"AVGO":{"AIPO":0.6191,"SOXX":0.6796,"GLW":0.4617,"ASML":0.5437,"COPX":0.46,"AMZN":0.172,"LLY":-0.2229,"HOOD":0.2427,"ETHA":0.2737,"GLDM":0.2369,"IBIT":0.2349,"SLV":0.2587,"GSOL":0.2465,"MU":0.5258,"WDC":0.4682,"SNDK":0.4447,"COHR":0.4881,"LITE":0.4074,"AAOI":0.3324,"ABCL":0.0777,"AMD":0.5417,"ARM":0.5397,"AVGO":1.0,"BE":0.3998,"BSOL":0.2472,"COIN":0.184,"CRCL":0.1773,"FLNC":0.26,"INTC":0.4842,"META":0.0502,"MRVL":0.5289,"MSTR":0.2217,"NVDA":0.435,"SKHY":0.4774,"TEM":0.1277,"VST":0.2383},"BE":{"AIPO":0.7276,"SOXX":0.6129,"GLW":0.5463,"ASML":0.4834,"COPX":0.3908,"AMZN":0.2185,"LLY":-0.2379,"HOOD":0.1388,"ETHA":0.1477,"GLDM":0.2796,"IBIT":0.1399,"SLV":0.3106,"GSOL":0.0732,"MU":0.5165,"WDC":0.5722,"SNDK":0.481,"COHR":0.5594,"LITE":0.5211,"AAOI":0.4276,"ABCL":0.1508,"AMD":0.4728,"ARM":0.47,"AVGO":0.3998,"BE":1.0,"BSOL":0.0732,"COIN":0.1035,"CRCL":0.1619,"FLNC":0.2912,"INTC":0.5079,"META":0.0986,"MRVL":0.5564,"MSTR":0.1724,"NVDA":0.3054,"SKHY":0.6888,"TEM":0.1749,"VST":0.4352},"BSOL":{"AIPO":0.3018,"SOXX":0.2705,"GLW":0.1915,"ASML":0.137,"COPX":0.4534,"AMZN":0.204,"LLY":0.1196,"HOOD":0.4502,"ETHA":0.7864,"GLDM":0.5233,"IBIT":0.7964,"SLV":0.526,"GSOL":0.9988,"MU":0.2869,"WDC":0.15,"SNDK":0.1727,"COHR":0.2017,"LITE":0.2162,"AAOI":0.2294,"ABCL":0.2753,"AMD":0.282,"ARM":0.2261,"AVGO":0.2472,"BE":0.0732,"BSOL":1.0,"COIN":0.6725,"CRCL":0.5504,"FLNC":0.2052,"INTC":0.2629,"META":0.1252,"MRVL":0.1495,"MSTR":0.7069,"NVDA":0.3061,"SKHY":0.2109,"TEM":0.2947,"VST":0.1496},"COIN":{"AIPO":0.241,"SOXX":0.1848,"GLW":0.0629,"ASML":0.0568,"COPX":0.374,"AMZN":0.0479,"LLY":0.1358,"HOOD":0.7254,"ETHA":0.7243,"GLDM":0.4679,"IBIT":0.7533,"SLV":0.4741,"GSOL":0.6697,"MU":0.2313,"WDC":0.1179,"SNDK":0.1361,"COHR":0.1626,"LITE":0.139,"AAOI":0.1916,"ABCL":0.2194,"AMD":0.1537,"ARM":0.2223,"AVGO":0.184,"BE":0.1035,"BSOL":0.6725,"COIN":1.0,"CRCL":0.7695,"FLNC":0.1035,"INTC":0.1384,"META":0.1267,"MRVL":0.1479,"MSTR":0.8116,"NVDA":0.2695,"SKHY":0.2218,"TEM":0.4537,"VST":0.0897},"CRCL":{"AIPO":0.2747,"SOXX":0.2168,"GLW":0.1565,"ASML":0.1047,"COPX":0.342,"AMZN":0.1797,"LLY":0.1088,"HOOD":0.5785,"ETHA":0.5956,"GLDM":0.3994,"IBIT":0.6181,"SLV":0.427,"GSOL":0.5476,"MU":0.2718,"WDC":0.1801,"SNDK":0.1658,"COHR":0.1981,"LITE":0.2086,"AAOI":0.254,"ABCL":0.2808,"AMD":0.1524,"ARM":0.2357,"AVGO":0.1773,"BE":0.1619,"BSOL":0.5504,"COIN":0.7695,"CRCL":1.0,"FLNC":0.0934,"INTC":0.1652,"META":0.1341,"MRVL":0.17,"MSTR":0.6561,"NVDA":0.2609,"SKHY":0.2406,"TEM":0.3147,"VST":0.1972},"FLNC":{"AIPO":0.4285,"SOXX":0.4502,"GLW":0.3825,"ASML":0.4273,"COPX":0.3957,"AMZN":0.1194,"LLY":-0.1846,"HOOD":0.1137,"ETHA":0.1622,"GLDM":0.2149,"IBIT":0.0778,"SLV":0.3251,"GSOL":0.2076,"MU":0.439,"WDC":0.3559,"SNDK":0.3651,"COHR":0.3378,"LITE":0.3713,"AAOI":0.3411,"ABCL":0.2261,"AMD":0.3923,"ARM":0.3419,"AVGO":0.26,"BE":0.2912,"BSOL":0.2052,"COIN":0.1035,"CRCL":0.0934,"FLNC":1.0,"INTC":0.3334,"META":-0.0261,"MRVL":0.4086,"MSTR":0.0694,"NVDA":0.3979,"SKHY":0.4905,"TEM":0.1362,"VST":0.2141},"INTC":{"AIPO":0.6416,"SOXX":0.8029,"GLW":0.6029,"ASML":0.628,"COPX":0.4498,"AMZN":0.1657,"LLY":-0.2123,"HOOD":0.1248,"ETHA":0.215,"GLDM":0.2519,"IBIT":0.238,"SLV":0.3395,"GSOL":0.2572,"MU":0.6554,"WDC":0.5358,"SNDK":0.6419,"COHR":0.557,"LITE":0.5155,"AAOI":0.5242,"ABCL":0.1827,"AMD":0.7755,"ARM":0.5703,"AVGO":0.4842,"BE":0.5079,"BSOL":0.2629,"COIN":0.1384,"CRCL":0.1652,"FLNC":0.3334,"INTC":1.0,"META":0.1387,"MRVL":0.5597,"MSTR":0.2116,"NVDA":0.3978,"SKHY":0.6994,"TEM":0.1524,"VST":0.2918},"META":{"AIPO":0.0521,"SOXX":0.0895,"GLW":0.0472,"ASML":-0.0004,"COPX":0.1143,"AMZN":0.3804,"LLY":-0.0544,"HOOD":0.2485,"ETHA":0.2179,"GLDM":0.1538,"IBIT":0.222,"SLV":0.148,"GSOL":0.1275,"MU":-0.0087,"WDC":0.0147,"SNDK":-0.0204,"COHR":0.028,"LITE":-0.0401,"AAOI":0.0342,"ABCL":-0.0357,"AMD":0.1366,"ARM":0.1324,"AVGO":0.0502,"BE":0.0986,"BSOL":0.1252,"COIN":0.1267,"CRCL":0.1341,"FLNC":-0.0261,"INTC":0.1387,"META":1.0,"MRVL":0.0491,"MSTR":0.16,"NVDA":0.2035,"SKHY":-0.0199,"TEM":0.1333,"VST":0.112},"MRVL":{"AIPO":0.7529,"SOXX":0.8276,"GLW":0.6915,"ASML":0.6877,"COPX":0.532,"AMZN":0.1141,"LLY":-0.1124,"HOOD":0.1813,"ETHA":0.2425,"GLDM":0.35,"IBIT":0.1632,"SLV":0.3959,"GSOL":0.1465,"MU":0.6496,"WDC":0.598,"SNDK":0.5684,"COHR":0.7278,"LITE":0.6126,"AAOI":0.5823,"ABCL":0.2099,"AMD":0.6361,"ARM":0.6259,"AVGO":0.5289,"BE":0.5564,"BSOL":0.1495,"COIN":0.1479,"CRCL":0.17,"FLNC":0.4086,"INTC":0.5597,"META":0.0491,"MRVL":1.0,"MSTR":0.2072,"NVDA":0.4062,"SKHY":0.6794,"TEM":0.2898,"VST":0.3465},"MSTR":{"AIPO":0.3134,"SOXX":0.2632,"GLW":0.1292,"ASML":0.111,"COPX":0.3886,"AMZN":0.2166,"LLY":0.0804,"HOOD":0.6218,"ETHA":0.7684,"GLDM":0.4803,"IBIT":0.8313,"SLV":0.4935,"GSOL":0.7013,"MU":0.2315,"WDC":0.1724,"SNDK":0.1594,"COHR":0.2271,"LITE":0.2026,"AAOI":0.2382,"ABCL":0.2022,"AMD":0.2028,"ARM":0.274,"AVGO":0.2217,"BE":0.1724,"BSOL":0.7069,"COIN":0.8116,"CRCL":0.6561,"FLNC":0.0694,"INTC":0.2116,"META":0.16,"MRVL":0.2072,"MSTR":1.0,"NVDA":0.3159,"SKHY":0.2636,"TEM":0.3641,"VST":0.0796},"NVDA":{"AIPO":0.5222,"SOXX":0.5395,"GLW":0.371,"ASML":0.466,"COPX":0.4838,"AMZN":0.1945,"LLY":-0.2464,"HOOD":0.3187,"ETHA":0.3062,"GLDM":0.3764,"IBIT":0.2678,"SLV":0.4346,"GSOL":0.3024,"MU":0.4274,"WDC":0.2898,"SNDK":0.3463,"COHR":0.4404,"LITE":0.3599,"AAOI":0.3886,"ABCL":0.1463,"AMD":0.4395,"ARM":0.4081,"AVGO":0.435,"BE":0.3054,"BSOL":0.3061,"COIN":0.2695,"CRCL":0.2609,"FLNC":0.3979,"INTC":0.3978,"META":0.2035,"MRVL":0.4062,"MSTR":0.3159,"NVDA":1.0,"SKHY":0.4648,"TEM":0.2284,"VST":0.255},"SKHY":{"AIPO":0.6782,"SOXX":0.7668,"GLW":0.6728,"ASML":0.6453,"COPX":0.575,"AMZN":-0.0573,"LLY":-0.3328,"HOOD":0.2982,"ETHA":0.2487,"GLDM":0.3554,"IBIT":0.2588,"SLV":0.4828,"GSOL":0.2154,"MU":0.8216,"WDC":0.6975,"SNDK":0.8084,"COHR":0.5647,"LITE":0.6648,"AAOI":0.6819,"ABCL":0.2242,"AMD":0.6837,"ARM":0.4741,"AVGO":0.4774,"BE":0.6888,"BSOL":0.2109,"COIN":0.2218,"CRCL":0.2406,"FLNC":0.4905,"INTC":0.6994,"META":-0.0199,"MRVL":0.6794,"MSTR":0.2636,"NVDA":0.4648,"SKHY":1.0,"TEM":0.2494,"VST":0.4061},"TEM":{"AIPO":0.242,"SOXX":0.2135,"GLW":0.1305,"ASML":0.1612,"COPX":0.3247,"AMZN":0.1757,"LLY":0.2124,"HOOD":0.4793,"ETHA":0.3761,"GLDM":0.3458,"IBIT":0.3074,"SLV":0.3291,"GSOL":0.2983,"MU":0.2051,"WDC":0.098,"SNDK":0.1624,"COHR":0.1341,"LITE":0.1147,"AAOI":0.2196,"ABCL":0.4959,"AMD":0.1698,"ARM":0.2076,"AVGO":0.1277,"BE":0.1749,"BSOL":0.2947,"COIN":0.4537,"CRCL":0.3147,"FLNC":0.1362,"INTC":0.1524,"META":0.1333,"MRVL":0.2898,"MSTR":0.3641,"NVDA":0.2284,"SKHY":0.2494,"TEM":1.0,"VST":0.1775},"VST":{"AIPO":0.6162,"SOXX":0.4565,"GLW":0.445,"ASML":0.387,"COPX":0.3378,"AMZN":0.2143,"LLY":-0.0644,"HOOD":0.2297,"ETHA":0.1596,"GLDM":0.3284,"IBIT":0.1268,"SLV":0.3057,"GSOL":0.1423,"MU":0.4324,"WDC":0.4211,"SNDK":0.3734,"COHR":0.368,"LITE":0.3606,"AAOI":0.2427,"ABCL":0.3008,"AMD":0.4138,"ARM":0.3404,"AVGO":0.2383,"BE":0.4352,"BSOL":0.1496,"COIN":0.0897,"CRCL":0.1972,"FLNC":0.2141,"INTC":0.2918,"META":0.112,"MRVL":0.3465,"MSTR":0.0796,"NVDA":0.255,"SKHY":0.4061,"TEM":0.1775,"VST":1.0}},"3m":{"AIPO":{"AIPO":1.0,"SOXX":0.8967,"GLW":0.8139,"ASML":0.7732,"COPX":0.577,"AMZN":0.1933,"LLY":-0.4134,"HOOD":0.3732,"ETHA":0.2192,"GLDM":0.3925,"IBIT":0.224,"SLV":0.4852,"GSOL":0.288,"MU":0.7726,"WDC":0.5911,"SNDK":0.7222,"COHR":0.8089,"LITE":0.7921,"AAOI":0.7976,"ABCL":0.2208,"AMD":0.7777,"ARM":0.7295,"AVGO":0.617,"BE":0.7816,"BSOL":0.2887,"COIN":0.217,"CRCL":0.2887,"FLNC":0.639,"INTC":0.7869,"META":0.0017,"MRVL":0.7817,"MSTR":0.3257,"NVDA":0.5543,"SKHY":0.6782,"TEM":0.2876,"VST":0.6185},"SOXX":{"AIPO":0.8967,"SOXX":1.0,"GLW":0.8274,"ASML":0.8232,"COPX":0.6174,"AMZN":0.0858,"LLY":-0.3973,"HOOD":0.3662,"ETHA":0.2104,"GLDM":0.3638,"IBIT":0.2554,"SLV":0.5066,"GSOL":0.2707,"MU":0.8561,"WDC":0.6506,"SNDK":0.7926,"COHR":0.8072,"LITE":0.7948,"AAOI":0.8018,"ABCL":0.1873,"AMD":0.881,"ARM":0.8188,"AVGO":0.71,"BE":0.6806,"BSOL":0.2688,"COIN":0.2522,"CRCL":0.3083,"FLNC":0.5858,"INTC":0.8734,"META":0.0438,"MRVL":0.8477,"MSTR":0.3446,"NVDA":0.5831,"SKHY":0.7668,"TEM":0.2707,"VST":0.4206},"GLW":{"AIPO":0.8139,"SOXX":0.8274,"GLW":1.0,"ASML":0.7137,"COPX":0.5362,"AMZN":0.1291,"LLY":-0.4094,"HOOD":0.2333,"ETHA":0.1212,"GLDM":0.3059,"IBIT":0.1386,"SLV":0.4265,"GSOL":0.15,"MU":0.6972,"WDC":0.5593,"SNDK":0.6462,"COHR":0.8615,"LITE":0.8408,"AAOI":0.8239,"ABCL":0.1378,"AMD":0.7553,"ARM":0.6999,"AVGO":0.5161,"BE":0.7029,"BSOL":0.1414,"COIN":0.0464,"CRCL":0.0999,"FLNC":0.5422,"INTC":0.733,"META":0.0722,"MRVL":0.738,"MSTR":0.168,"NVDA":0.3869,"SKHY":0.6728,"TEM":0.1597,"VST":0.4548},"ASML":{"AIPO":0.7732,"SOXX":0.8232,"GLW":0.7137,"ASML":1.0,"COPX":0.5068,"AMZN":0.0212,"LLY":-0.3871,"HOOD":0.2316,"ETHA":0.0569,"GLDM":0.2171,"IBIT":0.0832,"SLV":0.3205,"GSOL":0.0947,"MU":0.6582,"WDC":0.5113,"SNDK":0.7023,"COHR":0.6797,"LITE":0.6672,"AAOI":0.6343,"ABCL":0.2299,"AMD":0.7133,"ARM":0.6123,"AVGO":0.6271,"BE":0.5579,"BSOL":0.0942,"COIN":0.0582,"CRCL":0.1112,"FLNC":0.525,"INTC":0.6394,"META":-0.0689,"MRVL":0.6387,"MSTR":0.1055,"NVDA":0.4659,"SKHY":0.6453,"TEM":0.1565,"VST":0.4586},"COPX":{"AIPO":0.577,"SOXX":0.6174,"GLW":0.5362,"ASML":0.5068,"COPX":1.0,"AMZN":0.0765,"LLY":-0.0932,"HOOD":0.4528,"ETHA":0.4386,"GLDM":0.6722,"IBIT":0.4585,"SLV":0.7963,"GSOL":0.4436,"MU":0.5376,"WDC":0.3557,"SNDK":0.4506,"COHR":0.4744,"LITE":0.4954,"AAOI":0.5366,"ABCL":0.2572,"AMD":0.5398,"ARM":0.4508,"AVGO":0.4872,"BE":0.4827,"BSOL":0.442,"COIN":0.3691,"CRCL":0.3707,"FLNC":0.3931,"INTC":0.5637,"META":0.0132,"MRVL":0.5483,"MSTR":0.4331,"NVDA":0.3795,"SKHY":0.575,"TEM":0.427,"VST":0.212},"AMZN":{"AIPO":0.1933,"SOXX":0.0858,"GLW":0.1291,"ASML":0.0212,"COPX":0.0765,"AMZN":1.0,"LLY":-0.077,"HOOD":0.1434,"ETHA":0.0635,"GLDM":0.022,"IBIT":0.0264,"SLV":0.021,"GSOL":0.0914,"MU":-0.0835,"WDC":0.0036,"SNDK":-0.0069,"COHR":0.1389,"LITE":0.0465,"AAOI":0.1239,"ABCL":0.0623,"AMD":0.0728,"ARM":0.0612,"AVGO":0.1157,"BE":0.1255,"BSOL":0.0892,"COIN":-0.1155,"CRCL":0.0609,"FLNC":0.1785,"INTC":0.0567,"META":0.2538,"MRVL":0.0993,"MSTR":0.0738,"NVDA":0.1072,"SKHY":-0.0573,"TEM":0.1033,"VST":0.2274},"LLY":{"AIPO":-0.4134,"SOXX":-0.3973,"GLW":-0.4094,"ASML":-0.3871,"COPX":-0.0932,"AMZN":-0.077,"LLY":1.0,"HOOD":0.0694,"ETHA":-0.0322,"GLDM":0.1709,"IBIT":0.0362,"SLV":0.0553,"GSOL":0.0299,"MU":-0.2815,"WDC":-0.4446,"SNDK":-0.3987,"COHR":-0.4104,"LITE":-0.5023,"AAOI":-0.3966,"ABCL":0.2527,"AMD":-0.437,"ARM":-0.2403,"AVGO":-0.2827,"BE":-0.2516,"BSOL":0.0344,"COIN":0.0729,"CRCL":0.0023,"FLNC":-0.403,"INTC":-0.3285,"META":0.0695,"MRVL":-0.3076,"MSTR":-0.0273,"NVDA":-0.2063,"SKHY":-0.3328,"TEM":0.1791,"VST":-0.2203},"HOOD":{"AIPO":0.3732,"SOXX":0.3662,"GLW":0.2333,"ASML":0.2316,"COPX":0.4528,"AMZN":0.1434,"LLY":0.0694,"HOOD":1.0,"ETHA":0.4713,"GLDM":0.4445,"IBIT":0.5974,"SLV":0.4388,"GSOL":0.4869,"MU":0.3163,"WDC":0.1879,"SNDK":0.3269,"COHR":0.2382,"LITE":0.126,"AAOI":0.2775,"ABCL":0.3017,"AMD":0.2546,"ARM":0.3215,"AVGO":0.2783,"BE":0.3086,"BSOL":0.4955,"COIN":0.7025,"CRCL":0.6737,"FLNC":0.2025,"INTC":0.3045,"META":0.2852,"MRVL":0.3162,"MSTR":0.6841,"NVDA":0.337,"SKHY":0.2982,"TEM":0.4637,"VST":0.1622},"ETHA":{"AIPO":0.2192,"SOXX":0.2104,"GLW":0.1212,"ASML":0.0569,"COPX":0.4386,"AMZN":0.0635,"LLY":-0.0322,"HOOD":0.4713,"ETHA":1.0,"GLDM":0.4899,"IBIT":0.8865,"SLV":0.486,"GSOL":0.7487,"MU":0.2323,"WDC":0.0273,"SNDK":0.1468,"COHR":0.1278,"LITE":0.1265,"AAOI":0.1442,"ABCL":-0.0139,"AMD":0.1487,"ARM":0.2111,"AVGO":0.1269,"BE":0.1365,"BSOL":0.7491,"COIN":0.7555,"CRCL":0.6737,"FLNC":0.0849,"INTC":0.1977,"META":0.1181,"MRVL":0.2979,"MSTR":0.8068,"NVDA":0.1356,"SKHY":0.2487,"TEM":0.3435,"VST":-0.0051},"GLDM":{"AIPO":0.3925,"SOXX":0.3638,"GLW":0.3059,"ASML":0.2171,"COPX":0.6722,"AMZN":0.022,"LLY":0.1709,"HOOD":0.4445,"ETHA":0.4899,"GLDM":1.0,"IBIT":0.5276,"SLV":0.9116,"GSOL":0.4939,"MU":0.3726,"WDC":0.1247,"SNDK":0.2726,"COHR":0.3153,"LITE":0.2574,"AAOI":0.2894,"ABCL":0.2662,"AMD":0.2283,"ARM":0.3092,"AVGO":0.1825,"BE":0.3817,"BSOL":0.4932,"COIN":0.4432,"CRCL":0.4699,"FLNC":0.1512,"INTC":0.288,"META":0.049,"MRVL":0.4384,"MSTR":0.5299,"NVDA":0.3214,"SKHY":0.3554,"TEM":0.4489,"VST":0.2332},"IBIT":{"AIPO":0.224,"SOXX":0.2554,"GLW":0.1386,"ASML":0.0832,"COPX":0.4585,"AMZN":0.0264,"LLY":0.0362,"HOOD":0.5974,"ETHA":0.8865,"GLDM":0.5276,"IBIT":1.0,"SLV":0.5165,"GSOL":0.7672,"MU":0.277,"WDC":0.0769,"SNDK":0.2172,"COHR":0.144,"LITE":0.1619,"AAOI":0.178,"ABCL":0.0305,"AMD":0.2107,"ARM":0.2584,"AVGO":0.1191,"BE":0.1495,"BSOL":0.7745,"COIN":0.7917,"CRCL":0.7035,"FLNC":0.1055,"INTC":0.2357,"META":0.1939,"MRVL":0.2897,"MSTR":0.8739,"NVDA":0.2157,"SKHY":0.2588,"TEM":0.3683,"VST":-0.0223},"SLV":{"AIPO":0.4852,"SOXX":0.5066,"GLW":0.4265,"ASML":0.3205,"COPX":0.7963,"AMZN":0.021,"LLY":0.0553,"HOOD":0.4388,"ETHA":0.486,"GLDM":0.9116,"IBIT":0.5165,"SLV":1.0,"GSOL":0.5401,"MU":0.5174,"WDC":0.2876,"SNDK":0.4131,"COHR":0.3855,"LITE":0.3776,"AAOI":0.4382,"ABCL":0.3313,"AMD":0.4004,"ARM":0.4302,"AVGO":0.3063,"BE":0.4293,"BSOL":0.5378,"COIN":0.4508,"CRCL":0.481,"FLNC":0.2221,"INTC":0.4424,"META":0.059,"MRVL":0.5484,"MSTR":0.5523,"NVDA":0.3555,"SKHY":0.4828,"TEM":0.4887,"VST":0.262},"GSOL":{"AIPO":0.288,"SOXX":0.2707,"GLW":0.15,"ASML":0.0947,"COPX":0.4436,"AMZN":0.0914,"LLY":0.0299,"HOOD":0.4869,"ETHA":0.7487,"GLDM":0.4939,"IBIT":0.7672,"SLV":0.5401,"GSOL":1.0,"MU":0.2106,"WDC":0.0772,"SNDK":0.1848,"COHR":0.1439,"LITE":0.1502,"AAOI":0.1637,"ABCL":0.1713,"AMD":0.1717,"ARM":0.2467,"AVGO":0.2407,"BE":0.1873,"BSOL":0.9986,"COIN":0.6652,"CRCL":0.596,"FLNC":0.1727,"INTC":0.2539,"META":0.0349,"MRVL":0.2702,"MSTR":0.8053,"NVDA":0.2603,"SKHY":0.2154,"TEM":0.3537,"VST":0.0489},"MU":{"AIPO":0.7726,"SOXX":0.8561,"GLW":0.6972,"ASML":0.6582,"COPX":0.5376,"AMZN":-0.0835,"LLY":-0.2815,"HOOD":0.3163,"ETHA":0.2323,"GLDM":0.3726,"IBIT":0.277,"SLV":0.5174,"GSOL":0.2106,"MU":1.0,"WDC":0.7391,"SNDK":0.8833,"COHR":0.6501,"LITE":0.7051,"AAOI":0.7597,"ABCL":0.1901,"AMD":0.7779,"ARM":0.64,"AVGO":0.4793,"BE":0.6468,"BSOL":0.2052,"COIN":0.3298,"CRCL":0.3319,"FLNC":0.4649,"INTC":0.7558,"META":-0.0909,"MRVL":0.7625,"MSTR":0.3301,"NVDA":0.4156,"SKHY":0.8216,"TEM":0.2765,"VST":0.4377},"WDC":{"AIPO":0.5911,"SOXX":0.6506,"GLW":0.5593,"ASML":0.5113,"COPX":0.3557,"AMZN":0.0036,"LLY":-0.4446,"HOOD":0.1879,"ETHA":0.0273,"GLDM":0.1247,"IBIT":0.0769,"SLV":0.2876,"GSOL":0.0772,"MU":0.7391,"WDC":1.0,"SNDK":0.825,"COHR":0.4665,"LITE":0.5849,"AAOI":0.5703,"ABCL":0.1266,"AMD":0.6221,"ARM":0.4466,"AVGO":0.3676,"BE":0.5394,"BSOL":0.0723,"COIN":0.1159,"CRCL":0.167,"FLNC":0.4686,"INTC":0.6001,"META":-0.131,"MRVL":0.5896,"MSTR":0.1252,"NVDA":0.251,"SKHY":0.6975,"TEM":0.0332,"VST":0.3378},"SNDK":{"AIPO":0.7222,"SOXX":0.7926,"GLW":0.6462,"ASML":0.7023,"COPX":0.4506,"AMZN":-0.0069,"LLY":-0.3987,"HOOD":0.3269,"ETHA":0.1468,"GLDM":0.2726,"IBIT":0.2172,"SLV":0.4131,"GSOL":0.1848,"MU":0.8833,"WDC":0.825,"SNDK":1.0,"COHR":0.5641,"LITE":0.6383,"AAOI":0.6857,"ABCL":0.1807,"AMD":0.7396,"ARM":0.546,"AVGO":0.4938,"BE":0.5744,"BSOL":0.1832,"COIN":0.2348,"CRCL":0.2975,"FLNC":0.4588,"INTC":0.6562,"META":-0.0846,"MRVL":0.6859,"MSTR":0.2488,"NVDA":0.4163,"SKHY":0.8084,"TEM":0.173,"VST":0.438},"COHR":{"AIPO":0.8089,"SOXX":0.8072,"GLW":0.8615,"ASML":0.6797,"COPX":0.4744,"AMZN":0.1389,"LLY":-0.4104,"HOOD":0.2382,"ETHA":0.1278,"GLDM":0.3153,"IBIT":0.144,"SLV":0.3855,"GSOL":0.1439,"MU":0.6501,"WDC":0.4665,"SNDK":0.5641,"COHR":1.0,"LITE":0.8879,"AAOI":0.818,"ABCL":-0.0061,"AMD":0.657,"ARM":0.6449,"AVGO":0.5864,"BE":0.6342,"BSOL":0.1359,"COIN":0.1261,"CRCL":0.1388,"FLNC":0.5064,"INTC":0.674,"META":-0.0186,"MRVL":0.7327,"MSTR":0.2205,"NVDA":0.4996,"SKHY":0.5647,"TEM":0.1494,"VST":0.3893},"LITE":{"AIPO":0.7921,"SOXX":0.7948,"GLW":0.8408,"ASML":0.6672,"COPX":0.4954,"AMZN":0.0465,"LLY":-0.5023,"HOOD":0.126,"ETHA":0.1265,"GLDM":0.2574,"IBIT":0.1619,"SLV":0.3776,"GSOL":0.1502,"MU":0.7051,"WDC":0.5849,"SNDK":0.6383,"COHR":0.8879,"LITE":1.0,"AAOI":0.845,"ABCL":0.085,"AMD":0.7333,"ARM":0.601,"AVGO":0.5176,"BE":0.622,"BSOL":0.1478,"COIN":0.0765,"CRCL":0.0808,"FLNC":0.6022,"INTC":0.6658,"META":-0.0289,"MRVL":0.7274,"MSTR":0.1572,"NVDA":0.4749,"SKHY":0.6648,"TEM":0.1395,"VST":0.4531},"AAOI":{"AIPO":0.7976,"SOXX":0.8018,"GLW":0.8239,"ASML":0.6343,"COPX":0.5366,"AMZN":0.1239,"LLY":-0.3966,"HOOD":0.2775,"ETHA":0.1442,"GLDM":0.2894,"IBIT":0.178,"SLV":0.4382,"GSOL":0.1637,"MU":0.7597,"WDC":0.5703,"SNDK":0.6857,"COHR":0.818,"LITE":0.845,"AAOI":1.0,"ABCL":0.2284,"AMD":0.7351,"ARM":0.6053,"AVGO":0.4977,"BE":0.5889,"BSOL":0.1568,"COIN":0.1943,"CRCL":0.1814,"FLNC":0.5882,"INTC":0.6779,"META":0.0097,"MRVL":0.7235,"MSTR":0.2392,"NVDA":0.4577,"SKHY":0.6819,"TEM":0.2716,"VST":0.3642},"ABCL":{"AIPO":0.2208,"SOXX":0.1873,"GLW":0.1378,"ASML":0.2299,"COPX":0.2572,"AMZN":0.0623,"LLY":0.2527,"HOOD":0.3017,"ETHA":-0.0139,"GLDM":0.2662,"IBIT":0.0305,"SLV":0.3313,"GSOL":0.1713,"MU":0.1901,"WDC":0.1266,"SNDK":0.1807,"COHR":-0.0061,"LITE":0.085,"AAOI":0.2284,"ABCL":1.0,"AMD":0.1874,"ARM":0.1337,"AVGO":0.0417,"BE":0.2975,"BSOL":0.1753,"COIN":0.1558,"CRCL":0.1971,"FLNC":0.1783,"INTC":0.1634,"META":0.0059,"MRVL":0.2581,"MSTR":0.1227,"NVDA":0.095,"SKHY":0.2242,"TEM":0.5316,"VST":0.2752},"AMD":{"AIPO":0.7777,"SOXX":0.881,"GLW":0.7553,"ASML":0.7133,"COPX":0.5398,"AMZN":0.0728,"LLY":-0.437,"HOOD":0.2546,"ETHA":0.1487,"GLDM":0.2283,"IBIT":0.2107,"SLV":0.4004,"GSOL":0.1717,"MU":0.7779,"WDC":0.6221,"SNDK":0.7396,"COHR":0.657,"LITE":0.7333,"AAOI":0.7351,"ABCL":0.1874,"AMD":1.0,"ARM":0.7466,"AVGO":0.5022,"BE":0.6074,"BSOL":0.17,"COIN":0.1699,"CRCL":0.1983,"FLNC":0.5217,"INTC":0.8064,"META":0.1341,"MRVL":0.7275,"MSTR":0.2198,"NVDA":0.3927,"SKHY":0.6837,"TEM":0.2122,"VST":0.4624},"ARM":{"AIPO":0.7295,"SOXX":0.8188,"GLW":0.6999,"ASML":0.6123,"COPX":0.4508,"AMZN":0.0612,"LLY":-0.2403,"HOOD":0.3215,"ETHA":0.2111,"GLDM":0.3092,"IBIT":0.2584,"SLV":0.4302,"GSOL":0.2467,"MU":0.64,"WDC":0.4466,"SNDK":0.546,"COHR":0.6449,"LITE":0.601,"AAOI":0.6053,"ABCL":0.1337,"AMD":0.7466,"ARM":1.0,"AVGO":0.5917,"BE":0.6002,"BSOL":0.2422,"COIN":0.2223,"CRCL":0.282,"FLNC":0.4669,"INTC":0.7632,"META":0.2123,"MRVL":0.7407,"MSTR":0.3295,"NVDA":0.3416,"SKHY":0.4741,"TEM":0.177,"VST":0.2763},"AVGO":{"AIPO":0.617,"SOXX":0.71,"GLW":0.5161,"ASML":0.6271,"COPX":0.4872,"AMZN":0.1157,"LLY":-0.2827,"HOOD":0.2783,"ETHA":0.1269,"GLDM":0.1825,"IBIT":0.1191,"SLV":0.3063,"GSOL":0.2407,"MU":0.4793,"WDC":0.3676,"SNDK":0.4938,"COHR":0.5864,"LITE":0.5176,"AAOI":0.4977,"ABCL":0.0417,"AMD":0.5022,"ARM":0.5917,"AVGO":1.0,"BE":0.4145,"BSOL":0.2422,"COIN":0.16,"CRCL":0.1863,"FLNC":0.3797,"INTC":0.6023,"META":-0.0227,"MRVL":0.4834,"MSTR":0.2022,"NVDA":0.5311,"SKHY":0.4774,"TEM":0.1206,"VST":0.1674},"BE":{"AIPO":0.7816,"SOXX":0.6806,"GLW":0.7029,"ASML":0.5579,"COPX":0.4827,"AMZN":0.1255,"LLY":-0.2516,"HOOD":0.3086,"ETHA":0.1365,"GLDM":0.3817,"IBIT":0.1495,"SLV":0.4293,"GSOL":0.1873,"MU":0.6468,"WDC":0.5394,"SNDK":0.5744,"COHR":0.6342,"LITE":0.622,"AAOI":0.5889,"ABCL":0.2975,"AMD":0.6074,"ARM":0.6002,"AVGO":0.4145,"BE":1.0,"BSOL":0.182,"COIN":0.1406,"CRCL":0.1642,"FLNC":0.6049,"INTC":0.6762,"META":-0.007,"MRVL":0.6445,"MSTR":0.2142,"NVDA":0.2553,"SKHY":0.6888,"TEM":0.2853,"VST":0.5257},"BSOL":{"AIPO":0.2887,"SOXX":0.2688,"GLW":0.1414,"ASML":0.0942,"COPX":0.442,"AMZN":0.0892,"LLY":0.0344,"HOOD":0.4955,"ETHA":0.7491,"GLDM":0.4932,"IBIT":0.7745,"SLV":0.5378,"GSOL":0.9986,"MU":0.2052,"WDC":0.0723,"SNDK":0.1832,"COHR":0.1359,"LITE":0.1478,"AAOI":0.1568,"ABCL":0.1753,"AMD":0.17,"ARM":0.2422,"AVGO":0.2422,"BE":0.182,"BSOL":1.0,"COIN":0.6707,"CRCL":0.6078,"FLNC":0.17,"INTC":0.2554,"META":0.0426,"MRVL":0.2626,"MSTR":0.8111,"NVDA":0.2763,"SKHY":0.2109,"TEM":0.3513,"VST":0.0541},"COIN":{"AIPO":0.217,"SOXX":0.2522,"GLW":0.0464,"ASML":0.0582,"COPX":0.3691,"AMZN":-0.1155,"LLY":0.0729,"HOOD":0.7025,"ETHA":0.7555,"GLDM":0.4432,"IBIT":0.7917,"SLV":0.4508,"GSOL":0.6652,"MU":0.3298,"WDC":0.1159,"SNDK":0.2348,"COHR":0.1261,"LITE":0.0765,"AAOI":0.1943,"ABCL":0.1558,"AMD":0.1699,"ARM":0.2223,"AVGO":0.16,"BE":0.1406,"BSOL":0.6707,"COIN":1.0,"CRCL":0.867,"FLNC":0.1143,"INTC":0.2482,"META":0.0729,"MRVL":0.2396,"MSTR":0.8535,"NVDA":0.1951,"SKHY":0.2218,"TEM":0.4224,"VST":-0.0648},"CRCL":{"AIPO":0.2887,"SOXX":0.3083,"GLW":0.0999,"ASML":0.1112,"COPX":0.3707,"AMZN":0.0609,"LLY":0.0023,"HOOD":0.6737,"ETHA":0.6737,"GLDM":0.4699,"IBIT":0.7035,"SLV":0.481,"GSOL":0.596,"MU":0.3319,"WDC":0.167,"SNDK":0.2975,"COHR":0.1388,"LITE":0.0808,"AAOI":0.1814,"ABCL":0.1971,"AMD":0.1983,"ARM":0.282,"AVGO":0.1863,"BE":0.1642,"BSOL":0.6078,"COIN":0.867,"CRCL":1.0,"FLNC":0.1481,"INTC":0.2946,"META":0.1219,"MRVL":0.316,"MSTR":0.8251,"NVDA":0.2653,"SKHY":0.2406,"TEM":0.3377,"VST":0.0156},"FLNC":{"AIPO":0.639,"SOXX":0.5858,"GLW":0.5422,"ASML":0.525,"COPX":0.3931,"AMZN":0.1785,"LLY":-0.403,"HOOD":0.2025,"ETHA":0.0849,"GLDM":0.1512,"IBIT":0.1055,"SLV":0.2221,"GSOL":0.1727,"MU":0.4649,"WDC":0.4686,"SNDK":0.4588,"COHR":0.5064,"LITE":0.6022,"AAOI":0.5882,"ABCL":0.1783,"AMD":0.5217,"ARM":0.4669,"AVGO":0.3797,"BE":0.6049,"BSOL":0.17,"COIN":0.1143,"CRCL":0.1481,"FLNC":1.0,"INTC":0.5051,"META":0.0081,"MRVL":0.5503,"MSTR":0.1479,"NVDA":0.2238,"SKHY":0.4905,"TEM":0.2157,"VST":0.345},"INTC":{"AIPO":0.7869,"SOXX":0.8734,"GLW":0.733,"ASML":0.6394,"COPX":0.5637,"AMZN":0.0567,"LLY":-0.3285,"HOOD":0.3045,"ETHA":0.1977,"GLDM":0.288,"IBIT":0.2357,"SLV":0.4424,"GSOL":0.2539,"MU":0.7558,"WDC":0.6001,"SNDK":0.6562,"COHR":0.674,"LITE":0.6658,"AAOI":0.6779,"ABCL":0.1634,"AMD":0.8064,"ARM":0.7632,"AVGO":0.6023,"BE":0.6762,"BSOL":0.2554,"COIN":0.2482,"CRCL":0.2946,"FLNC":0.5051,"INTC":1.0,"META":0.171,"MRVL":0.7451,"MSTR":0.3252,"NVDA":0.4564,"SKHY":0.6994,"TEM":0.2675,"VST":0.3058},"META":{"AIPO":0.0017,"SOXX":0.0438,"GLW":0.0722,"ASML":-0.0689,"COPX":0.0132,"AMZN":0.2538,"LLY":0.0695,"HOOD":0.2852,"ETHA":0.1181,"GLDM":0.049,"IBIT":0.1939,"SLV":0.059,"GSOL":0.0349,"MU":-0.0909,"WDC":-0.131,"SNDK":-0.0846,"COHR":-0.0186,"LITE":-0.0289,"AAOI":0.0097,"ABCL":0.0059,"AMD":0.1341,"ARM":0.2123,"AVGO":-0.0227,"BE":-0.007,"BSOL":0.0426,"COIN":0.0729,"CRCL":0.1219,"FLNC":0.0081,"INTC":0.171,"META":1.0,"MRVL":0.0644,"MSTR":0.1184,"NVDA":0.0839,"SKHY":-0.0199,"TEM":0.1109,"VST":0.1415},"MRVL":{"AIPO":0.7817,"SOXX":0.8477,"GLW":0.738,"ASML":0.6387,"COPX":0.5483,"AMZN":0.0993,"LLY":-0.3076,"HOOD":0.3162,"ETHA":0.2979,"GLDM":0.4384,"IBIT":0.2897,"SLV":0.5484,"GSOL":0.2702,"MU":0.7625,"WDC":0.5896,"SNDK":0.6859,"COHR":0.7327,"LITE":0.7274,"AAOI":0.7235,"ABCL":0.2581,"AMD":0.7275,"ARM":0.7407,"AVGO":0.4834,"BE":0.6445,"BSOL":0.2626,"COIN":0.2396,"CRCL":0.316,"FLNC":0.5503,"INTC":0.7451,"META":0.0644,"MRVL":1.0,"MSTR":0.3654,"NVDA":0.4168,"SKHY":0.6794,"TEM":0.4341,"VST":0.4007},"MSTR":{"AIPO":0.3257,"SOXX":0.3446,"GLW":0.168,"ASML":0.1055,"COPX":0.4331,"AMZN":0.0738,"LLY":-0.0273,"HOOD":0.6841,"ETHA":0.8068,"GLDM":0.5299,"IBIT":0.8739,"SLV":0.5523,"GSOL":0.8053,"MU":0.3301,"WDC":0.1252,"SNDK":0.2488,"COHR":0.2205,"LITE":0.1572,"AAOI":0.2392,"ABCL":0.1227,"AMD":0.2198,"ARM":0.3295,"AVGO":0.2022,"BE":0.2142,"BSOL":0.8111,"COIN":0.8535,"CRCL":0.8251,"FLNC":0.1479,"INTC":0.3252,"META":0.1184,"MRVL":0.3654,"MSTR":1.0,"NVDA":0.332,"SKHY":0.2636,"TEM":0.4084,"VST":0.0167},"NVDA":{"AIPO":0.5543,"SOXX":0.5831,"GLW":0.3869,"ASML":0.4659,"COPX":0.3795,"AMZN":0.1072,"LLY":-0.2063,"HOOD":0.337,"ETHA":0.1356,"GLDM":0.3214,"IBIT":0.2157,"SLV":0.3555,"GSOL":0.2603,"MU":0.4156,"WDC":0.251,"SNDK":0.4163,"COHR":0.4996,"LITE":0.4749,"AAOI":0.4577,"ABCL":0.095,"AMD":0.3927,"ARM":0.3416,"AVGO":0.5311,"BE":0.2553,"BSOL":0.2763,"COIN":0.1951,"CRCL":0.2653,"FLNC":0.2238,"INTC":0.4564,"META":0.0839,"MRVL":0.4168,"MSTR":0.332,"NVDA":1.0,"SKHY":0.4648,"TEM":0.2014,"VST":0.3152},"SKHY":{"AIPO":0.6782,"SOXX":0.7668,"GLW":0.6728,"ASML":0.6453,"COPX":0.575,"AMZN":-0.0573,"LLY":-0.3328,"HOOD":0.2982,"ETHA":0.2487,"GLDM":0.3554,"IBIT":0.2588,"SLV":0.4828,"GSOL":0.2154,"MU":0.8216,"WDC":0.6975,"SNDK":0.8084,"COHR":0.5647,"LITE":0.6648,"AAOI":0.6819,"ABCL":0.2242,"AMD":0.6837,"ARM":0.4741,"AVGO":0.4774,"BE":0.6888,"BSOL":0.2109,"COIN":0.2218,"CRCL":0.2406,"FLNC":0.4905,"INTC":0.6994,"META":-0.0199,"MRVL":0.6794,"MSTR":0.2636,"NVDA":0.4648,"SKHY":1.0,"TEM":0.2494,"VST":0.4061},"TEM":{"AIPO":0.2876,"SOXX":0.2707,"GLW":0.1597,"ASML":0.1565,"COPX":0.427,"AMZN":0.1033,"LLY":0.1791,"HOOD":0.4637,"ETHA":0.3435,"GLDM":0.4489,"IBIT":0.3683,"SLV":0.4887,"GSOL":0.3537,"MU":0.2765,"WDC":0.0332,"SNDK":0.173,"COHR":0.1494,"LITE":0.1395,"AAOI":0.2716,"ABCL":0.5316,"AMD":0.2122,"ARM":0.177,"AVGO":0.1206,"BE":0.2853,"BSOL":0.3513,"COIN":0.4224,"CRCL":0.3377,"FLNC":0.2157,"INTC":0.2675,"META":0.1109,"MRVL":0.4341,"MSTR":0.4084,"NVDA":0.2014,"SKHY":0.2494,"TEM":1.0,"VST":0.1744},"VST":{"AIPO":0.6185,"SOXX":0.4206,"GLW":0.4548,"ASML":0.4586,"COPX":0.212,"AMZN":0.2274,"LLY":-0.2203,"HOOD":0.1622,"ETHA":-0.0051,"GLDM":0.2332,"IBIT":-0.0223,"SLV":0.262,"GSOL":0.0489,"MU":0.4377,"WDC":0.3378,"SNDK":0.438,"COHR":0.3893,"LITE":0.4531,"AAOI":0.3642,"ABCL":0.2752,"AMD":0.4624,"ARM":0.2763,"AVGO":0.1674,"BE":0.5257,"BSOL":0.0541,"COIN":-0.0648,"CRCL":0.0156,"FLNC":0.345,"INTC":0.3058,"META":0.1415,"MRVL":0.4007,"MSTR":0.0167,"NVDA":0.3152,"SKHY":0.4061,"TEM":0.1744,"VST":1.0}}};
+const WINDOWS=["1y","6m","3m"];
+let CWIN="1y";
+let BREADTH="neff";   // "neff" = measured independent bets | "sqrt" = sqrt(count)
+
+// Jacobi eigenvalues -> participation ratio. N_eff = (sum L)^2 / sum(L^2).
+// 7 perfectly correlated names -> 1.0. 7 independent -> 7.0.
+function nEff(syms){
+  const S=syms.filter(x=>CORR[CWIN][x]);
+  if(S.length<2) return S.length||1;
+  const n=S.length, A=S.map(a=>S.map(b=>CORR[CWIN][a][b]));
+  for(let it=0;it<200;it++){
+    let p=0,q=1,mx=0;
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++) if(Math.abs(A[i][j])>mx){mx=Math.abs(A[i][j]);p=i;q=j;}
+    if(mx<1e-11) break;
+    const th=0.5*Math.atan2(2*A[p][q],A[p][p]-A[q][q]), c=Math.cos(th), sn=Math.sin(th);
+    for(let k=0;k<n;k++){const a1=c*A[k][p]+sn*A[k][q], a2=-sn*A[k][p]+c*A[k][q]; A[k][p]=a1; A[k][q]=a2;}
+    for(let k=0;k<n;k++){const a1=c*A[p][k]+sn*A[q][k], a2=-sn*A[p][k]+c*A[q][k]; A[p][k]=a1; A[q][k]=a2;}
+  }
+  const lam=A.map((r,i)=>r[i]), s=lam.reduce((a,b)=>a+b,0), s2=lam.reduce((a,b)=>a+b*b,0);
+  return s*s/s2;
+}
+function breadthOf(syms){ return BREADTH==='sqrt' ? Math.sqrt(syms.length) : nEff(syms); }
+function pc1(syms){
+  const S=syms.filter(x=>CORR[CWIN][x]); if(S.length<2) return 1;
+  const ne=nEff(S); return null;
+}
+const WAVE_TREND="1 AI buildout";
+function waveDemand(trend,sub){
+  if(trend!==WAVE_TREND) return 1.0;
+  const row=WAVE_DEMAND[sub]; if(!row) return 1.0;
+  return row[Math.max(0,WAVES.indexOf(WAVE))];
+}
+const CWHY={certain:"multiple voices, observable evidence, investable vehicles exist",
+ strong:"well-argued, evidence accumulating",forming:"dated or named, not yet observable",
+ speculative:"one voice, no confirmation",watch:"named, not investable yet"};
+let D=JSON.parse(JSON.stringify(BASE));
+
+const band=s=>s>=85?1.00:s>=70?0.95:s>=55?0.85:s>=45?0.75:0.60;
+const f1=x=>x.toFixed(1);
+// Escape text placed inside an HTML attribute. An unescaped quote in a why-string ended the
+// title attribute early and leaked words as attributes -- AMZN's 'multiple compression' quote
+// turned its quality <select> into a multi-select listbox (fixed 2026-09-30).
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+let R={};
+function calc(){
+  R={}; const pool=100;
+  const T=[];
+  for(const [tname,ovr,ttiming,tconv,subs] of D){
+    const sc=subs.map(s=>{
+      const td=s[4], S=s5calc(td[0],td[1],td[2],td[3]);
+      const wd=waveDemand(tname,s[0]);
+      const t=STAGES[s[2]], q=QUAL[s[3]], eff=100*t*q*wd,
+            raw=(100-FLOOR_SCORE)*t*q*wd, m=band(S.s5);
+      return {sub:s[0],tkr:s[1],timing:s[2],quality:s[3],tm:t,qm:q,wd,
+              px:td[0],d50:td[1],d200:td[2],rsi:td[3],s5:S.s5,S,
+              dep:s[5],why:s[6],eff,raw,m,score:raw*m};
+    });
+    // trend timing is DERIVED — the mean of its sub-themes. Timing was being
+    // stated twice: once at the trend, once per sub-theme. The sub-theme call is
+    // strictly more informative (Visser's stage clock is sub-theme level), and a
+    // trend-level assertion is either duplication (1 sub-theme) or fiction
+    // (AI buildout was set 'binding' with only 1 of 7 members binding).
+    const live=sc.filter(r=>r.quality!=='remove');
+    const n=live.length;
+    const tmDer = n ? live.reduce((a,r)=>a+r.tm,0)/n : 0;
+    const syms=live.map(r=>r.tkr);
+    const br=n?breadthOf(syms):0;
+    const ts=tmDer*CONV[tconv]*br;
+    T.push({tname,ovr,tmDer,tconv,sc,n,br,ts});
+  }
+  const grand=T.reduce((a,t)=>a+t.ts,0)||1;
+  T.forEach(t=>t.emg=pool*t.ts/grand);
+  const fixed=T.filter(t=>t.ovr!==null), free=T.filter(t=>t.ovr===null);
+  const used=fixed.reduce((a,t)=>a+t.ovr,0), left=pool-used;
+  const freeSum=free.reduce((a,t)=>a+t.ts,0)||1;
+  fixed.forEach(t=>t.tw=t.ovr);
+  free.forEach(t=>t.tw=left*t.ts/freeSum);
+  const rows=[], fills=[];
+  for(const t of T){
+    const sum=t.sc.reduce((a,b)=>a+b.score,0);
+    if(!t.sc.length){fills.push([t.tname,t.tw,0,null,t.emg,t.ovr]);continue;}
+    t.sc.forEach(r=>{r.share=sum>0?r.score/sum:1/t.sc.length; r.w=t.tw*r.share;
+                     r.tot=sum; r.twt=t.tw; r.trend=t.tname; r.n=t.sc.length;
+                     r.tmDer=t.tmDer; r.tconv=t.tconv; r.ts=t.ts; r.br=t.br; r.emg=t.emg; r.ovr=t.ovr;
+                     R[r.tkr]=r;});
+    const q=t.sc.reduce((a,b)=>a+b.m*b.w,0)/(t.tw||1);
+    fills.push([t.tname,t.tw,t.sc.reduce((a,b)=>a+b.w,0),q,t.emg,t.ovr]);
+    rows.push([t.tname,t.tw,t.sc,t.emg,t.ovr]);
+  }
+  for(const sv of SLEEVES){
+    const mem=rows.flatMap(([,,sc])=>sc).filter(r=>sv.tickers.includes(r.tkr));
+    const cur=mem.reduce((a,r)=>a+r.w,0); sv.cur=cur; sv.pre=cur; sv.fired=false;
+    if(!sv.on||cur<=sv.cap+0.001||!mem.length) continue;
+    sv.fired=true; sv.pre=cur; sv.cur=sv.cap; const freed=cur-sv.cap, k=sv.cap/cur;
+    mem.forEach(r=>{r.capped=true; r.w*=k;});
+    // an explicit trend override is a decision — reflow must not silently undo it
+    const out=rows.flatMap(([,,sc])=>sc).filter(r=>!sv.tickers.includes(r.tkr)&&r.ovr===null);
+    const base=out.reduce((a,r)=>a+r.w,0)||1;
+    out.forEach(r=>r.w+=freed*r.w/base);
+  }
+  fills.forEach(f=>{const t=rows.find(x=>x[0]===f[0]); if(t) f[1]=t[2].reduce((a,r)=>a+r.w,0);});
+  return {rows,fills};
+}
+
+function render(){
+  const {rows,fills}=calc();
+  let h='', total=0;
+  for(const [tname,twt,sc,emg,ovr] of rows){
+    sc.forEach((r,i)=>{
+      total+=r.w;
+      const d=r.w-r.dep;
+      h+=`<tr class="${i===0?'trendstart':''}" style="${r.quality==='remove'?'opacity:.42':''}">`;
+      if(i===0){
+        const tt=R[sc[0].tkr];
+        h+=`<td class="l tname" rowspan="${sc.length}">`+
+           `<input class="tn" value="${tname}" onchange="renameTrend('${tname}',this.value)">`+
+           `<div style="margin-top:5px">`+
+           (tname===WAVE_TREND
+             ? `<select class="stage" style="font-size:10.5px;max-width:none" onchange="setWave(this.value)" title="adoption wave — re-rates the sub-themes below">`+
+               WAVES.map(w=>`<option ${w===WAVE?'selected':''}>${w}</option>`).join('')+`</select>`
+             : `<select class="stage" style="font-size:10.5px;max-width:none" onchange="setTrendF('${tname}',3,this.value)" title="${esc(CWHY[tt.tconv])}">`+
+               Object.keys(CONV).map(k=>`<option ${k===tt.tconv?'selected':''}>${k}</option>`).join('')+`</select>`)+
+           `</div>`+
+           `<div class="faint q" onclick="hdr('ttiming',event)" style="font-size:9.5px;margin-top:4px">`+
+             `timing <span class="derived">${tt.tmDer.toFixed(3)}</span> &middot; breadth <span class="derived">${tt.br.toFixed(2)}</span> of ${sc.length}`+
+           `</div>`+
+           (tname===WAVE_TREND
+             ? `<div class="faint q" onclick="hdr('wave',event)" style="font-size:9.5px">adoption wave &mdash; re-rates sub-themes</div>`
+             : `<div class="faint" style="font-size:9.5px">conviction &mdash; ${tt.tconv}</div>`)+
+           `<div class="faint" style="font-size:9.5px">score ${tt.ts.toFixed(2)}</div>`+
+           `</td>`;
+        h+=`<td class="tname" rowspan="${sc.length}" style="text-align:right">`+
+           `<input class="n pin" style="width:46px;font-size:13px" value="${f1(twt)}" onchange="setTrend('${tname}',this.value)">`+
+           `</td>`;
+      }
+      h+=`<td class="l sname grp">${r.sub}</td><td class="l tkr q" onclick="cell('${r.tkr}','tkr',event)">${r.tkr}`+
+         (/NO VOICE SUPPORT/.test(r.why)?`<span style="color:var(--neg);font-size:9px"> \u25cb</span>`
+          :/CORRECTED|MOVED/.test(r.why)?`<span style="color:var(--pin);font-size:9px"> \u25cf</span>`:'')+`</td>`;
+      h+=`<td class="grp"><select class="stage" onchange="setF('${r.tkr}',2,this.value)">`+
+         Object.keys(STAGES).map(k=>`<option ${k===r.timing?'selected':''}>${k}</option>`).join('')+`</select></td>`;
+      h+=`<td><select class="stage" onchange="setF('${r.tkr}',3,this.value)" title="${esc(r.why)}">`+
+         QORDER.map(k=>`<option ${k===r.quality?'selected':''}>${k}</option>`).join('')+`</select></td>`;
+      h+=`<td class="${r.wd===1?'faint':'derived'} q" onclick="cell('${r.tkr}','wave',event)">${r.wd===1&&r.trend!==WAVE_TREND?'—':r.wd.toFixed(2)}</td>`+
+         `<td class="derived q" onclick="cell('${r.tkr}','eff',event)">${r.eff.toFixed(0)}</td>`+
+         `<td class="derived q" onclick="cell('${r.tkr}','raw',event)">${r.raw.toFixed(1)}</td>`;
+      const ed=(i,w)=>`<input class="n" style="width:${w}px" value="${[r.px,r.d50,r.d200][i]}" onchange="setTD('${r.tkr}',${i},this.value)">`;
+      h+=`<td class="grp">${ed(0,58)}</td><td>${ed(1,58)}</td><td>${ed(2,58)}</td>`+
+         `<td class="derived q" onclick="cell('${r.tkr}','s5',event)">${r.s5===null?'—':r.s5.toFixed(0)}</td>`;
+      h+=`<td class="derived q" onclick="cell('${r.tkr}','mult',event)">${r.m.toFixed(2)}</td>`+
+         `<td class="derived q" onclick="cell('${r.tkr}','score',event)">${r.score.toFixed(1)}</td>`;
+      h+=`<td class="grp derived q" onclick="cell('${r.tkr}','share',event)">${(r.share*100).toFixed(1)}%</td>`;
+      h+=`<td class="final q" onclick="cell('${r.tkr}','final',event)">${f1(r.w)}`+
+         (r.capped?`<span style="color:var(--pin);font-size:9.5px"> cap</span>`:'')+`</td>`;
+      h+=`<td class="faint">${r.dep?f1(r.dep):'—'}</td>`;
+      h+=`<td style="color:${d>=0?'var(--pos)':'var(--neg)'}">${d>=0?'+':''}${f1(d)}</td></tr>`;
+    });
+  }
+  document.getElementById('tb').innerHTML=h;
+  document.getElementById('tot').textContent=f1(total);
+  document.getElementById('tot').style.color=Math.abs(total-100)<0.15?'var(--derived)':'var(--neg)';
+  document.getElementById('fill').innerHTML=fills.map(([n,t,held,q,emg,ovr])=>
+    `<div class="trendbar"><span>${n}${ovr!==null?' <span style="color:var(--pin)">override</span>':''}</span><span>${f1(t)}${q!==null?`&nbsp;&nbsp;<b style="color:${q<0.7?'var(--neg)':'var(--derived)'}">q ${q.toFixed(2)}</b>`:''}</span></div>`+
+    `<div class="bar" style="width:${Math.min(100,t)}%"></div>`).join('');
+  document.getElementById('brsel').innerHTML=
+    [['neff','N_eff measured'],['sqrt','&radic;n counted']].map(([v,l])=>`<option value="${v}" ${v===BREADTH?'selected':''}>${l}</option>`).join('');
+  document.getElementById('cwsel').innerHTML=WINDOWS.map(w=>`<option ${w===CWIN?'selected':''}>${w}</option>`).join('');
+  document.getElementById('sleeves').innerHTML=SLEEVES.map((sv,i)=>
+    `<div style="border:1px solid var(--rule);border-radius:6px;padding:9px 10px;margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <label style="font-family:var(--mono);font-size:12px;display:flex;gap:6px;align-items:center">
+          <input type="checkbox" ${sv.on?'checked':''} onchange="setSleeve(${i},'on',this.checked)" style="accent-color:var(--pin)">
+          ${sv.name}</label>
+        <span style="font-family:var(--mono);font-size:12px">
+          <span style="color:${sv.fired?'var(--pin)':'var(--derived)'}">${f1(sv.cur||0)}</span>
+          <span class="faint"> / </span>
+          <input class="n pin" style="width:40px" value="${f1(sv.cap)}" onchange="setSleeve(${i},'cap',this.value)"></span>
+      </div>
+      <input class="n" style="width:100%;text-align:left;margin-top:6px;color:var(--dim);font-size:11px"
+        value="${sv.tickers.join(' ')}" onchange="setSleeve(${i},'tkr',this.value)">
+      ${sv.fired?'<div style="color:var(--pin);font-size:10.5px;font-family:var(--mono);margin-top:5px">CAP FIRED — was '+f1(sv.pre||0)+', excess reflowed</div>':'<div class="faint" style="font-size:10.5px;font-family:var(--mono);margin-top:5px">'+(sv.on?'not binding':'off — currently '+f1(sv.cur||0)+'%')+'</div>'}
+    </div>`).join('');
+  const budget=fills.reduce((a,f)=>a+f[1],0);
+  const be=document.getElementById('budget');
+  be.textContent=f1(budget)+'%';
+  be.style.color=Math.abs(budget-100)<0.05?'var(--derived)':'var(--neg)';
+  document.getElementById('budgetnote').textContent=
+    Math.abs(budget-100)<0.05?'balanced' : (budget>100?f1(budget-100)+'% over — trim a trend or cash':f1(100-budget)+'% unallocated');
+}
+
+const INS=document.getElementById('ins');
+function pop(html,e){
+  INS.innerHTML='<x onclick="INS.style.display=\'none\'">&times;</x>'+html;
+  INS.style.display='block';
+  const w=INS.offsetWidth,h=INS.offsetHeight;
+  let x=e.clientX+14,y=e.clientY+14;
+  if(x+w>innerWidth-12)x=Math.max(12,e.clientX-w-14);
+  if(y+h>innerHeight-12)y=Math.max(12,innerHeight-h-12);
+  INS.style.left=x+'px'; INS.style.top=y+'px';
+  e.stopPropagation();
+}
+document.addEventListener('click',e=>{if(!INS.contains(e.target)&&!e.target.closest('.q'))INS.style.display='none';});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')INS.style.display='none';});
+
+function hdr(k,e){
+ if(k==='sev') pop(`<h4>S1 — two ladders</h4><div class="who">100 &times; timing &times; quality</div>
+  <p>S1 used to be a free-form 0-100 severity number. Two of the four axes had a published rubric; the other two — bottleneck and monetary — had none. Nine numbers, prose justification only, not reproducible by anyone else. This replaces them with two discrete ladders.</p>
+  <div class="step">TIMING &nbsp;&nbsp;binding 1.00 &middot; working 0.92 &middot; cooling 0.80
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forward 0.70 &middot; exhausted 0.60</div>
+  <div class="step">QUALITY &nbsp;sole 1.00 &middot; basket 0.92 &middot; duopoly 0.85
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;leader 0.75 &middot; contested 0.60</div>
+  <p>Quality asks the odds that owning this captures the trend — which is why a basket scores near a monopoly. That is the breadth term the old severity scale never had, and it is why SOXX no longer needs a hand-set floor.</p>
+  <p class="warn">Cost of five rungs: LLY and AMZN both land on working &times; leader and come out identical. The ladder cannot separate a 150-year trial archive from a logistics network. More rungs would fix it; free-form numbers would undo the point.</p>
+  <div class="src">signal_model_config.json &rarr; three_axes.bottleneck.raw_s1</div>`,e);
+ else if(k==='breadth') pop(`<h4>Breadth — measured, not counted</h4><div class="who">N_eff from real correlations &middot; ${CWIN} window</div>
+  <div class="step">N_eff = (&Sigma;&lambda;)&sup2; / &Sigma;&lambda;&sup2;
+7 identical names &rarr; 1.0 &nbsp; 7 independent &rarr; 7.0</div>
+  <p>&radic;n counts sub-themes as if each were an independent bet. They are not. Measured on daily log returns:</p>
+  <div class="step">${D.filter(t=>t[4].length).map(t=>{const S=t[4].map(x=>x[1]); return t[0].padEnd(18,'\u00a0')+'n '+S.length+'   \u221an '+Math.sqrt(S.length).toFixed(2)+'   N_eff '+nEff(S).toFixed(2);}).join('\n')}</div>
+  <p>Seven AI-buildout names average ~0.65 correlation and deliver <b>1.95</b> independent bets. Two application names — AMZN vs LLY at <b>0.04</b> — deliver <b>2.00</b>. Slicing one exposure more finely does not create diversification, and &radic;n was paying you for it.</p>
+  <p class="warn">Backward-looking. Correlations tighten as the window shortens (AIPO-SOXX 0.86 at 1y, 0.91 at 3m; GLDM-IBIT 0.28 to 0.59), so switch windows to see how much the answer depends on the regime. It also creates a perverse incentive: an unrelated name buys trend weight regardless of conviction.</p>`,e);
+ else if(k==='wave') pop(`<h4>Adoption wave</h4><div class="who">one global timeline &middot; currently ${WAVE}</div>
+  <p>Visser 8/16 sequencing: coding agents now, enterprise agents next year, consumer agents the back half, embodied 2028. One setting, so the trends cannot contradict each other.</p>
+  <p>It re-rates <b>${WAVE_TREND}</b> only. Different waves stress different parts of the stack — consumer agents need more memory but less nearline storage than enterprise agents. The other trends are not downstream of this curve and sit at 1.00.</p>
+  <div class="step">${Object.keys(WAVE_DEMAND).map(k=>k.padEnd(20,'\u00a0')+WAVE_DEMAND[k].map(v=>v.toFixed(2)).join('  ')).join('\n')}
+${'\u00a0'.repeat(20)}${WAVES.map(w=>(w===WAVE?'^^^^':'    ')).join('  ')}</div>
+  <p class="warn">Advance this only on observable evidence that the next wave has arrived, not on an announcement. Visser dated Stage 4 to September — that is a claim about rails, not proof the wave has turned.</p>`,e);
+ else if(k==='ttiming'){
+  const t=D.find(x=>x[4].length&&x[4].some(z=>true));
+  let best=null; for(const tr of D){ if(tr[4].length&&tr[4].some(z=>R[z[1]])){ if(!best) best=tr; } }
+  pop(`<h4>Trend timing — derived</h4><div class="who">mean of the sub-themes in this trend</div>
+  <p>Not an input. Timing used to be stated twice: once at the trend and once per sub-theme. The sub-theme call is strictly more informative — Visser's stage clock (memory, optical, power, tokenization) is sub-theme level.</p>
+  <div class="step">trend_timing = mean(sub-theme timing multipliers)</div>
+  <p>AI buildout was set to <b>binding</b> (1.00) while only 1 of its 7 sub-themes is binding — the rest are working and cooling. The real mean is 0.880, so the trend was overstated by about 3 points of weight.</p>
+  <p>Deriving it also means it cannot drift: change a sub-theme's stage and the trend updates on its own.</p>
+  <p class="warn">Simplification: a plain mean counts a 2%-weight sub-theme the same as a 20% one. Weighting by score would be more accurate but circular — the weights depend on the trend weight, which would depend on the weights.</p>`,e);
+ } else if(k==='trend') pop(`<h4>Trend weight</h4><div class="who">timing &times; conviction &times; &radic;breadth</div>
+  <div class="step">trend_score = timing &times; conviction &times; &radic;(sub-themes)
+trend_wt&nbsp;&nbsp;&nbsp; = 100 &times; score / &Sigma;(all scores)</div>
+  <p>Scored at the TREND level, not summed from its names. Summing made the weight a function of ticker count: adding two names to a one-name trend moved it 4.7% &rarr; 11.6% with conviction unchanged.</p>
+  <p>Voices set both inputs. Visser's stage clock gives timing; conviction is how well established the trend is across the voice record.</p>
+  <p>&radic;n keeps breadth meaningful without letting it dominate. It is the one arbitrary choice here.</p>
+  <p>Editable — type a number and the other trends re-split the remainder.</p>`,e);
+ else pop(`<h4>S5 entry quality</h4><div class="who">anti-momentum — high is a better entry</div>
+  <p>Computed, never typed. DMA position sets the base; stretch above the 50-DMA sets the penalty.</p>
+  <div class="step">base&nbsp;&nbsp; below 200-DMA&nbsp;&nbsp; 45
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pullback under 50&nbsp;72
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riding above both&nbsp;58</div>
+  <div class="step">stretch &ge;50% &rarr; 12 &middot; &ge;25% &rarr; 8 &middot; &ge;10% &rarr; 4
+then &times; 0.5 working-theme discount</div>
+  <p>The rule it enforces: penalise velocity, never proximity to highs. A structural winner sits near its highs the whole way up.</p>
+  <p class="warn">RSI term removed 8/22 — a threshold at 70 that cost 8 points of S5 for one tick. Trailing 1-year return is also excluded by design (changed 6/22/26), so a name down 32% that has just bounced still reads as stretched. IBIT is exactly that case.</p>
+  <div class="src">adapted from pull_candidates.cjs s5score()</div>`,e);
+}
+
+function cell(tkr,f,e){
+ const r=R[tkr]; if(!r)return;
+ const B=[[85,'1.00','85-100'],[70,'0.95','70-84'],[55,'0.85','55-69'],[45,'0.75','45-54'],[0,'0.60','under 45']];
+ const bd=B.find(b=>r.s5>=b[0]);
+ const M={
+  tkr:[`${tkr} — ${r.sub}`,
+    `${r.quality==='remove'?'<p class="warn"><b>REMOVED.</b> Zero weight, excluded from this trend\'s breadth and derived timing. The other names re-split the trend.</p>':''}
+    <div class="step">trend&nbsp;&nbsp;&nbsp; ${r.trend}
+timing&nbsp;&nbsp; ${r.timing} (&times;${r.tm.toFixed(2)})
+quality&nbsp; ${r.quality} (&times;${r.qm.toFixed(2)})
+S1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${r.eff.toFixed(0)}   raw ${r.raw.toFixed(1)}
+S5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${r.s5.toFixed(0)}   mult ${r.m.toFixed(2)}
+score&nbsp;&nbsp;&nbsp;${r.score.toFixed(1)}   share ${(r.share*100).toFixed(1)}%
+WEIGHT&nbsp; ${f1(r.w)}%${r.dep?'   (deployed was '+f1(r.dep)+'%)':'   (new position)'}</div>
+    <div class="step">px ${r.px}  &middot;  50-DMA ${r.d50}  &middot;  200-DMA ${r.d200}
+stretch ${r.S.st.toFixed(1)}%   RSI ${r.rsi.toFixed(1)} <span class="faint">(not used)</span></div>
+    <div style="margin-top:10px;padding:9px 11px;background:#101317;border-left:2px solid ${/NO VOICE SUPPORT/.test(r.why)?'var(--neg)':/CORRECTED|MOVED/.test(r.why)?'var(--pin)':'var(--rule2)'};border-radius:0 5px 5px 0">
+      <div style="font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);margin-bottom:5px">
+        ${/NO VOICE SUPPORT/.test(r.why)?'&#9675; no voice support':/CORRECTED|MOVED/.test(r.why)?'&#9679; corrected 8/22':'source'}</div>
+      <div style="font-size:11.5px;line-height:1.55;color:${/NO VOICE SUPPORT/.test(r.why)?'var(--neg)':'var(--dim)'}">${r.why}</div>
+    </div>`],
+  wave:[`Wave demand — ${r.sub}`,
+    r.trend!==WAVE_TREND
+    ? `<p>Not applicable. Wave demand shifts only within <b>${WAVE_TREND}</b> — the other trends are not downstream of the AI adoption curve, so they sit at 1.00.</p>`
+    : `<div class="step">current wave: <b>${WAVE}</b>
+${r.sub} demand &rarr; <b>&times;${r.wd.toFixed(2)}</b></div>
+    <div class="step">${WAVES.map(w=>`${(w===WAVE?'&rarr; ':'&nbsp;&nbsp;&nbsp;')}${w.padEnd(18,'\u00a0')} ${WAVE_DEMAND[r.sub]?WAVE_DEMAND[r.sub][WAVES.indexOf(w)].toFixed(2):'—'}`).join('\n')}</div>
+    <p>${WAVE_WHY[r.sub]||''}</p>
+    <p>Different waves stress different parts of the buildout. Advance the wave and these re-rate together — consumer agents need more memory but less nearline storage than enterprise agents do.</p>`],
+  eff:[`S1 — timing &times; quality &times; wave`,
+    `<div class="step">100 &times; timing &times; quality${r.wd!==1?' &times; wave':''}
+100 &times; ${r.tm.toFixed(2)} <span class="faint">(${r.timing})</span> &times; ${r.qm.toFixed(2)} <span class="faint">(${r.quality})</span>${r.wd!==1?` &times; ${r.wd.toFixed(2)} <span class="faint">(${WAVE})</span>`:''} = <b>${r.eff.toFixed(0)}</b></div>
+    <p><b>Timing</b> — where the trend sits in the cycle. binding 1.00 · working 0.92 · cooling 0.80 · forward 0.70 · exhausted 0.60. The 0.60 is a floor: fade, never zero.</p>
+    <p><b>Quality</b> — the odds that owning this actually captures the trend. sole 1.00 · basket 0.92 · duopoly 0.85 · leader 0.75 · contested 0.60. A monopoly and a whole-theme basket both score high for opposite reasons: one has no alternative, the other owns every alternative.</p>
+    <div style="margin-top:9px;padding:8px 10px;background:#101317;border-left:2px solid ${/NO VOICE SUPPORT|CORRECTED|MOVED/.test(r.why)?'var(--pin)':'var(--rule2)'};border-radius:0 5px 5px 0">
+      <div style="font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);margin-bottom:4px">source</div>
+      <div style="font-size:11.5px;line-height:1.5;color:${/NO VOICE SUPPORT/.test(r.why)?'var(--neg)':'var(--dim)'}">${r.why}</div>
+    </div>
+    <p>Voice conviction reaches the model through the timing and quality dropdowns, not through a separate convergence term. One opinion, one place.</p>
+    <p>This replaced nine hand-set severity numbers that had no rubric behind them. Both inputs are now discrete, arguable, and reproducible.</p>`],
+  raw:[`raw — the above-floor portion`,
+    `<div class="step">(100 &minus; floor_score) &times; timing &times; quality
+55 &times; ${r.tm.toFixed(2)} &times; ${r.qm.toFixed(2)} = <b>${r.raw.toFixed(1)}</b></div>
+    <p>The multipliers act on the portion ABOVE floor_score, never on the whole scale. This is the form config specifies for stage decay: <code>ws = floor + (composite &minus; floor) &times; mult</code>.</p>
+    <p class="warn">Corrected 8/22. The earlier form was <code>100 &times; t &times; q &minus; 45</code>, which let the two ladders compound before the floor bit: spread across the 25 combinations was 5,500&times; and three cells scored zero — violating "fade, never zero", the stated principle of the very numbers being borrowed. The correct form spans 2.8&times;, which is 1.67 &times; 1.67, exactly what two ladders of that range should give.</p>`],
+  s5:[`S5 — DMA ladder + stretch`,
+    `<div class="step">base = px &lt; d200 ? 45 : (px &lt; d50 ? 72 : 58)
+${r.px} vs d200 ${r.d200} / d50 ${r.d50} &rarr; <b>${r.S.base}</b></div>
+    <div class="step">stretch = (px &minus; d50) / d50 = ${r.S.st.toFixed(1)}%
+&rarr; rp ${r.S.rp} &times; 0.5 = &minus;${r.S.pen.toFixed(1)}</div>
+    <div class="step">clamp(5, 95, ${r.S.base} &minus; ${r.S.pen.toFixed(1)}) = <b>${r.s5.toFixed(0)}</b></div>
+    <p>Stretch bands: &ge;50% &rarr; 12 &middot; &ge;25% &rarr; 8 &middot; &ge;10% &rarr; 4 &middot; else 0, all halved by the working-theme discount.</p>
+    <p class="warn">RSI removed 8/22. It was a cliff, not a slope — 69.9 to 70.0 cost 8 points of S5 and 25% of weight, and it was the only thing ranking gold above bitcoin when S1 said the reverse. RSI for ${r.tkr} is ${r.rsi.toFixed(1)}, shown for reference only.</p>
+    <p>Measured against the 50-DMA, never as distance from highs.</p>`],
+  mult:[`mult — entry-quality multiplier`,
+    `<div class="step">band(S5 ${r.s5}) &rarr; ${bd[2]} &rarr; <b>&times;${bd[1]}</b></div>
+    <p>The anti-momentum brake. A stretched name gets less than its sub-theme deserves; the difference is redistributed to better entries inside the same trend.</p>
+    <p class="warn">These five multipliers are not in config. They were set in this session and are the least-validated numbers on the page.</p>`],
+  score:[`score — what actually competes`,
+    `<div class="step">raw &times; mult
+${r.raw.toFixed(1)} &times; ${r.m.toFixed(2)} = <b>${r.score.toFixed(1)}</b></div>
+    <p>Severity says how much the sub-theme deserves; the multiplier says how good today's entry is. Score is the product, and it is the only thing ranked inside a trend.</p>`],
+  share:[`share — this name's slice of its trend`,
+    `<div class="step">score / &Sigma;(scores in trend)
+${r.score.toFixed(1)} / ${r.tot.toFixed(1)} = <b>${(r.share*100).toFixed(1)}%</b></div>
+    <p>Normalised across the ${r.n} name${r.n>1?'s':''} in ${r.trend}, so every trend fills to its target exactly. Competition is only ever within a trend — this name never competes with anything outside it.</p>
+    ${r.n===1?'<p class="warn">Sole name in its trend, so share is 100% no matter what it scores. Severity and entry quality are inert here — only the trend weight can size it.</p>':''}`],
+  final:[`final weight`,
+    `<div class="step">trend_wt &times; share
+${r.twt.toFixed(1)}% &times; ${(r.share*100).toFixed(1)}% = <b>${f1(r.w)}%</b></div>
+    <p>No target_top, no per-name cap, no composite. Trend weight is yours; share is the engine's.</p>
+    <p>Deployed was ${r.dep?f1(r.dep)+'%':'not held'}, so this is ${r.dep?(r.w>=r.dep?'an increase of ':'a reduction of ')+Math.abs(r.w-r.dep).toFixed(1)+' points':'a new position'}.</p>`]
+ }[f];
+ pop(`<h4>${M[0]}</h4><div class="who">${tkr} &middot; ${r.sub}</div>${M[1]}`,e);
+}
+
+function renameTrend(o,v){v=v.trim();if(!v||v===o)return;for(const t of D)if(t[0]===o)t[0]=v;render();}
+
+function moveTkr(tkr,dest){
+  if(!dest)return; let row=null;
+  for(const t of D){const i=t[4].findIndex(s=>s[1]===tkr); if(i>=0){row=t[4].splice(i,1)[0];break;}}
+  if(row) for(const t of D) if(t[0]===dest) t[4].push(row);
+  render();
+}
+function addTrend(){const n=prompt('New trend name');if(n&&n.trim())D.push([n.trim(),null,'forward','watch',[]]);render();}
+function retireTrend(n){
+  const t=D.find(x=>x[0]===n);
+  if(t&&t[4].length){alert('Move its names out first — '+t[4].length+' still assigned.');return;}
+  D=D.filter(x=>x[0]!==n); render();
+}
+function setSleeve(i,k,v){
+  if(k==='cap')SLEEVES[i].cap=parseFloat(v)||0;
+  else if(k==='on')SLEEVES[i].on=v;
+  else SLEEVES[i].tickers=v.split(/[ ,]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);
+  render();
+}
+function setTD(tkr,i,v){for(const t of D)for(const s of t[4])if(s[1]===tkr)s[4][i]=parseFloat(v)||0;render();}
+function setF(tkr,i,v,num){for(const t of D)for(const s of t[4])if(s[1]===tkr)s[i]=num?(parseFloat(v)||0):v;render();}
+function setTrend(n,v){const x=(v===''||v===null)?null:parseFloat(v);for(const t of D)if(t[0]===n)t[1]=isNaN(x)?null:x;render();}
+function setWave(v){WAVE=v;render();}
+function setTrendF(n,i,v){for(const t of D)if(t[0]===n)t[i]=v;render();}
+function exportState(){
+  const {rows,fills}=calc();
+  const b={}, bt={};   // key by TICKER, not trend name — trends are renameable
+  for(const [tn,tw,tt,tc,subs] of BASE){bt[tn]=tw; for(const x of subs) b[x[1]]={row:x,trend:tn};}
+  const diffs=[]; const L=[];
+  L.push('# AlphaPlaybook v3.4 worksheet — exported '+new Date().toISOString().slice(0,16).replace('T',' '));
+  L.push('# trend-first. S1 = 100*timing*quality; score = max(0,S1-45)*band(S5); weight = trend_wt * score/sum(score in trend)');
+  L.push('');
+  
+  L.push('TREND_WEIGHTS = {   # emergent unless marked OVERRIDE');
+  for(const f of fills){
+    const [tn,tw,,,emg,ovr]=f;
+    if(ovr!==null&&Math.abs(ovr-emg)>0.05) diffs.push(tn+' override '+f1(ovr)+' vs emergent '+f1(emg));
+    if(!(tn in bt)) diffs.push('new trend: '+tn);
+    const tr=D.find(x=>x[0]===tn);
+    L.push('  "'+tn+'": '+f1(tw)+',   # '+(tr?tr[2]+' x '+tr[3]+' x sqrt('+tr[4].length+')':'')+
+      (ovr!==null?'  OVERRIDE, derived was '+f1(emg):''));
+  }
+  L.push('}');
+  L.push('');
+  L.push('# ticker, timing, quality, S1, S5, final_weight');
+  L.push('BOOK = [');
+  for(const [tn,tw,sc] of rows) for(const r of sc){
+    const rec=b[r.tkr], o=rec?rec.row:null; const ch=[];
+    if(rec&&rec.trend!==tn) diffs.push(r.tkr+' moved: '+rec.trend+' -> '+tn);
+    if(o){ if(r.timing!==o[2]){ch.push('timing '+o[2]+'->'+r.timing); diffs.push(r.tkr+' timing '+o[2]+' -> '+r.timing);}
+           if(r.quality!==o[3]){ch.push('quality '+o[3]+'->'+r.quality); diffs.push(r.tkr+' quality '+o[3]+' -> '+r.quality);}
+           const od=o[4]; if(od&&(od[0]!==r.px||od[1]!==r.d50||od[2]!==r.d200||od[3]!==r.rsi)){
+             ch.push('technicals'); diffs.push(r.tkr+' technicals edited (S5 '+r.s5.toFixed(0)+')');} }
+    L.push('  # '+r.tkr+': '+r.why);
+    L.push('  ("'+r.tkr+'", "'+r.timing+'", "'+r.quality+'", '+r.eff.toFixed(0)+', '+r.s5.toFixed(0)+', '+f1(r.w)+'),'+
+           (ch.length?'   # '+ch.join(', '):'')+(o&&o[5]?'   [v3.4 '+f1(o[5])+']':'   [new]'));
+  }
+  L.push(']');
+  const tot=rows.reduce((a,[,,sc])=>a+sc.reduce((x,r)=>x+r.w,0),0);
+  document.getElementById('brsel').innerHTML=
+    [['neff','N_eff measured'],['sqrt','&radic;n counted']].map(([v,l])=>`<option value="${v}" ${v===BREADTH?'selected':''}>${l}</option>`).join('');
+  document.getElementById('cwsel').innerHTML=WINDOWS.map(w=>`<option ${w===CWIN?'selected':''}>${w}</option>`).join('');
+  document.getElementById('sleeves').innerHTML=SLEEVES.map((sv,i)=>
+    `<div style="border:1px solid var(--rule);border-radius:6px;padding:9px 10px;margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <label style="font-family:var(--mono);font-size:12px;display:flex;gap:6px;align-items:center">
+          <input type="checkbox" ${sv.on?'checked':''} onchange="setSleeve(${i},'on',this.checked)" style="accent-color:var(--pin)">
+          ${sv.name}</label>
+        <span style="font-family:var(--mono);font-size:12px">
+          <span style="color:${sv.fired?'var(--pin)':'var(--derived)'}">${f1(sv.cur||0)}</span>
+          <span class="faint"> / </span>
+          <input class="n pin" style="width:40px" value="${f1(sv.cap)}" onchange="setSleeve(${i},'cap',this.value)"></span>
+      </div>
+      <input class="n" style="width:100%;text-align:left;margin-top:6px;color:var(--dim);font-size:11px"
+        value="${sv.tickers.join(' ')}" onchange="setSleeve(${i},'tkr',this.value)">
+      ${sv.fired?'<div style="color:var(--pin);font-size:10.5px;font-family:var(--mono);margin-top:5px">CAP FIRED — was '+f1(sv.pre||0)+', excess reflowed</div>':'<div class="faint" style="font-size:10.5px;font-family:var(--mono);margin-top:5px">'+(sv.on?'not binding':'off — currently '+f1(sv.cur||0)+'%')+'</div>'}
+    </div>`).join('');
+  const budget=fills.reduce((a,f)=>a+f[1],0);
+  L.push('');
+  L.push('# total allocated '+f1(tot)+'%   budget (trends+cash) '+f1(budget)+'%'+(Math.abs(budget-100)<0.05?'':'  <-- NOT 100'));
+  for(const tn of Object.keys(bt)) if(!fills.some(f=>f[0]===tn)) diffs.push('trend removed or renamed: '+tn);
+  L.push('');
+  L.push('SLEEVE_CAPS = [');
+  for(const sv of SLEEVES) L.push('  {"'+sv.name+'": '+f1(sv.cap)+', "on": '+sv.on+', "tickers": '+JSON.stringify(sv.tickers)+'},'+
+    (sv.fired?'   # FIRED at '+f1(sv.cur||0):'   # not binding, at '+f1(sv.cur||0)));
+  L.push(']');
+  L.push('');
+  L.push('# CHANGES FROM BASELINE: '+(diffs.length?'':'none'));
+  diffs.forEach(d=>L.push('#   '+d));
+  document.getElementById('exptxt').value=L.join('\n');
+  document.getElementById('expnote').textContent=diffs.length
+    ? diffs.length+' change'+(diffs.length>1?'s':'')+' from baseline. Everything unchanged is included too, so this is a complete snapshot.'
+    : 'No changes from baseline yet — this is the starting state.';
+  document.getElementById('exp').style.display='block';
+  document.getElementById('exp').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function copyExp(){
+  const t=document.getElementById('exptxt'); t.select(); t.setSelectionRange(0,999999);
+  navigator.clipboard.writeText(t.value).then(()=>{
+    const c=document.getElementById('copied'); c.style.opacity=1; setTimeout(()=>c.style.opacity=0,1400);
+  }).catch(()=>{document.execCommand('copy');});
+}
+function reset(){D=JSON.parse(JSON.stringify(BASE));render();}
+render();
+</script>
+</body>
+</html>
