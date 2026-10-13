@@ -1,18 +1,31 @@
 {
  "_doc": "Theme -> asset derivation. Voices name themes (any voice); tickers are DERIVED here, never taken from a voice directly (ZaStocks tickers are never inputs). Engine decides whether and how much. Maintained each cycle by Weekly Workflow 5.11. 'lex' is a case-insensitive regex matched on cleaned transcript text. Vehicle status: held | in_etf (look-through, verified pct + as_of) | candidate | watch | private | none.",
- "_revised": "2026-10-12",
+ "_revised": "2026-10-13",
  "themes": {
   "power_grid": {
    "trend": "1 AI buildout",
    "sub": "power/grid",
    "lex": "\\bpower (?:grid|constraint|demand)|\\belectricity\\b|\\bthe grid\\b|\\bnuclear\\b|\\bphysical world\\b|\\belectrons\\b",
    "vehicles": {
-    "AIPO": "held",
-    "VST": "in_etf:AIPO:1.59:2026-09-24",
-    "BE": "in_etf:AIPO:5.10:2026-09-24",
+    "GEV": "held",
+    "AIPO": "watch",
+    "PWR": "candidate",
+    "ETN": "candidate",
+    "VRT": "candidate",
+    "BE": "candidate",
     "FLNC": "candidate"
    },
-   "note": "AIPO look-through verified 2026-09-24 (stockanalysis.com): ETN 8.58%, GEV 8.13%, BE 5.10%, VST 1.59%. FLNC not in top 25."
+   "note": "10/13 (v3.12): AIPO -> watch, VEHICLE MISFIT under 5.4b C - AIPO-SOXX 0.86/0.88/0.90 (1y/6m/3m), ~12% GOOGL/NVDA/AVGO; it was a second semis holding. GEV seated: turbines are the scarcest input (gas backlog 116 GW Q2, slots into 2031). Equipment layer is the priced one (GEV 47x, PWR 38x, BE 74x fwd). Look-throughs via AIPO are now plain candidates.",
+   "quality": {
+    "GEV": "leader"
+   },
+   "seat": "power",
+   "evidence": [
+    "GE Vernova gas-power backlog GW and latest delivery slot (quarterly report)",
+    "global gas-turbine orders vs build capacity (GW/yr)",
+    "PJM base residual auction: clearing price vs cap, shortfall MW",
+    "turbine cost index (Wood Mackenzie)"
+   ]
   },
   "semis_compute": {
    "trend": "1 AI buildout",
@@ -190,6 +203,28 @@
    "vehicles": {},
    "note": "Long-only book: avoided, not shorted. Logged for context.",
    "long_only_skip": true
+  },
+  "power_generation": {
+   "trend": "1 AI buildout",
+   "sub": "power/generation",
+   "lex": "\\bgenerators?\\b|\\bpower producers?\\b|\\bcapacity (?:auction|prices?)\\b|\\bPJM\\b|\\bERCOT\\b|\\bpower prices?\\b|\\bnuclear plants?\\b|\\bPPAs?\\b",
+   "vehicles": {
+    "VST": "held",
+    "CEG": "candidate",
+    "TLN": "candidate",
+    "NRG": "candidate"
+   },
+   "quality": {
+    "VST": "leader"
+   },
+   "seat": "power",
+   "note": "New 10/13 (v3.12), DATA-INITIATED. Neglected layer of the power bottleneck: VST -18%, CEG -19%, NRG -33% (1y) while equipment ran. Timing working, not binding - PJM capacity collar ($325/MW-day cap vs ~$555 uncapped, through the 2029/30 auction) and ERCOT ~$30/MWh cap the payout. Generators correlate ~0.8 with each other: hold one.",
+   "evidence": [
+    "PJM capacity clearing price vs cap; collar extensions",
+    "ERCOT forward prices (next calendar year)",
+    "hyperscaler PPA / co-location announcements",
+    "VST 2027 EBITDA opportunity range"
+   ]
   }
  }
 }

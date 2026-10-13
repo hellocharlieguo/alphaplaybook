@@ -25,14 +25,14 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-10-12T21:25:49.118Z",
-  "commit": "a26d279",
+  "generatedAt": "2026-10-13T15:58:47.433Z",
+  "commit": "6f0ffdc",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
   "ignored": 3,
-  "modified": 5,
-  "undeclared": 2,
+  "modified": 3,
+  "undeclared": 1,
   "orphanedSource": 0,
   "undeclaredSource": 0
 } as const
@@ -77,10 +77,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 94215,
-    "mtime": "2026-10-12",
-    "lastCommit": "2026-10-05",
-    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
+    "sizeBytes": 94319,
+    "mtime": "2026-10-13",
+    "lastCommit": "2026-10-12",
+    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
@@ -101,7 +101,7 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/voiceCards.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 11304,
@@ -112,8 +112,8 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-05",
-    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
+    "lastCommit": "2026-10-12",
+    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
   },
   "Weekly_Workflow_v34_section.md": {
     "exists": true,
@@ -192,7 +192,7 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/SignalRadar.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 4108,
@@ -202,8 +202,8 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/SignalRecap.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-05",
-    "lastMessage": "SignalRadar: 10/05 theme chips (summaries of what Visser said only)"
+    "lastCommit": "2026-10-12",
+    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
   },
   "src/components/Portfolio.tsx": {
     "exists": true,
@@ -304,10 +304,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 131865,
-    "mtime": "2026-10-12",
-    "lastCommit": "2026-10-05",
-    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
+    "sizeBytes": 141334,
+    "mtime": "2026-10-13",
+    "lastCommit": "2026-10-12",
+    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
   },
   "probe_source.textClipping": {
     "exists": true,
@@ -324,15 +324,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 29631,
-    "mtime": "2026-10-12",
+    "sizeBytes": 30241,
+    "mtime": "2026-10-13",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-05",
-    "lastMessage": "FREEZE 2026-10-05-v3.10-stageflip: GLDM cooling->exhausted, COPX working->cooling (Visser 10/4). No add: NVDA inside SOX"
+    "lastCommit": "2026-10-12",
+    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
   },
   "system_changelog": {
     "exists": false,
@@ -416,7 +416,7 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18654,
+    "sizeBytes": 18614,
     "mtime": "2026-10-12",
     "imports": 0,
     "importedBy": [
@@ -424,7 +424,7 @@ export const FILE_STATUS: Record<string, FileState> = {
     ],
     "reachable": true,
     "lastCommit": "2026-10-12",
-    "lastMessage": "FREEZE 2026-10-12-v3.11-gldm-litecopx: GLDM out (exhausted), COPX -> LITE (optical, Visser 10/11), SLV working->cooling "
+    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
   },
   "src/data/bookSnapshot.ts": {
     "exists": true,
@@ -432,7 +432,7 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 2221,
+    "sizeBytes": 2106,
     "mtime": "2026-10-12",
     "imports": 0,
     "importedBy": [
@@ -440,7 +440,7 @@ export const FILE_STATUS: Record<string, FileState> = {
     ],
     "reachable": true,
     "lastCommit": "2026-10-12",
-    "lastMessage": "FREEZE 2026-10-12-v3.11-gldm-litecopx: GLDM out (exhausted), COPX -> LITE (optical, Visser 10/11), SLV working->cooling "
+    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
   },
   "src/components/TradingTab.tsx": {
     "exists": true,
@@ -649,8 +649,7 @@ export const DECLARED_BUT_MISSING: string[] = [
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "freeze_2026-10-12.py",
-  "voiceCards_2026-10-12.ts"
+  "v34_worksheet_2026-10-13.html"
 ]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */

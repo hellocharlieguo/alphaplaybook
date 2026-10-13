@@ -13,104 +13,111 @@ export interface Holding {
 export interface Sleeve { name: string; weight: number }
 
 export const BOOK = {
-  version: "2026-10-12-v3.11-gldm-litecopx",
-  count: 11,
+  version: "2026-10-13-v3.12-gev-vst",
+  count: 12,
   total: 100,
-  generatedAt: "2026-10-12T21:25:49.266Z",
+  generatedAt: "2026-10-13T15:58:47.581Z",
   sleeves: [
   {
     "name": "AI Buildout",
-    "weight": 29.4
+    "weight": 32.3
   },
   {
     "name": "Tokenized Rails",
-    "weight": 27.2
+    "weight": 26.1
   },
   {
     "name": "Monetary",
-    "weight": 23.2
+    "weight": 22.3
   },
   {
     "name": "AI Applied",
-    "weight": 20.2
+    "weight": 19.3
   }
 ] as Sleeve[],
   holdings: [
   {
     "ticker": "IBIT",
-    "weight": 15.4,
+    "weight": 14.8,
     "theme": "Monetary",
-    "minWeight": 7.7,
-    "action": "Add"
+    "minWeight": 7.4,
+    "action": "Trim"
   },
   {
     "ticker": "LLY",
-    "weight": 11.7,
+    "weight": 11.2,
     "theme": "AI Applied",
-    "minWeight": 5.9,
+    "minWeight": 5.6,
     "action": "Trim"
   },
   {
     "ticker": "ETHA",
-    "weight": 10.6,
+    "weight": 10.2,
     "theme": "Tokenized Rails",
-    "minWeight": 5.3,
-    "action": "Add"
-  },
-  {
-    "ticker": "HOOD",
-    "weight": 8.8,
-    "theme": "Tokenized Rails",
-    "minWeight": 4.4,
-    "action": "Add"
-  },
-  {
-    "ticker": "AMZN",
-    "weight": 8.5,
-    "theme": "AI Applied",
-    "minWeight": 4.3,
+    "minWeight": 5.1,
     "action": "Trim"
   },
   {
     "ticker": "SOXX",
-    "weight": 8.4,
+    "weight": 9.6,
     "theme": "AI Buildout",
-    "minWeight": 4.2,
+    "minWeight": 4.8,
     "action": "Add"
-  },
-  {
-    "ticker": "AIPO",
-    "weight": 8,
-    "theme": "AI Buildout",
-    "minWeight": 4,
-    "action": "Hold"
   },
   {
     "ticker": "MU",
-    "weight": 7.9,
+    "weight": 9,
     "theme": "AI Buildout",
-    "minWeight": 4,
+    "minWeight": 4.5,
     "action": "Add"
   },
   {
-    "ticker": "COIN",
-    "weight": 7.8,
+    "ticker": "HOOD",
+    "weight": 8.4,
     "theme": "Tokenized Rails",
-    "minWeight": 3.9,
-    "action": "Add"
+    "minWeight": 4.2,
+    "action": "Trim"
+  },
+  {
+    "ticker": "AMZN",
+    "weight": 8.1,
+    "theme": "AI Applied",
+    "minWeight": 4.1,
+    "action": "Trim"
   },
   {
     "ticker": "SLV",
-    "weight": 7.8,
+    "weight": 7.5,
     "theme": "Monetary",
-    "minWeight": 3.9,
-    "action": "Add"
+    "minWeight": 3.8,
+    "action": "Trim"
+  },
+  {
+    "ticker": "COIN",
+    "weight": 7.5,
+    "theme": "Tokenized Rails",
+    "minWeight": 3.8,
+    "action": "Trim"
   },
   {
     "ticker": "LITE",
-    "weight": 5.1,
+    "weight": 5.9,
     "theme": "AI Buildout",
-    "minWeight": 2.6,
+    "minWeight": 3,
+    "action": "Add"
+  },
+  {
+    "ticker": "GEV",
+    "weight": 4.1,
+    "theme": "AI Buildout",
+    "minWeight": 2.1,
+    "action": "Add"
+  },
+  {
+    "ticker": "VST",
+    "weight": 3.7,
+    "theme": "AI Buildout",
+    "minWeight": 1.9,
     "action": "Add"
   }
 ] as Holding[],
