@@ -6,13 +6,12 @@
 // no 'we' reactions (C). Book changes live in the worksheet and Portfolio tab, not here.
 // Visser card headline 10/01: 'LONG SCARCITY, SHORT ABUNDANCE' -> 'LONG SPEED, SHORT FRICTION'.
 //
-// 2026-10-12 weekly cycle — '2026-10-12-v3.11-gldm-litecopx'. GLDM removed (exhausted, 5.11 trigger);
-// COPX -> LITE (optical, Visser 10/11 Lumentum slide); SLV working -> cooling (C discretionary);
-// AI Buildout 27.1 pin retired; trend order set by conviction (AI applied -> watch, Monetary -> speculative).
-// New transcripts: Visser 10/10 (Pomp), 10/11 (solo). Camillo: Grok 10/5-10/11 only — the file
-// '10/11/26 Dumb Money Live Even I'm Getting Nervous' is a verbatim clip of the 9/29 episode, so it is
-// NOT fresh 10/11 content and the Camillo card does not date anything from it to 10/11.
-// ZaStocks: Grok 10/5-10/12. Cards stay pure summaries of what each voice said.
+// 2026-10-19 weekly cycle — '2026-10-19-v3.13-asml-litework'. ASML added (lithography, binding/sole);
+// LITE forward -> working; memory held binding with a CXMT quality watch. All through the 5.4b data check.
+// New transcripts: Visser 10/14 (Titans of Tomorrow, long-form guest), 10/17 (Pomp), 10/18 (solo).
+// Camillo: Grok 10/12-10/18 — few first-hand posts; holdings figures come from third-party trackers
+// (CamilloTracker), so the card says 'trackers estimate', never 'he holds'. ZaStocks: Grok 10/12-10/19.
+// Cards stay pure summaries of what each voice said.
 //
 // Prior cycle notes (10/05 and earlier) are in git history for this file.
 //
@@ -40,37 +39,38 @@ export const VOICES: VoiceSection[] = [
     name: 'Visser',
     headline: 'LONG SPEED, SHORT FRICTION',
     subtitle: 'Jordi Visser — macro framework for the AI and crypto economy',
-    asOf: 'October 11, 2026',
+    asOf: 'October 18, 2026',
     active: true,
     themes: [
       {
         name: 'The framework',
-        editorial: `"You want to be long speed. You want to be short friction." Speed means what AI agents need and use: computing power and crypto. This week he took on the talk of an AI bubble, prompted by Ray Dalio saying rising rates may burst it, and pointed out how many times Dalio has called bubbles before. He laid out three kinds. A speculative bubble needs extreme valuations, and he notes Nvidia trades around 15 times earnings, nothing like Cisco at 100 in 2000. A capacity bubble needs supply to outrun demand, but AI agents are a new kind of buyer that will number in the billions, so demand is still ahead of supply. A credit bubble needs bad borrowing, and much of the AI borrowing is backed by computing equipment whose prices are rising. In his view the real bubble is the old-economy companies that only survived because money was cheap: only 18% of utility stocks and 12% of auto stocks are in uptrends, against 73% of technology stocks. Only energy and technology have beaten the S&P 500 this year. He expects 20 to 30% corrections from time to time, but not a bubble bursting, and says ten-year yields are starting to look tired.`,
+        editorial: `"This is not a bubble popping." Wearing a hoodie for the occasion, he said the bubble that has popped is hedge-fund borrowing, not the stock market or the economy: the S&P 500 closed the week only 2.7% below its record. Hedge funds are borrowed at record levels and crowded into the same AI trades, and some of the best-known funds gave back a year of gains in a single quarter. Drawing on his years on the other side of Long-Term Capital Management, he listed how a correct idea still loses money with borrowed money: wrong timing, a jump in volatility, financing costs, crowding, broken correlations, thin liquidity. He thinks the selling could run into big tech's earnings and possibly the midterms, with the end of the month and December as likely turning points. He does not care whether inflation prints 2.6% or 3.2%; real trouble needs job losses, and weekly jobless claims are near record lows. He did flag consumer confidence at its lowest since 2013 and believes hiring is weaker than economists say as companies start handing work to AI agents.`,
         tickers: [],
+        curated: true,
       },
       {
         name: 'AI Buildout',
-        editorial: `He says there are only two places to make money from here: computing for AI agents, and crypto. The first phase was Nvidia and the power plants and turbines to run data centers; the next was memory, where he watched Micron go from $100 to $200 over seven months and then from $200 to $1,400 over the next five. He thinks people will miss the next phase the same way. His reasoning is that agents consume computing power the way the economy consumes oil, except agents multiply far faster than people do: "We will not have enough compute for the agents." He cited Box's Aaron Levie on the scale of what is coming, the chief executive of Lumentum, a maker of optical parts for data centers, saying his company is "completely sold out through 2029," and a new nuclear power agreement between Google and Constellation. His advice was to own the computing power rather than guess which AI app wins.`,
-        tickers: ['AIPO', 'SOXX', 'MU', 'LITE'],
-        bucket: 'AI Buildout',
+        editorial: `He kept his view that AI computing is inevitable. Nvidia's share price is roughly where it was a year ago even though its earnings blew past every forecast, leaving it on about 15 times next year's earnings, while chip stocks overall are still up about 50% this year. Against bearish 2030 forecasts from Gartner and Bain he set contracts already signed: Micron has agreements covering more than 35% of its revenue through 2030, ASML expects shortages through 2028, Lumentum is sold out of AI parts until 2029, Amazon says its AI computing is sold out beyond 2028, and memory prices just made new highs. Agent swarms only began about two months ago, which he calls a step up in demand. For the next 12 months he wants AI agents and Nvidia's next platform, Vera Rubin; most of his 15 names there are optical-networking companies. News from Chinese memory maker CXMT knocked memory stocks this week.`,
+        tickers: ['NVDA', 'MU', 'ASML', 'LITE'],
+        curated: true,
       },
       {
         name: 'AI Applied',
-        editorial: `He does not want to pick the winner among personal AI assistants. Amazon is blocking Meta's Muse to protect its own Alexa, Apple is closing off the iPhone, and Google is building its own, so the big companies now fight over the same customers: "I don't know how these guys are going to make money off of it." He does think the labs with the most computing power, OpenAI and Anthropic, will keep the best models. He coined "bank apocalypse" for what he expects over the next nine months or so: as AI agents start handling money, they will move it to wherever it earns the most and costs the least, and instant settlement removes the float banks earn on. He stressed he is not calling for banks to collapse, only for their valuations to shrink, the way software stocks did. His example was Stripe, with about 10,000 employees, revenue up 41% and a valuation near $160 billion, against Citigroup with about 226,000 employees. He also said it is time to start talking about humanoid robots and self-driving cars, and warned that hiring is slowing, including in healthcare.`,
-        tickers: ['LLY', 'AMZN'],
-        bucket: 'AI Applied',
+        editorial: `He and Pompliano disagreed about Anthropic. Pompliano argued that companies will move to cheaper open-source models, citing a 97% cost cut at his own firm. Visser agreed open source wins over time but said the largest companies will keep paying for the best models, and that most future AI revenue will come from biotech, materials, robotics and science rather than chat subscriptions. Anthropic is on pace for $90 to $100 billion of annual revenue, up from about $9 billion. Only about 2% of companies run AI agents in their everyday workflows, against more than half using coding agents, so most of the change to jobs is still ahead. He still owns Eli Lilly, and he expects OpenAI's next model to bring a robotics breakthrough, noting Unitree sold only about 11,000 robots this year.`,
+        tickers: ['LLY'],
+        curated: true,
       },
       {
         name: 'Tokenized Rails',
-        editorial: `"When it comes to crypto, this is 100% for me about agents." He expects next year to bring the biggest moves in crypto because of them, and says traditional investors keep asking him about tokenization. His evidence: Stripe is building wallets for AI agents, owns a stablecoin company, and just bought OpenRouter, which routes AI requests to the cheapest model; Samsung added the USDC stablecoin to its wallet; OKX filed to offer tokenized stock trading; and the IMF noted the rapid growth of tokenized assets. He contrasted a bank wire to Robinhood that took five days with a transfer from Robinhood to Coinbase that took five seconds. He welcomed research from Citrini and BlackRock making the same case, saying an idea has to go from contrarian to widely held before big money follows. He added a new theme: privacy. After hearing Ethereum co-founder Vitalik Buterin, he said AI agents make privacy essential: "I want to be long privacy as a theme," naming Zcash and NEAR.`,
-        tickers: ['ETHA', 'HOOD', 'COIN'],
-        bucket: 'Tokenized Rails',
+        editorial: `He called tokenization the final stage of the hedge-fund squeeze. Trading around the clock, and stocks that can be spent or borrowed against instantly, change how risk, margin and even the money supply are measured. Banks and the largest asset managers began studying crypto seriously only in the last two months, he said, and are no longer calling it "rat poison." He pointed to JPMorgan's $107 billion of net interest income as money that AI agents will move to wherever it earns a yield, as Stripe already offers. Ethereum and NEAR, a network built for AI agents, are among the cryptocurrencies he watches every day.`,
+        tickers: ['ETH', 'NEAR'],
+        curated: true,
       },
       {
         name: 'Monetary',
-        editorial: `On Bitcoin his message was patience: "For Christ's sake, be patient." He compared it to Micron, which spent months going sideways before its big run, and said Bitcoin and Ethereum are in a bull market that will speed up when traditional investors arrive, which needs more tokenization and stablecoin activity first. He found it encouraging that crypto rose this year even as interest rates climbed and gold fell, and he again described gold as falling. He expects ten-year yields to be about where they are now a year from today. He did not mention silver.`,
-        tickers: ['IBIT', 'SLV'],
-        bucket: 'Monetary',
+        editorial: `"You know what the hedge is? If I'm right, it's to go buy Bitcoin." Bitcoin fell just 2.3% in a week when AI stocks were hit hard, holding between about $82,000 and $85,000, and he said the majority of his portfolio is now in crypto. He would not be surprised to see it drift back toward $75,000 until hedge funds finish selling, expects the next move to the highs around big tech's earnings or in December, and sees the big run in 2027. He also said the silver he bought earlier has not moved and is down about 5 to 10%.`,
+        tickers: ['BTC', 'SLV'],
+        curated: true,
       },
     ],
   },
@@ -78,24 +78,18 @@ export const VOICES: VoiceSection[] = [
     name: 'Camillo',
     headline: 'INFORMATION EDGE, NOT VIBES',
     subtitle: 'Chris Camillo — social arbitrage; a supporting voice that can point to ideas but not change themes',
-    asOf: 'wk of Oct 5 – Oct 11 · via Grok',
+    asOf: 'wk of Oct 12 – Oct 18 · via Grok',
     active: true,
     themes: [
       {
-        name: 'Amazon, with the case against it',
-        editorial: `Amazon remains the center of his portfolio. In an October 6 post he laid out the strongest case against it: AI shopping assistants like Meta's Muse could weaken Amazon's ad business, headlines about Anthropic are moving sentiment, and higher diesel prices hurt shipping costs. He calls these real but manageable. Amazon can respond with its own assistant (Project Moonraker), partnerships or higher prices, and he thinks its cloud business and its own AI chips could more than make up for any loss. He sees the stock as misunderstood.`,
-        tickers: ['AMZN'],
-        curated: true,
-      },
-      {
-        name: 'GTA 6',
-        editorial: `On the Iced Coffee Hour podcast he called Take-Two Interactive, maker of Grand Theft Auto, "the next ultimate trade of 2026." He bought after strong early reactions to GTA 6 gameplay and expects first-year sales near or above the top of the 30 to 50 million estimates, with in-game purchases that could bring in $2 to $3 billion a year.`,
-        tickers: ['TTWO'],
+        name: 'Amazon, still the core',
+        editorial: `He posted few new stock calls this week. Public trackers that follow his posts and podcasts estimate Amazon at roughly three quarters of his portfolio, with Robinhood and Bloom Energy well behind. These are outside estimates, not figures he confirmed. He has described Amazon as misunderstood for its cloud business and its own AI chips, and treats dips as chances to add. He still holds Take-Two ahead of GTA 6.`,
+        tickers: ['AMZN', 'HOOD', 'BE', 'TTWO'],
         curated: true,
       },
       {
         name: 'Lessons',
-        editorial: `His main lesson this week: keep updating the strongest argument against your own position, and understand it well enough to judge how confident to be. He says the bull case doesn't need the bear case to be wrong, only to be more right. He thinks the gap between AI bulls and bears is unusually wide, which is where the opportunity is. On robots he is cautious: the market is huge, but he wants to see real commercial results before chasing it, and he hears Tesla's Optimus program has had execution problems.`,
+        editorial: `Most of his posts were about mindset. AI is easy to overthink: models, chips, agents and benchmarks matter less than the basic point that AI makes previously uneconomic problems solvable and lets people do more with less. If nothing has changed in what you know, ignore the daily moves. Having lived through the dot-com bubble, he sees AI infrastructure companies differently from the richly valued private AI startups, which feel frothier. He praised Tesla's Roadster reveal for attempting something that could have failed in public.`,
         tickers: [],
         curated: true,
       },
@@ -103,21 +97,21 @@ export const VOICES: VoiceSection[] = [
   },
   {
     name: 'ZaStocks',
-    headline: 'A WALL OF WORRY',
+    headline: 'EMBRACE THE CHAOS',
     subtitle: 'ZaStocks (@ZaStocks) — chart-based trade ideas, gathered weekly',
-    asOf: 'wk of Oct 5 – Oct 12 · via Grok',
+    asOf: 'wk of Oct 12 – Oct 19 · via Grok',
     active: true,
     themes: [
       {
-        name: 'The AI names on the chart',
-        editorial: `He still sees the big AI names as the place to be. He says people will look back on Amazon around $250 as obvious once it trades above $300. Micron approved a new buyback just as it neared $1,000, which he called convenient timing on a strong chart. He posted CoreWeave in an unusually tight range ("from compression comes eventual expansion") and said Tesla is quietly setting up out of a five-year base while everyone watches SpaceX. He also posted Tempus AI retesting a breakout.`,
-        tickers: ['AMZN', 'MU', 'CRWV', 'TSLA', 'TEM'],
+        name: 'Two markets',
+        editorial: `He sees noise and weak sentiment, not a collapse. The mood around AI is poor after weakness in CoreWeave and Oracle and cuts to Anthropic's expected IPO valuation, and the war with Iran keeps oil and yields high. The indexes sit near their highs while many former AI winners are deep in drawdowns, which he calls two different markets. He thinks the loud crash and "Black Monday" calls are overdone and that ordinary 401(k) holders are not panicking. In his count the market has had only two clean stretches to trade in two years, so he would rather sit tight until the clouds clear.`,
+        tickers: [],
         curated: true,
       },
       {
-        name: 'New highs, few winners',
-        editorial: `The Nasdaq made new all-time highs despite rising yields, high oil, the midterms and war, which he calls objectively impressive. He reminds followers that how a stock reacts to news matters more than the news itself, and that setups on weekly and monthly charts are more reliable than short-term ones. He admits few stocks are actually working even at the highs, and says treading water in a market like this is a win: better times come when people are mentally and financially worn out.`,
-        tickers: ['QQQ'],
+        name: 'Buy quality early',
+        editorial: `His lesson: people ignore a stock like SanDisk at $50 and then want it after it reaches $2,000; flip that and buy quality earlier in the run. He called Meta the clearest case of mood driving a stock, since nothing changed in the business but a new product turned sentiment and the shares went vertical. He posted Tempus AI retesting a breakout and said a Tesla and SpaceX merger would create the most ambitious company the world has seen.`,
+        tickers: ['SNDK', 'META', 'TEM', 'TSLA'],
         curated: true,
       },
     ],

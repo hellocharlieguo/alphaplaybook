@@ -1,6 +1,6 @@
 {
  "_doc": "Theme -> asset derivation. Voices name themes (any voice); tickers are DERIVED here, never taken from a voice directly (ZaStocks tickers are never inputs). Engine decides whether and how much. Maintained each cycle by Weekly Workflow 5.11. 'lex' is a case-insensitive regex matched on cleaned transcript text. Vehicle status: held | in_etf (look-through, verified pct + as_of) | candidate | watch | private | none.",
- "_revised": "2026-10-13",
+ "_revised": "2026-10-19",
  "themes": {
   "power_grid": {
    "trend": "1 AI buildout",
@@ -49,7 +49,7 @@
     "MU": "held",
     "SKHY": "in_etf:SOXX:3.11:2026-09-24"
    },
-   "note": "DRAM/HBM only - pure vehicles MU and SK hynix are both inside SOXX; Samsung has no US listing. SNDK is NAND (post-spin) and sits under storage. Max-demand WAVE_DEMAND row with no direct holding. 'memory' also matches agent-memory talk - read the quote."
+   "note": "10/19: CXMT quality watch (Visser 10/18 00:50:34; XTB 10/12 DRAM-architecture progress; Q3 due 10/31). Duopoly held. DRAM/HBM only - pure vehicles MU and SK hynix are both inside SOXX; Samsung has no US listing. SNDK is NAND (post-spin) and sits under storage. Max-demand WAVE_DEMAND row with no direct holding. 'memory' also matches agent-memory talk - read the quote."
   },
   "storage_nearline": {
    "trend": "1 AI buildout",
@@ -71,15 +71,19 @@
     "COHR": "candidate",
     "AAOI": "candidate"
    },
-   "note": "LITE seated 10/12 (v3.11), replacing COPX. Visser 10/11 agentic-portfolio slide: Lumentum CEO 'We are completely sold out through 2029' (00:40:10). Chosen on merits: pure-play lasers/transceivers, the name Visser pointed at, entry passes. GLW/COHR/AAOI under their 200-DMA on 10/12 (ADD-WHEN)."
+   "note": "10/19: LITE forward -> working (5.4b A: Lumentum sold out through early 2029, short ~70% of demand on some products, Bloomberg 10/09; InP gap wider than DRAM, TrendForce 8/06). Visser 10/18: 15 Vera Rubin names, 'most of them are in the optical side' (00:39:24). LITE seated 10/12 (v3.11), replacing COPX. Visser 10/11 agentic-portfolio slide: Lumentum CEO 'We are completely sold out through 2029' (00:40:10). Chosen on merits: pure-play lasers/transceivers, the name Visser pointed at, entry passes. GLW/COHR/AAOI under their 200-DMA on 10/12 (ADD-WHEN).",
+   "timing": "working"
   },
   "lithography": {
    "trend": "1 AI buildout",
    "sub": "lithography",
    "lex": "\\blithography\\b|\\bEUV\\b|\\bASML\\b",
    "vehicles": {
-    "ASML": "in_etf:SOXX:1.39:2026-09-24"
-   }
+    "ASML": "held"
+   },
+   "timing": "binding",
+   "quality": "sole",
+   "note": "10/19 (v3.13): ASML seated, binding/sole. Visser 10/18: 'ASML AI chip demand is stretching into 2030... supply shortages through 2028' (00:51:40). 5.4b A: Q3 10/14 demand > supply until at least 2028, +30% capacity 'won't be enough'; FY26 guide raised. Look-through via SOXX 1.39% (9/24) = 0.13% of book. ASML-SOXX 0.83/0.82 (1y/3m) - under the 0.85 misfit line, watch."
   },
   "copper_input": {
    "trend": "1 AI buildout",
@@ -225,6 +229,16 @@
     "hyperscaler PPA / co-location announcements",
     "VST 2027 EBITDA opportunity range"
    ]
+  },
+  "privacy": {
+   "trend": "3 Tokenized rails",
+   "sub": "privacy",
+   "lex": "\\bprivacy\\b|\\bzcash\\b|\\bnear protocol\\b|\\bnear (?:token|coin)\\b",
+   "vehicles": {
+    "NEAR": "none",
+    "ZEC": "none"
+   },
+   "note": "NEW 10/19. Visser 10/11 'I want to be long privacy as a theme' (Zcash, NEAR); 10/17 watches NEAR daily as an AI-agentic chain. No US-listed spot vehicle verified with >=252 sessions - verify Grayscale trusts before deriving. Lex avoids bare 'near'."
   }
  }
 }

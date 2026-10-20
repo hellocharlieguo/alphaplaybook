@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'Agents eat compute',     blurb: 'Visser: AI agents are a new kind of demand that will number in the billions. \u201cWe will not have enough compute for the agents.\u201d Lumentum, an optical-parts maker, says it is sold out through 2029.', binding: true },
-  { name: 'AI Applied',      tag: 'Don\u2019t pick the assistant', blurb: 'Big tech now fights over the same customers with personal AI assistants. Visser: \u201cI don\u2019t know how these guys are going to make money off of it.\u201d He would rather own the computing power they all need.' },
-  { name: 'Tokenized Rails', tag: 'Crypto is about agents', blurb: '\u201cWhen it comes to crypto, this is 100% for me about agents.\u201d Stripe, Samsung and OKX are building stablecoin and tokenized-stock rails, and he named privacy as a new theme.' },
-  { name: 'Monetary',        tag: 'Be patient on bitcoin',  blurb: 'Bitcoin is in a bull market that needs patience: \u201cFor Christ\u2019s sake, be patient.\u201d Crypto rose this year even as rates climbed and gold fell.' },
+  { name: 'AI Buildout',     tag: 'Sold out to 2029', blurb: 'Visser: the slump is hedge funds selling, not AI demand fading. Micron has deals covering over 35% of revenue through 2030, ASML sees shortages through 2028 and Lumentum is sold out until 2029.', binding: true },
+  { name: 'AI Applied',      tag: 'Revenue from science', blurb: 'Visser expects most AI revenue to come from biotech, robotics and science, not chat subscriptions. Only about 2% of companies run AI agents in daily work so far.' },
+  { name: 'Tokenized Rails', tag: 'Tokenization ends leverage', blurb: 'Visser: trading around the clock and spendable tokenized stocks will change how risk and margin work. Banks and big managers started taking crypto seriously in the last two months.' },
+  { name: 'Monetary',        tag: 'Bitcoin is the hedge', blurb: '\u201cIf I\u2019m right, it\u2019s to go buy Bitcoin.\u201d Bitcoin fell 2.3% in a week when AI stocks were hit hard; most of his portfolio is now crypto.' },
 ]
 
 interface Holding { ticker?: string; category?: string }

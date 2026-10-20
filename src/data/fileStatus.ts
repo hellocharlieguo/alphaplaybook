@@ -25,14 +25,14 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-10-13T15:58:47.433Z",
-  "commit": "6f0ffdc",
+  "generatedAt": "2026-10-20T00:33:02.252Z",
+  "commit": "c4a4f6f",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
   "ignored": 3,
-  "modified": 3,
-  "undeclared": 1,
+  "modified": 1,
+  "undeclared": 0,
   "orphanedSource": 0,
   "undeclaredSource": 0
 } as const
@@ -74,13 +74,13 @@ export const FILE_STATUS: Record<string, FileState> = {
   "server/daily-cron.cjs": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 94319,
-    "mtime": "2026-10-13",
-    "lastCommit": "2026-10-12",
-    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
+    "sizeBytes": 94702,
+    "mtime": "2026-10-20",
+    "lastCommit": "2026-10-19",
+    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
@@ -104,16 +104,16 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 11304,
-    "mtime": "2026-10-12",
+    "sizeBytes": 9911,
+    "mtime": "2026-10-20",
     "imports": 0,
     "importedBy": [
       "src/components/SignalRecap.tsx",
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-12",
-    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
+    "lastCommit": "2026-10-19",
+    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
   },
   "Weekly_Workflow_v34_section.md": {
     "exists": true,
@@ -195,15 +195,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 4108,
-    "mtime": "2026-10-12",
+    "sizeBytes": 4027,
+    "mtime": "2026-10-20",
     "imports": 1,
     "importedBy": [
       "src/components/SignalRecap.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-12",
-    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
+    "lastCommit": "2026-10-19",
+    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
   },
   "src/components/Portfolio.tsx": {
     "exists": true,
@@ -301,13 +301,13 @@ export const FILE_STATUS: Record<string, FileState> = {
   "v34_worksheet.html": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 141334,
-    "mtime": "2026-10-13",
-    "lastCommit": "2026-10-12",
-    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
+    "sizeBytes": 147094,
+    "mtime": "2026-10-20",
+    "lastCommit": "2026-10-19",
+    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
   },
   "probe_source.textClipping": {
     "exists": true,
@@ -321,18 +321,18 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/systemMap.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 30241,
-    "mtime": "2026-10-13",
+    "sizeBytes": 30934,
+    "mtime": "2026-10-20",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-12",
-    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
+    "lastCommit": "2026-10-19",
+    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
   },
   "system_changelog": {
     "exists": false,
@@ -416,31 +416,31 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18614,
-    "mtime": "2026-10-12",
+    "sizeBytes": 18434,
+    "mtime": "2026-10-20",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-12",
-    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
+    "lastCommit": "2026-10-19",
+    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
   },
   "src/data/bookSnapshot.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 2106,
-    "mtime": "2026-10-12",
+    "sizeBytes": 2356,
+    "mtime": "2026-10-20",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-12",
-    "lastMessage": "APPLY FREEZE 2026-10-12-v3.11-gldm-litecopx: a26d279 carried the label but only the pre-conviction worksheet (freeze scr"
+    "lastCommit": "2026-10-19",
+    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
   },
   "src/components/TradingTab.tsx": {
     "exists": true,
@@ -648,9 +648,7 @@ export const DECLARED_BUT_MISSING: string[] = [
   "theme_weights.json"
 ]
 
-export const UNDECLARED_UNTRACKED: string[] = [
-  "v34_worksheet_2026-10-13.html"
-]
+export const UNDECLARED_UNTRACKED: string[] = []
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */
 export const ORPHANED_SOURCE: string[] = []
