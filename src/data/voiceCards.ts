@@ -6,11 +6,9 @@
 // no 'we' reactions (C). Book changes live in the worksheet and Portfolio tab, not here.
 // Visser card headline 10/01: 'LONG SCARCITY, SHORT ABUNDANCE' -> 'LONG SPEED, SHORT FRICTION'.
 //
-// 2026-10-19 weekly cycle — '2026-10-19-v3.13-asml-litework'. ASML added (lithography, binding/sole);
-// LITE forward -> working; memory held binding with a CXMT quality watch. All through the 5.4b data check.
-// New transcripts: Visser 10/14 (Titans of Tomorrow, long-form guest), 10/17 (Pomp), 10/18 (solo).
-// Camillo: Grok 10/12-10/18 — few first-hand posts; holdings figures come from third-party trackers
-// (CamilloTracker), so the card says 'trackers estimate', never 'he holds'. ZaStocks: Grok 10/12-10/19.
+// 2026-10-28 weekly cycle — confirm the book (v3.13 unchanged). No rung passed the 5.4b data check.
+// New transcripts (Project files): Visser 10/22 (Julia La Roche), 10/23 (Cointelegraph), 10/24 (Pomp),
+// 10/25 (solo). Camillo: Pomp 10/12 + Grok 10/18-10/25 (first-hand posts this time). ZaStocks: Grok 10/19-10/26.
 // Cards stay pure summaries of what each voice said.
 //
 // Prior cycle notes (10/05 and earlier) are in git history for this file.
@@ -39,37 +37,37 @@ export const VOICES: VoiceSection[] = [
     name: 'Visser',
     headline: 'LONG SPEED, SHORT FRICTION',
     subtitle: 'Jordi Visser — macro framework for the AI and crypto economy',
-    asOf: 'October 18, 2026',
+    asOf: 'October 25, 2026',
     active: true,
     themes: [
       {
         name: 'The framework',
-        editorial: `"This is not a bubble popping." Wearing a hoodie for the occasion, he said the bubble that has popped is hedge-fund borrowing, not the stock market or the economy: the S&P 500 closed the week only 2.7% below its record. Hedge funds are borrowed at record levels and crowded into the same AI trades, and some of the best-known funds gave back a year of gains in a single quarter. Drawing on his years on the other side of Long-Term Capital Management, he listed how a correct idea still loses money with borrowed money: wrong timing, a jump in volatility, financing costs, crowding, broken correlations, thin liquidity. He thinks the selling could run into big tech's earnings and possibly the midterms, with the end of the month and December as likely turning points. He does not care whether inflation prints 2.6% or 3.2%; real trouble needs job losses, and weekly jobless claims are near record lows. He did flag consumer confidence at its lowest since 2013 and believes hiring is weaker than economists say as companies start handing work to AI agents.`,
+        editorial: `"The AI bubble didn't pop, hedge fund leverage did." He called the last two weeks one of the largest hedge-fund unwinds of his career and thinks it is "either done or in the seventh or eighth inning." The damage has spread from stock pickers to quant and multi-strategy funds and into French government bonds, yet the S&P 500 fell only about half a percent on the week. What would make it an economic downturn rather than a fund unwind is falling profit margins and rising layoffs, and he sees neither: corporate profits are still growing about 20% a year and jobless claims are calm. Junk-bond spreads widening is the one sign he is watching. He expects the low for this AI selloff within about two weeks, around big-tech earnings, the midterms and the Treasury's November 4 refunding announcement.`,
         tickers: [],
         curated: true,
       },
       {
         name: 'AI Buildout',
-        editorial: `He kept his view that AI computing is inevitable. Nvidia's share price is roughly where it was a year ago even though its earnings blew past every forecast, leaving it on about 15 times next year's earnings, while chip stocks overall are still up about 50% this year. Against bearish 2030 forecasts from Gartner and Bain he set contracts already signed: Micron has agreements covering more than 35% of its revenue through 2030, ASML expects shortages through 2028, Lumentum is sold out of AI parts until 2029, Amazon says its AI computing is sold out beyond 2028, and memory prices just made new highs. Agent swarms only began about two months ago, which he calls a step up in demand. For the next 12 months he wants AI agents and Nvidia's next platform, Vera Rubin; most of his 15 names there are optical-networking companies. News from Chinese memory maker CXMT knocked memory stocks this week.`,
-        tickers: ['NVDA', 'MU', 'ASML', 'LITE'],
+        editorial: `He called SpaceX's results the most important report he has seen apart from Nvidia's: Musk said demand for computing is far greater than supply and that SpaceX could rent out its capacity several times over. His view is that supply will not catch up with demand at any point in the next three years, which makes "agentic compute" the safest place to invest — chips, but also the gas turbines, batteries and chemicals behind data centers. He said Micron could be at $1,500 by the end of February, and that edge devices are next, naming Qualcomm and AMD. His largest positions after Eli Lilly are Nvidia and Marvell.`,
+        tickers: ['NVDA', 'MRVL', 'MU', 'QCOM', 'AMD'],
         curated: true,
       },
       {
         name: 'AI Applied',
-        editorial: `He and Pompliano disagreed about Anthropic. Pompliano argued that companies will move to cheaper open-source models, citing a 97% cost cut at his own firm. Visser agreed open source wins over time but said the largest companies will keep paying for the best models, and that most future AI revenue will come from biotech, materials, robotics and science rather than chat subscriptions. Anthropic is on pace for $90 to $100 billion of annual revenue, up from about $9 billion. Only about 2% of companies run AI agents in their everyday workflows, against more than half using coding agents, so most of the change to jobs is still ahead. He still owns Eli Lilly, and he expects OpenAI's next model to bring a robotics breakthrough, noting Unitree sold only about 11,000 robots this year.`,
+        editorial: `"Healthcare needs to be part of your portfolio," on the pharma, biotech and life-sciences side. Eli Lilly, his largest position, hit a record high in a week when AI stocks fell, and he still expects it to become the largest US company within five years. His case: healthcare is now the biggest category of US consumer spending, it does not rise and fall with the economy, and AI drug discovery is turning it into a growth business; Lilly's TuneLab now pools research from 135 biotech companies. He also expects personal AI agents to move idle bank deposits to wherever they earn more, which he thinks will shrink bank valuations over the next three years.`,
         tickers: ['LLY'],
         curated: true,
       },
       {
         name: 'Tokenized Rails',
-        editorial: `He called tokenization the final stage of the hedge-fund squeeze. Trading around the clock, and stocks that can be spent or borrowed against instantly, change how risk, margin and even the money supply are measured. Banks and the largest asset managers began studying crypto seriously only in the last two months, he said, and are no longer calling it "rat poison." He pointed to JPMorgan's $107 billion of net interest income as money that AI agents will move to wherever it earns a yield, as Stripe already offers. Ethereum and NEAR, a network built for AI agents, are among the cryptocurrencies he watches every day.`,
-        tickers: ['ETH', 'NEAR'],
+        editorial: `"The crypto guardrails were built not for humans. They were built for AI agents." Crypto is his strongest call for the next year. Stripe's John Collison said agent-driven shopping on Stripe's payment system "went vertical"; JPMorgan has three tokenized products running on Ethereum; Uniswap posted record revenue driven by Robinhood's blockchain. He expects AI-driven hacking of banks and websites to become the biggest market story of the next three years and to push banks onto blockchains faster. After Bitcoin, his largest crypto holdings are Ethereum and Solana, plus a basket of privacy coins.`,
+        tickers: ['ETH', 'SOL', 'HOOD'],
         curated: true,
       },
       {
         name: 'Monetary',
-        editorial: `"You know what the hedge is? If I'm right, it's to go buy Bitcoin." Bitcoin fell just 2.3% in a week when AI stocks were hit hard, holding between about $82,000 and $85,000, and he said the majority of his portfolio is now in crypto. He would not be surprised to see it drift back toward $75,000 until hedge funds finish selling, expects the next move to the highs around big tech's earnings or in December, and sees the big run in 2027. He also said the silver he bought earlier has not moved and is down about 5 to 10%.`,
-        tickers: ['BTC', 'SLV'],
+        editorial: `He calls Bitcoin "the purest AI trade." It held between $80,000 and $85,000 through the AI selloff and a claim from Chamath Palihapitiya that quantum computing will send it to zero. He sides with cryptographer Adam Back: quantum is a hardware problem perhaps 20 to 40 years away, and Bitcoin can upgrade before then. BlackRock's Bitcoin fund took in $664 million and its shares outstanding are at a record. Gold and silver, by contrast, have fallen back to their lows.`,
+        tickers: ['BTC'],
         curated: true,
       },
     ],
@@ -78,18 +76,18 @@ export const VOICES: VoiceSection[] = [
     name: 'Camillo',
     headline: 'INFORMATION EDGE, NOT VIBES',
     subtitle: 'Chris Camillo — social arbitrage; a supporting voice that can point to ideas but not change themes',
-    asOf: 'wk of Oct 12 – Oct 18 · via Grok',
+    asOf: 'wk of Oct 18 – Oct 25 · via Grok + Pomp 10/12',
     active: true,
     themes: [
       {
-        name: 'Amazon, still the core',
-        editorial: `He posted few new stock calls this week. Public trackers that follow his posts and podcasts estimate Amazon at roughly three quarters of his portfolio, with Robinhood and Bloom Energy well behind. These are outside estimates, not figures he confirmed. He has described Amazon as misunderstood for its cloud business and its own AI chips, and treats dips as chances to add. He still holds Take-Two ahead of GTA 6.`,
-        tickers: ['AMZN', 'HOOD', 'BE', 'TTWO'],
+        name: 'Amazon and Bloom, holding',
+        editorial: `Asked on October 22 whether he was adding to Amazon and Bloom Energy, he answered "holding." On Pompliano's show he walked through his Amazon earnings trade, about $10 million in a day: more than 100 hours of research, and the deciding call was that management would address its spending plans head-on, as Microsoft had three days earlier. He still rated it only an 80% chance of working.`,
+        tickers: ['AMZN', 'BE'],
         curated: true,
       },
       {
         name: 'Lessons',
-        editorial: `Most of his posts were about mindset. AI is easy to overthink: models, chips, agents and benchmarks matter less than the basic point that AI makes previously uneconomic problems solvable and lets people do more with less. If nothing has changed in what you know, ignore the daily moves. Having lived through the dot-com bubble, he sees AI infrastructure companies differently from the richly valued private AI startups, which feel frothier. He praised Tesla's Roadster reveal for attempting something that could have failed in public.`,
+        editorial: `He has traded through the dot-com bust and the financial crisis and has never seen skepticism this intense about a major technology, with many investors seemingly rooting for AI to fail; so far the bears have been consistently wrong. Hold when the thesis has not changed, but change your mind when the data breaks: he exited a Lululemon trade once he found Google search data had been distorted by AI queries. Humanoid robots will be the biggest thing of all, but are years away.`,
         tickers: [],
         curated: true,
       },
@@ -99,19 +97,19 @@ export const VOICES: VoiceSection[] = [
     name: 'ZaStocks',
     headline: 'EMBRACE THE CHAOS',
     subtitle: 'ZaStocks (@ZaStocks) — chart-based trade ideas, gathered weekly',
-    asOf: 'wk of Oct 12 – Oct 19 · via Grok',
+    asOf: 'wk of Oct 19 – Oct 26 · via Grok',
     active: true,
     themes: [
       {
-        name: 'Two markets',
-        editorial: `He sees noise and weak sentiment, not a collapse. The mood around AI is poor after weakness in CoreWeave and Oracle and cuts to Anthropic's expected IPO valuation, and the war with Iran keeps oil and yields high. The indexes sit near their highs while many former AI winners are deep in drawdowns, which he calls two different markets. He thinks the loud crash and "Black Monday" calls are overdone and that ordinary 401(k) holders are not panicking. In his count the market has had only two clean stretches to trade in two years, so he would rather sit tight until the clouds clear.`,
-        tickers: [],
+        name: 'Quality that can scale',
+        editorial: `He is cautious on the AI trade and says the market "stinks," with debt worries, credit stress and pressure on the smaller cloud providers. He pushes back on constant bubble and financial-crisis comparisons: there is "too much at stake" for the AI trade to blow up now. He sees SpaceX as in a league of its own among computing providers and expects it to win contracts from struggling rivals.`,
+        tickers: ['SPCX', 'META'],
         curated: true,
       },
       {
-        name: 'Buy quality early',
-        editorial: `His lesson: people ignore a stock like SanDisk at $50 and then want it after it reaches $2,000; flip that and buy quality earlier in the run. He called Meta the clearest case of mood driving a stock, since nothing changed in the business but a new product turned sentiment and the shares went vertical. He posted Tempus AI retesting a breakout and said a Tesla and SpaceX merger would create the most ambitious company the world has seen.`,
-        tickers: ['SNDK', 'META', 'TEM', 'TSLA'],
+        name: 'Lessons',
+        editorial: `Markets wear people out until they stop paying attention, and then they bottom. Round-the-clock trading, same-day options and leveraged funds are built to help people lose money. After a big run the easy money is often made: he likes Bloom Energy but notes it went from $15 to over $300.`,
+        tickers: ['BE'],
         curated: true,
       },
     ],
