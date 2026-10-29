@@ -1,13 +1,13 @@
 {
  "_doc": "Theme -> asset derivation. Voices name themes (any voice); tickers are DERIVED here, never taken from a voice directly (ZaStocks tickers are never inputs). Engine decides whether and how much. Maintained each cycle by Weekly Workflow 5.11. 'lex' is a case-insensitive regex matched on cleaned transcript text. Vehicle status: held | in_etf (look-through, verified pct + as_of) | candidate | watch | private | none.",
- "_revised": "2026-10-19",
+ "_revised": "2026-10-29",
  "themes": {
   "power_grid": {
    "trend": "1 AI buildout",
    "sub": "power/grid",
    "lex": "\\bpower (?:grid|constraint|demand)|\\belectricity\\b|\\bthe grid\\b|\\bnuclear\\b|\\bphysical world\\b|\\belectrons\\b",
    "vehicles": {
-    "GEV": "held",
+    "GEV": "candidate",
     "AIPO": "watch",
     "PWR": "candidate",
     "ETN": "candidate",
@@ -15,7 +15,7 @@
     "BE": "candidate",
     "FLNC": "candidate"
    },
-   "note": "10/13 (v3.12): AIPO -> watch, VEHICLE MISFIT under 5.4b C - AIPO-SOXX 0.86/0.88/0.90 (1y/6m/3m), ~12% GOOGL/NVDA/AVGO; it was a second semis holding. GEV seated: turbines are the scarcest input (gas backlog 116 GW Q2, slots into 2031). Equipment layer is the priced one (GEV 47x, PWR 38x, BE 74x fwd). Look-throughs via AIPO are now plain candidates.",
+   "note": "10/13 (v3.12): AIPO -> watch, VEHICLE MISFIT under 5.4b C - AIPO-SOXX 0.86/0.88/0.90 (1y/6m/3m), ~12% GOOGL/NVDA/AVGO; it was a second semis holding. GEV seated: turbines are the scarcest input (gas backlog 116 GW Q2, slots into 2031). Equipment layer is the priced one (GEV 47x, PWR 38x, BE 74x fwd). Look-throughs via AIPO are now plain candidates. 10/29: GEV removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row.",
    "quality": {
     "GEV": "leader"
    },
@@ -46,10 +46,10 @@
    "sub": "memory",
    "lex": "\\bmemory\\b(?! of)|\\bHBM\\b|\\bDRAM\\b|\\bNAND\\b|\\bmicron\\b",
    "vehicles": {
-    "MU": "held",
+    "MU": "candidate",
     "SKHY": "in_etf:SOXX:3.11:2026-09-24"
    },
-   "note": "10/19: CXMT quality watch (Visser 10/18 00:50:34; XTB 10/12 DRAM-architecture progress; Q3 due 10/31). Duopoly held. DRAM/HBM only - pure vehicles MU and SK hynix are both inside SOXX; Samsung has no US listing. SNDK is NAND (post-spin) and sits under storage. Max-demand WAVE_DEMAND row with no direct holding. 'memory' also matches agent-memory talk - read the quote."
+   "note": "10/19: CXMT quality watch (Visser 10/18 00:50:34; XTB 10/12 DRAM-architecture progress; Q3 due 10/31). Duopoly held. DRAM/HBM only - pure vehicles MU and SK hynix are both inside SOXX; Samsung has no US listing. SNDK is NAND (post-spin) and sits under storage. Max-demand WAVE_DEMAND row with no direct holding. 'memory' also matches agent-memory talk - read the quote. 10/29: MU removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
   },
   "storage_nearline": {
    "trend": "1 AI buildout",
@@ -79,11 +79,11 @@
    "sub": "lithography",
    "lex": "\\blithography\\b|\\bEUV\\b|\\bASML\\b",
    "vehicles": {
-    "ASML": "held"
+    "ASML": "candidate"
    },
    "timing": "binding",
    "quality": "sole",
-   "note": "10/19 (v3.13): ASML seated, binding/sole. Visser 10/18: 'ASML AI chip demand is stretching into 2030... supply shortages through 2028' (00:51:40). 5.4b A: Q3 10/14 demand > supply until at least 2028, +30% capacity 'won't be enough'; FY26 guide raised. Look-through via SOXX 1.39% (9/24) = 0.13% of book. ASML-SOXX 0.83/0.82 (1y/3m) - under the 0.85 misfit line, watch."
+   "note": "10/19 (v3.13): ASML seated, binding/sole. Visser 10/18: 'ASML AI chip demand is stretching into 2030... supply shortages through 2028' (00:51:40). 5.4b A: Q3 10/14 demand > supply until at least 2028, +30% capacity 'won't be enough'; FY26 guide raised. Look-through via SOXX 1.39% (9/24) = 0.13% of book. ASML-SOXX 0.83/0.82 (1y/3m) - under the 0.85 misfit line, watch. 10/29: ASML removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
   },
   "copper_input": {
    "trend": "1 AI buildout",
@@ -110,7 +110,8 @@
     "LLY": "held",
     "TEM": "candidate",
     "ABCL": "candidate"
-   }
+   },
+   "note": "10/28: TEM/ABCL engine ADD (~4.2%) is funded almost entirely from LLY (-5.5) - mostly displacing a same-theme holding, NOT WORTH IT under 5.11."
   },
   "consumer_agent_platform": {
    "trend": "2 AI applied",
@@ -128,8 +129,9 @@
    "sub": "settlement layer",
    "lex": "\\bethereum\\b|\\bsettlement\\b|\\bsmart contracts?\\b",
    "vehicles": {
-    "ETHA": "held"
-   }
+    "ETHA": "candidate"
+   },
+   "note": "10/29: ETHA removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
   },
   "tokenization": {
    "trend": "3 Tokenized rails",
@@ -137,8 +139,9 @@
    "lex": "\\btokeni[sz]\\w*\\b|\\bstock tokens\\b|\\bon-?chain\\b|\\breal.world assets\\b|\\bRWA\\b",
    "vehicles": {
     "HOOD": "held",
-    "COIN": "held"
-   }
+    "COIN": "candidate"
+   },
+   "note": "10/29: COIN removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
   },
   "speed_layer": {
    "trend": "3 Tokenized rails",
@@ -148,7 +151,7 @@
     "GSOL": "candidate",
     "BSOL": "candidate"
    },
-   "note": "Visser 9/07 'three horsemen' (Solana = speed); named 9/20, 9/27. BSOL history too short for corr window - use GSOL."
+   "note": "Visser 9/07 'three horsemen' (Solana = speed); named 9/20, 9/27. BSOL history too short for corr window - use GSOL. 10/23 Visser: 'Bitcoin... Ethereum is number two. Solana is number three' - clock refreshed. 10/28: entry now met (GSOL -4.5% vs 50-DMA, above 200); engine 5.2%, drawn from ETHA/HOOD/COIN. C's 10/12 call (no SOL) stands unless C reverses it."
   },
   "agent_payments": {
    "trend": "3 Tokenized rails",
@@ -156,9 +159,10 @@
    "lex": "\\bstable ?coins?\\b|\\bagentic payments?\\b|\\bpayment protocols?\\b|\\bprogrammable money\\b|\\bguard ?rails\\b",
    "vehicles": {
     "CRCL": "candidate",
-    "COIN": "held",
+    "COIN": "candidate",
     "PRIV:STRIPE": "private"
-   }
+   },
+   "note": "10/29: COIN removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
   },
   "bitcoin": {
    "trend": "4 Monetary",
@@ -183,8 +187,9 @@
    "sub": "silver",
    "lex": "\\bsilver\\b",
    "vehicles": {
-    "SLV": "held"
-   }
+    "SLV": "watch"
+   },
+   "note": "10/29: SLV removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
   },
   "robotics": {
    "trend": null,
@@ -239,6 +244,49 @@
     "ZEC": "none"
    },
    "note": "NEW 10/19. Visser 10/11 'I want to be long privacy as a theme' (Zcash, NEAR); 10/17 watches NEAR daily as an AI-agentic chain. No US-listed spot vehicle verified with >=252 sessions - verify Grayscale trusts before deriving. Lex avoids bare 'near'."
+  },
+  "healthcare_basket": {
+   "trend": "2 AI applied",
+   "sub": "pharma/biotech basket",
+   "lex": "\\bhealth ?care\\b|\\blife sciences\\b|\\bpharma\\w*\\b|\\bbiotech\\b",
+   "vehicles": {
+    "XBI": "held",
+    "IBB": "candidate",
+    "XLV": "watch"
+   },
+   "note": "HELD 10/29 (v3.14, C): XBI seated at forward/basket. BBH is the alternative (worksheet row, off). NEW 10/28. Visser 10/24 'if you're worried about the AI buildout and the delays, get long the healthcare sector'; 10/25 'Healthcare needs to be part of your portfolio... the pharma side, the biotech side, and life sciences.' Not a scarcity bottleneck: enters at forward. XLV watch only (LLY ~13% of it; corr 0.74/0.85). Projections 10/28: XBI own seat 7.4% lifts AI applied to 22.7 (above Monetary 20.5, against C's trend order); XBI sharing the LLY seat cuts LLY 10.3 -> 5.0. Put to C, not added. Needs pull_correlations coverage."
+  },
+  "cybersecurity": {
+   "trend": "2 AI applied",
+   "sub": "cybersecurity",
+   "lex": "\\bcyber ?security\\b|\\bhack(?:ed|ing|ings|s)?\\b|\\bagent swarms?\\b",
+   "vehicles": {
+    "CIBR": "held",
+    "HACK": "candidate",
+    "CRWD": "candidate",
+    "PANW": "candidate"
+   },
+   "note": "HELD 10/29 (v3.14, C): CIBR seated at forward/basket. NEW 10/28. Visser 10/25: AI-driven cyber attacks 'becomes the most important story over the next 3 years for the market' - but his conclusion is that it pushes banks onto blockchains (rails already held). Demand theme, no scarcity indicator. Priced: CRWD +120% YTD, ~232x trailing (10/23). Engine at forward: CIBR 7.3%, AI applied 18.7 -> 24.0 (against C's trend order). Logged, not acted."
+  },
+  "edge_ai": {
+   "trend": "1 AI buildout",
+   "sub": "edge AI silicon",
+   "lex": "\\bedge (?:devices?|AI|inference)\\b|\\bon.device\\b|\\bqualcomm\\b",
+   "vehicles": {
+    "QCOM": "candidate",
+    "AMD": "in_etf:SOXX:9.58:2026-09-24",
+    "ARM": "candidate"
+   },
+   "note": "NEW 10/28. Visser 10/22: 'you can start to move into some things like Qualcomm and AMD, things that are going to benefit from edge devices.' No edge-AI bottleneck data. Vehicle fit fails for now: QCOM +0.3% 1y, revenue still handset-led and squeezed by memory cost inflation. Engine at forward 4.1%. ADD-WHEN: shipped on-device agent volume (Siri/Alexa agent launches) shows up in silicon orders."
+  },
+  "compute_capacity": {
+   "trend": "1 AI buildout",
+   "sub": "compute capacity",
+   "lex": "\\bspacex\\b|\\bneoclouds?\\b|\\bcoreweave\\b",
+   "vehicles": {
+    "SPCX": "watch"
+   },
+   "note": "NEW 10/28. SpaceX Q3 (10/20) read by Visser as demand evidence for compute, not a buy. SPCX named by ZaStocks (his tickers are not inputs) and has ~96 sessions - no 200-DMA or 1y correlation. Watch only."
   }
  }
 }

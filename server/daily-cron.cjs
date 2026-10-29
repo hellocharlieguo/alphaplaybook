@@ -1161,7 +1161,10 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 //          trend = derived_timing x conviction x breadth(N_eff);
 //          weight = trend_weight x (name score / sum in trend).
 // Canonical: v34_worksheet_2026-08-24.html   Spec: Trend_First_Spec.md
-// v3.13 (2026-10-19): 13 holdings. No cash line. Hard-money sleeve cap OFF (IBIT+SLV = 21.6%).
+// v3.14 (2026-10-29): 9 holdings. C discretionary restructure. Out: ASML, MU, GEV, COIN, ETHA, SLV. In: XBI (biotech
+// basket), CIBR (cybersecurity). 10% cap per single stock (HOOD, LITE, VST, LLY, AMZN). Convictions: Buildout strong,
+// Applied certain, Rails forming, Monetary strong; AMZN cooling -> working. Canonical: v34_worksheet_2026-10-29.html
+// prior v3.13 (2026-10-19): 13 holdings. No cash line. Hard-money sleeve cap OFF (IBIT+SLV = 21.6%).
 // 10/19: ASML added (lithography, binding/sole) and LITE forward -> working, both through the 5.4b data check.
 // Trend weights emergent. Canonical: v34_worksheet_2026-10-19.html
 // prior v3.12 (2026-10-13): 12 holdings. No cash line. Hard-money sleeve cap OFF (IBIT+SLV = 22.3%).
@@ -1170,19 +1173,15 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // Retired this freeze: SKHY (unscoreable, no SMA50 until ~Sept 18), SGOV (no cash
 // row in the cascade), MU + WDC (dropped 8/23 on measured redundancy).
 const BASE_PORTFOLIO = {
-  IBIT:  { base_weight: 14.3, theme: 'Monetary',        min_weight:  7.2, action: 'Trim' },
-  LLY:   { base_weight: 10.8, theme: 'AI Applied',      min_weight:  5.4, action: 'Trim' },
-  ETHA:  { base_weight: 10.2, theme: 'Tokenized Rails', min_weight:  5.1, action: 'Trim' },
-  ASML:  { base_weight:  8.4, theme: 'AI Buildout',     min_weight:  4.2, action: 'Add' },
-  HOOD:  { base_weight:  8.4, theme: 'Tokenized Rails', min_weight:  4.2, action: 'Trim' },
-  AMZN:  { base_weight:  7.9, theme: 'AI Applied',      min_weight:  4.0, action: 'Trim' },
-  SOXX:  { base_weight:  7.7, theme: 'AI Buildout',     min_weight:  3.9, action: 'Trim' },
-  MU:    { base_weight:  7.3, theme: 'AI Buildout',     min_weight:  3.7, action: 'Trim' },
-  SLV:   { base_weight:  7.3, theme: 'Monetary',        min_weight:  3.7, action: 'Trim' },
-  COIN:  { base_weight:  6.6, theme: 'Tokenized Rails', min_weight:  3.3, action: 'Trim' },
-  LITE:  { base_weight:  6.1, theme: 'AI Buildout',     min_weight:  3.1, action: 'Add' },
-  GEV:   { base_weight:  2.6, theme: 'AI Buildout',     min_weight:  1.3, action: 'Trim' },
-  VST:   { base_weight:  2.4, theme: 'AI Buildout',     min_weight:  1.2, action: 'Trim' },
+  IBIT:  { base_weight: 15.2, theme: 'Monetary',       min_weight:  7.6, action: 'Add' },
+  XBI:   { base_weight: 13.2, theme: 'AI Applied',     min_weight:  6.6, action: 'Add' },
+  SOXX:  { base_weight: 12.2, theme: 'AI Buildout',    min_weight:  6.1, action: 'Add' },
+  CIBR:  { base_weight: 11.8, theme: 'AI Applied',     min_weight:  5.9, action: 'Add' },
+  HOOD:  { base_weight: 10.3, theme: 'Tokenized Rails', min_weight:  5.2, action: 'Add' },
+  LLY:   { base_weight: 10.1, theme: 'AI Applied',     min_weight:  5.1, action: 'Trim' },
+  AMZN:  { base_weight: 10.0, theme: 'AI Applied',     min_weight:  5.0, action: 'Add' },
+  LITE:  { base_weight:  9.6, theme: 'AI Buildout',    min_weight:  4.8, action: 'Add' },
+  VST:   { base_weight:  7.6, theme: 'AI Buildout',    min_weight:  3.8, action: 'Add' },
 }
 
 // SGOV left the book 2026-08-24 (v3.4 has no cash row) but the momentum
@@ -1195,7 +1194,7 @@ const PRICE_EXTRAS = ['SGOV']
 // stored in yesterday's snapshot; a change forces a one-night rebalance-to-target.
 // Between bumps (same tickers, same version) holdings DRIFT with price — winners gain
 // weight, losers shed it. A ticker add/drop also forces a rebalance regardless.
-const PORTFOLIO_VERSION = '2026-10-19-v3.13-asml-litework'
+const PORTFOLIO_VERSION = '2026-10-29-v3.14-restructure'
 
 function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('\n========================================')

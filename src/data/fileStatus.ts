@@ -25,14 +25,14 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-10-20T00:33:02.252Z",
-  "commit": "c4a4f6f",
+  "generatedAt": "2026-10-29T13:54:38.703Z",
+  "commit": "5bca67f",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
   "ignored": 3,
-  "modified": 1,
-  "undeclared": 0,
+  "modified": 6,
+  "undeclared": 1,
   "orphanedSource": 0,
   "undeclaredSource": 0
 } as const
@@ -74,11 +74,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "server/daily-cron.cjs": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 94702,
-    "mtime": "2026-10-20",
+    "sizeBytes": 94679,
+    "mtime": "2026-10-29",
     "lastCommit": "2026-10-19",
     "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
   },
@@ -104,25 +104,25 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 9911,
-    "mtime": "2026-10-20",
+    "sizeBytes": 8547,
+    "mtime": "2026-10-28",
     "imports": 0,
     "importedBy": [
       "src/components/SignalRecap.tsx",
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-19",
-    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
+    "lastCommit": "2026-10-28",
+    "lastMessage": "Voice cards 2026-10-28: Visser 10/22-10/25, Camillo 10/12 + 10/18-10/25, ZaStocks 10/19-10/26"
   },
   "Weekly_Workflow_v34_section.md": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 16203,
-    "mtime": "2026-09-29",
+    "sizeBytes": 24625,
+    "mtime": "2026-10-29",
     "lastCommit": "2026-09-29",
     "lastMessage": "Workflow 5.11: theme-derived book changes. cycle_scan v2 (theme-first, ZaStocks tickers excluded), theme_map.json, book_"
   },
@@ -208,11 +208,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/Portfolio.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18195,
-    "mtime": "2026-10-01",
+    "sizeBytes": 18341,
+    "mtime": "2026-10-29",
     "imports": 2,
     "importedBy": [
       "src/components/Dashboard.tsx"
@@ -301,11 +301,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "v34_worksheet.html": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 147094,
-    "mtime": "2026-10-20",
+    "sizeBytes": 176443,
+    "mtime": "2026-10-29",
     "lastCommit": "2026-10-19",
     "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
   },
@@ -321,11 +321,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/systemMap.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 30934,
-    "mtime": "2026-10-20",
+    "sizeBytes": 31598,
+    "mtime": "2026-10-29",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
@@ -416,7 +416,7 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18434,
+    "sizeBytes": 18614,
     "mtime": "2026-10-20",
     "imports": 0,
     "importedBy": [
@@ -432,8 +432,8 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 2356,
-    "mtime": "2026-10-20",
+    "sizeBytes": 1861,
+    "mtime": "2026-10-29",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
@@ -648,7 +648,9 @@ export const DECLARED_BUT_MISSING: string[] = [
   "theme_weights.json"
 ]
 
-export const UNDECLARED_UNTRACKED: string[] = []
+export const UNDECLARED_UNTRACKED: string[] = [
+  "v34_worksheet_2026-10-29.html"
+]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */
 export const ORPHANED_SOURCE: string[] = []

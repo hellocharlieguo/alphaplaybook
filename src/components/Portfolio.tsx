@@ -46,6 +46,8 @@ const TICKER_META: Record<string, { name: string; color: string }> = {
   HOOD: { name: 'Robinhood (Tokenization)',          color: '#22c55e' },
   ETHA: { name: 'Ethereum ETF',                      color: '#6366f1' },
   // AI Application
+  XBI:  { name: 'SPDR S&P Biotech ETF',              color: '#06b6d4' },
+  CIBR: { name: 'First Trust Cybersecurity ETF',     color: '#a855f7' },
   LLY:  { name: 'Eli Lilly (Peptides / AI-pharma)',  color: '#0ea5e9' },
   // Monetary Scarcity
   IBIT: { name: 'Bitcoin ETF',                       color: '#8b5cf6' },

@@ -79,7 +79,7 @@ export const SYS_NODES: SysNode[] = [
   { id: 'zastocks', x: 10,  y: 194, kind: 'input',  ref: 'A3 · INPUT L2', title: 'ZaStocks',       sub: 'verify only',          history: true },
 
   { id: 'approval', x: 536, y: 106, kind: 'human',  ref: 'C1 · GATE',     title: 'Approval',       sub: 'no auto-build' },
-  { id: 'freeze',   x: 732, y: 106, kind: 'write',  ref: 'C2 · WRITE',    title: 'Freeze',         sub: 'v3.13',                 history: true },
+  { id: 'freeze',   x: 732, y: 106, kind: 'write',  ref: 'C2 · WRITE',    title: 'Freeze',         sub: 'v3.14',                 history: true },
   { id: 'push',     x: 928, y: 106, kind: 'write',  ref: 'C3 · DEPLOY',   title: 'git push',       sub: '→ Vercel' },
 
   { id: 'cron',     x: 10,  y: 344, kind: 'input',  ref: 'D1 · TRIGGER',  title: 'GitHub Actions', sub: '23:17 UTC' },
@@ -336,9 +336,10 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     source: 'phase 2: system_changelog · PORTFOLIO_VERSION drives P&L drift',
     blocks: [
       { t: 'sec', label: 'Current' },
-      { t: 'kv', k: 'Version string', v: '2026-10-19-v3.13-asml-litework' },
-      { t: 'kv', k: 'Names', v: '13' },
+      { t: 'kv', k: 'Version string', v: '2026-10-29-v3.14-restructure' },
+      { t: 'kv', k: 'Names', v: '9' },
       { t: 'sec', label: 'Changelog' },
+      { t: 'row', date: '10/29', pill: 'book', tone: 'book', title: 'v3.14 freeze: simplified to 9 names; biotech and cybersecurity added', quote: 'C discretionary restructure, not a data-check move. Out: ASML, MU, GEV, COIN, ETHA, SLV (chips exposure kept through SOXX; crypto through IBIT and HOOD). In: XBI (biotech basket, Visser 10/25: healthcare needs to be part of your portfolio) and CIBR (cybersecurity, Visser 10/25). 10% cap per single stock. Convictions reset: Applied certain, Buildout strong, Monetary strong, Rails forming; AMZN cooling to working. Weights: Buildout 29.4, Applied 45.1, Monetary 15.2, Rails 10.3. 9 names, 43.1pp one-way turnover.' },
       { t: 'row', date: '10/19', pill: 'book', tone: 'book', title: 'v3.13 freeze: ASML added for lithography; optical moves up a rung', quote: 'Data check: ASML says demand exceeds supply until at least 2028 and its planned capacity growth will not be enough (Q3, 10/14); guidance raised. Seated at binding/sole (only EUV supplier). Lumentum sold out through early 2029 and upstream indium phosphide is short: LITE forward to working. Memory held binding (Q4 DRAM contracts up 10-15 percent); CXMT watched, not moved. Single semis names rejected again: they draw from SOXX. Emergent weights: Buildout 34.5, Rails 25.2, Monetary 21.6, Applied 18.7. 13 names, 8.6pp one-way turnover.' },
       { t: 'row', date: '10/13', pill: 'book', tone: 'book', title: 'v3.12 freeze: AIPO becomes one power seat (GEV + VST); seat rule', quote: 'First freeze under the new data check (voices propose, data decides). A power-was-phase-1 reading was rejected: turbine backlog 116 GW and rising, PJM short 6.8 GW. AIPO failed vehicle fit (0.86 to SOXX). GEV binding/leader and VST working/leader share one power seat: a seat is a bottleneck, not a ticker (without the rule power would have jumped to 14.6%). Emergent weights: Buildout 32.2, Rails 26.1, Monetary 22.3, Applied 19.3. 12 names, 10.9pp one-way turnover.' },
       { t: 'row', date: '10/12', pill: 'book', tone: 'book', title: 'v3.11 freeze: gold out, copper swapped for optical', quote: 'GLDM removed (exhausted since 10/05). COPX -> LITE, the unseated max-demand optical row Visser voiced 10/11. SLV working -> cooling (C discretionary). AI Buildout 27.1 pin retired; trend order set by conviction, not weight overrides: Buildout 29.4, Rails 27.2, Monetary 23.2, Applied 20.1. 11 names, 26.7pp turnover.' },
