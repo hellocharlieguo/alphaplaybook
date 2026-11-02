@@ -3,6 +3,8 @@
 **Replaces the old §5 "run rescore_current_v3.py" step. That script and
 `rescore_v34.py` both implement the retired composite method — do not run either.**
 
+**Revision 2026-11-02 (C).** **ZaStocks is retired as a voice.** Two voices remain: Visser and Camillo. His Grok captures are no longer added to Project files; any old ones are ignored by `cycle_scan.py` (themes and tickers alike), and his voice card is gone from the site. `cycle_scan.py` now reads holdings from `BASE_PORTFOLIO` (its hardcoded list was stale since v3.9) and dates cross-month windows correctly (`10/26-11/1` was parsing as 2011).
+
 **Revision 2026-10-28 (C).** Transcripts live in **Project files only**. Claude reads them there, in full, every cycle. The `~/Desktop/transcripts/` folder and the local `cycle_scan.py --dir` step are retired. Claude runs the sweep itself, in its own workspace, on the Project-file transcripts.
 
 **Revision 2026-10-13.** Changes from the 2026-09-29 revision:
@@ -91,7 +93,6 @@ Everything else is derived. Trend weights, trend timing, S5 and name weights are
 |---|---|---|---|---|
 | **Visser** | Fri (Pomp) + Sun (weekly) | ✅ | hint only — derived like any other | **proposes** |
 | **Camillo** | irregular, via Grok | ✅ | hint only — derived like any other | **proposes** |
-| **ZaStocks** | weekly, via Grok | ✅ | ❌ **never an input** | **proposes** (theme level) |
 | **Data check (§5.4b)** | every cycle | — | — | **decides** |
 
 **Voices give ideas; the data decides (C, 10/13).** A proposal from any voice
@@ -103,7 +104,7 @@ A theme no voice has described still enters at `forward` (×0.72) until the data
 check sets a rung.
 
 **Capture integrity, checked first.** Confirm each Project file's stated window matches
-the intended one. The `8_17-8_24` ZaStocks output was byte-identical to
+the intended one. A Grok capture for `8_17-8_24` was once byte-identical to
 `8_10-8_17` and went undetected for a week. A missing capture is reported as a
 gap, never silently filled from the prior window.
 
@@ -119,7 +120,7 @@ the Project-file name. Themes and their vehicles live in **`theme_map.json`**. F
 2. **Derived candidates** — every vehicle for every theme voiced, marked held / inside a held ETF (with verified % and date) / candidate / watch.
 3. **Removal review** — held names whose themes no voice has described for 28+ days.
 4. **Structural language** — taxonomy, ranking, stage and long/short framing. **Unmapped lines are listed first: they are where a new theme appears.** Add it to `theme_map.json` and derive its vehicles that cycle.
-5. **Name hints** — Visser and Camillo mentions only, as pointers for derivation. ZaStocks' tickers are excluded by construction.
+5. **Name hints** — Visser and Camillo mentions, as pointers for derivation.
 
 **A lexicon hit is a pointer, not evidence.** "Memory" matched agent-memory talk
 on 9/26; GLDM once registered four hits from a host's ad reads. Every theme
@@ -355,9 +356,7 @@ themes (§5.4b) are listed here too, marked `DATA-INITIATED`.
 ### Step 2 · Derive assets
 For each theme: what must be owned to capture it, and which vehicles trade
 against it — ETFs and single names. New themes are researched fresh; existing
-themes re-use `theme_map.json`, refreshed when a vehicle changes. **ZaStocks'
-tickers are never used; if his theme is valid, the vehicles are derived
-independently.** Private companies and tokens with no listed vehicle are
+themes re-use `theme_map.json`, refreshed when a vehicle changes. Private companies and tokens with no listed vehicle are
 recorded as such.
 
 ### Step 3 · Coverage

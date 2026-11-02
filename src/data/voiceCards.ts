@@ -6,9 +6,10 @@
 // no 'we' reactions (C). Book changes live in the worksheet and Portfolio tab, not here.
 // Visser card headline 10/01: 'LONG SCARCITY, SHORT ABUNDANCE' -> 'LONG SPEED, SHORT FRICTION'.
 //
-// 2026-10-28 weekly cycle — confirm the book (v3.13 unchanged). No rung passed the 5.4b data check.
-// New transcripts (Project files): Visser 10/22 (Julia La Roche), 10/23 (Cointelegraph), 10/24 (Pomp),
-// 10/25 (solo). Camillo: Pomp 10/12 + Grok 10/18-10/25 (first-hand posts this time). ZaStocks: Grok 10/19-10/26.
+// 2026-11-02 weekly cycle — FREEZE v3.15 (LITE removed after the Marvell-Lumentum deal; single-stock cap off).
+// New transcripts (Project files): Visser 10/31 (Pomp) and 10/31 (solo). Camillo: Grok 10/26-11/1.
+// ZaStocks RETIRED as a voice (C, 11/02) — his card is removed; the renderer needs no change
+// (SignalRecap stacks whatever voices follow Visser in the right column).
 // Cards stay pure summaries of what each voice said.
 //
 // Prior cycle notes (10/05 and earlier) are in git history for this file.
@@ -37,37 +38,37 @@ export const VOICES: VoiceSection[] = [
     name: 'Visser',
     headline: 'LONG SPEED, SHORT FRICTION',
     subtitle: 'Jordi Visser — macro framework for the AI and crypto economy',
-    asOf: 'October 25, 2026',
+    asOf: 'October 31, 2026',
     active: true,
     themes: [
       {
         name: 'The framework',
-        editorial: `"The AI bubble didn't pop, hedge fund leverage did." He called the last two weeks one of the largest hedge-fund unwinds of his career and thinks it is "either done or in the seventh or eighth inning." The damage has spread from stock pickers to quant and multi-strategy funds and into French government bonds, yet the S&P 500 fell only about half a percent on the week. What would make it an economic downturn rather than a fund unwind is falling profit margins and rising layoffs, and he sees neither: corporate profits are still growing about 20% a year and jobless claims are calm. Junk-bond spreads widening is the one sign he is watching. He expects the low for this AI selloff within about two weeks, around big-tech earnings, the midterms and the Treasury's November 4 refunding announcement.`,
+        editorial: `"The market structure has completely changed and it is forever changed." October felt like a crash but the S&P 500 ended the month down less than 1%, nine of eleven sectors rose and most stocks gained. Morgan Stanley's prime brokerage called it the largest hedge-fund pullback it has seen; he compares it to the GameStop-era unwind in a healthy economy, not to a bear market. His lesson is "strikeout, strikeout, strikeout, home run": nearly all of Nvidia's gain over 30 months came in one four-month stretch, so selling on bubble fears means missing it. Next week: the Treasury's November 4 refunding (he thinks it may cut long-bond sales), the midterms, Iran, and the Anthropic IPO.`,
         tickers: [],
         curated: true,
       },
       {
         name: 'AI Buildout',
-        editorial: `He called SpaceX's results the most important report he has seen apart from Nvidia's: Musk said demand for computing is far greater than supply and that SpaceX could rent out its capacity several times over. His view is that supply will not catch up with demand at any point in the next three years, which makes "agentic compute" the safest place to invest — chips, but also the gas turbines, batteries and chemicals behind data centers. He said Micron could be at $1,500 by the end of February, and that edge devices are next, naming Qualcomm and AMD. His largest positions after Eli Lilly are Nvidia and Marvell.`,
-        tickers: ['NVDA', 'MRVL', 'MU', 'QCOM', 'AMD'],
+        editorial: `"Guys, go buy memory names. Trust me." SK hynix's results were strong, memory makers keep signing contracts out to 2030, and Elon Musk says robots will need more memory than everything else on earth; he expects robots to be the next wave of AI, starting next year. On optical networking, Corning says demand is pressing against its capacity and connections per chip could grow tenfold; he bought optical stocks three times this week, and does not like Marvell buying Lumentum. Computing power is getting scarcer: the price to rent future chip capacity is rising. Oracle pledged to raise no more than $20 billion through 2030, a sign that outside financing for AI may be near its peak. His advice: hold less of the giant cloud companies and more of the companies building AI computing.`,
+        tickers: ['MU', 'GLW', 'MRVL'],
         curated: true,
       },
       {
         name: 'AI Applied',
-        editorial: `"Healthcare needs to be part of your portfolio," on the pharma, biotech and life-sciences side. Eli Lilly, his largest position, hit a record high in a week when AI stocks fell, and he still expects it to become the largest US company within five years. His case: healthcare is now the biggest category of US consumer spending, it does not rise and fall with the economy, and AI drug discovery is turning it into a growth business; Lilly's TuneLab now pools research from 135 biotech companies. He also expects personal AI agents to move idle bank deposits to wherever they earn more, which he thinks will shrink bank valuations over the next three years.`,
-        tickers: ['LLY'],
+        editorial: `Eli Lilly, now his largest position, grew revenue 39% to $24.4 billion and raised its outlook; he still expects it to become the largest company in the S&P 500 before the end of 2030. Anthropic's IPO filing showed $132 billion in cash and half of the Fortune 500 as customers, yet a tiny share of their spending, so in his view business adoption of AI agents has barely started. Microsoft offering buyouts to 60,000 employees, 27% of its staff, is "stage one of the AI productivity boom," and the fight between workers and capital comes next. The only software company he owns is Palantir; cybersecurity stocks are expensive and could go nowhere for a year and a half even as attacks rise.`,
+        tickers: ['LLY', 'PLTR'],
         curated: true,
       },
       {
         name: 'Tokenized Rails',
-        editorial: `"The crypto guardrails were built not for humans. They were built for AI agents." Crypto is his strongest call for the next year. Stripe's John Collison said agent-driven shopping on Stripe's payment system "went vertical"; JPMorgan has three tokenized products running on Ethereum; Uniswap posted record revenue driven by Robinhood's blockchain. He expects AI-driven hacking of banks and websites to become the biggest market story of the next three years and to push banks onto blockchains faster. After Bitcoin, his largest crypto holdings are Ethereum and Solana, plus a basket of privacy coins.`,
-        tickers: ['ETH', 'SOL', 'HOOD'],
+        editorial: `Tokenization "continues": the DTCC's tokenization service is live, tokenized real-world assets on Solana hit a record, and Google is building crypto custody for institutions. Stripe's agent-driven payments will "only grow from here." He reads the Binance hack as the growing pains of a new market, like the Nasdaq's electronic-trading breakdowns in 1999; now that banks are involved and promote crypto to clients, security problems get fixed faster.`,
+        tickers: ['SOL', 'HOOD'],
         curated: true,
       },
       {
         name: 'Monetary',
-        editorial: `He calls Bitcoin "the purest AI trade." It held between $80,000 and $85,000 through the AI selloff and a claim from Chamath Palihapitiya that quantum computing will send it to zero. He sides with cryptographer Adam Back: quantum is a hardware problem perhaps 20 to 40 years away, and Bitcoin can upgrade before then. BlackRock's Bitcoin fund took in $664 million and its shares outstanding are at a record. Gold and silver, by contrast, have fallen back to their lows.`,
-        tickers: ['BTC'],
+        editorial: `Binance lost about $6 billion to hackers, the largest theft on record, and Bitcoin fell only about 4% on the week: "You can't even tell that something happened." He thinks Bitcoin is at "the beginning of a major move," and his favorite trade is owning Bitcoin against the Nasdaq-100. Quantum: one company says it can break Bitcoin's encryption by 2028; his own research puts that near 15%. High real interest rates have weighed on Bitcoin and silver all year; he expects that to ease next year as the energy, tariff and memory-price effects on inflation fade. He still owns silver for the robotics phase.`,
+        tickers: ['BTC', 'SLV'],
         curated: true,
       },
     ],
@@ -76,40 +77,19 @@ export const VOICES: VoiceSection[] = [
     name: 'Camillo',
     headline: 'INFORMATION EDGE, NOT VIBES',
     subtitle: 'Chris Camillo — social arbitrage; a supporting voice that can point to ideas but not change themes',
-    asOf: 'wk of Oct 18 – Oct 25 · via Grok + Pomp 10/12',
+    asOf: 'wk of Oct 26 – Nov 1 · via Grok',
     active: true,
     themes: [
       {
-        name: 'Amazon and Bloom, holding',
-        editorial: `Asked on October 22 whether he was adding to Amazon and Bloom Energy, he answered "holding." On Pompliano's show he walked through his Amazon earnings trade, about $10 million in a day: more than 100 hours of research, and the deciding call was that management would address its spending plans head-on, as Microsoft had three days earlier. He still rated it only an 80% chance of working.`,
-        tickers: ['AMZN', 'BE'],
+        name: 'Amazon, Bloom and Robinhood',
+        editorial: `Amazon is by far his largest position and he added aggressively around its October 29 earnings, calling it misunderstood: cloud, AI efficiency, advertising and scale. He cut his leverage before the report and added back after it. He added to Bloom Energy on October 26 for AI data-center power, and on October 30 said he was "meaningfully long" Amazon, Bloom Energy and Robinhood.`,
+        tickers: ['AMZN', 'BE', 'HOOD'],
         curated: true,
       },
       {
         name: 'Lessons',
-        editorial: `He has traded through the dot-com bust and the financial crisis and has never seen skepticism this intense about a major technology, with many investors seemingly rooting for AI to fail; so far the bears have been consistently wrong. Hold when the thesis has not changed, but change your mind when the data breaks: he exited a Lululemon trade once he found Google search data had been distorted by AI queries. Humanoid robots will be the biggest thing of all, but are years away.`,
+        editorial: `"This is a time to think like a long term investor." He loves leverage but calls this fearful market a dangerous place to use it. Fear creates mispricing: five years from now, young investors will likely see this as an extraordinary chance to buy strong businesses, and he favors established companies over speculative ones while fear is high. Red days are "part of the game." The value in his posts is the reasoning, not copying his trades.`,
         tickers: [],
-        curated: true,
-      },
-    ],
-  },
-  {
-    name: 'ZaStocks',
-    headline: 'EMBRACE THE CHAOS',
-    subtitle: 'ZaStocks (@ZaStocks) — chart-based trade ideas, gathered weekly',
-    asOf: 'wk of Oct 19 – Oct 26 · via Grok',
-    active: true,
-    themes: [
-      {
-        name: 'Quality that can scale',
-        editorial: `He is cautious on the AI trade and says the market "stinks," with debt worries, credit stress and pressure on the smaller cloud providers. He pushes back on constant bubble and financial-crisis comparisons: there is "too much at stake" for the AI trade to blow up now. He sees SpaceX as in a league of its own among computing providers and expects it to win contracts from struggling rivals.`,
-        tickers: ['SPCX', 'META'],
-        curated: true,
-      },
-      {
-        name: 'Lessons',
-        editorial: `Markets wear people out until they stop paying attention, and then they bottom. Round-the-clock trading, same-day options and leveraged funds are built to help people lose money. After a big run the easy money is often made: he likes Bloom Energy but notes it went from $15 to over $300.`,
-        tickers: ['BE'],
         curated: true,
       },
     ],

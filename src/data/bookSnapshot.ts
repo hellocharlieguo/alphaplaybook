@@ -13,90 +13,83 @@ export interface Holding {
 export interface Sleeve { name: string; weight: number }
 
 export const BOOK = {
-  version: "2026-10-29-v3.14-restructure",
-  count: 9,
+  version: "2026-11-02-v3.15-drop-lite-nocap",
+  count: 8,
   total: 100,
-  generatedAt: "2026-10-29T13:54:38.704Z",
+  generatedAt: "2026-11-02T22:07:51.581Z",
   sleeves: [
   {
     "name": "AI Applied",
-    "weight": 45.1
+    "weight": 48.4
   },
   {
     "name": "AI Buildout",
-    "weight": 29.4
+    "weight": 24.1
   },
   {
     "name": "Monetary",
-    "weight": 15.2
+    "weight": 15.3
   },
   {
     "name": "Tokenized Rails",
-    "weight": 10.3
+    "weight": 12.2
   }
 ] as Sleeve[],
   holdings: [
   {
     "ticker": "IBIT",
-    "weight": 15.2,
+    "weight": 15.3,
     "theme": "Monetary",
-    "minWeight": 7.6,
-    "action": "Add"
-  },
-  {
-    "ticker": "XBI",
-    "weight": 13.2,
-    "theme": "AI Applied",
-    "minWeight": 6.6,
+    "minWeight": 7.7,
     "action": "Add"
   },
   {
     "ticker": "SOXX",
-    "weight": 12.2,
+    "weight": 13.5,
     "theme": "AI Buildout",
-    "minWeight": 6.1,
+    "minWeight": 6.8,
+    "action": "Add"
+  },
+  {
+    "ticker": "XBI",
+    "weight": 13,
+    "theme": "AI Applied",
+    "minWeight": 6.5,
     "action": "Add"
   },
   {
     "ticker": "CIBR",
-    "weight": 11.8,
+    "weight": 13,
     "theme": "AI Applied",
-    "minWeight": 5.9,
+    "minWeight": 6.5,
     "action": "Add"
   },
   {
     "ticker": "HOOD",
-    "weight": 10.3,
+    "weight": 12.2,
     "theme": "Tokenized Rails",
-    "minWeight": 5.2,
+    "minWeight": 6.1,
     "action": "Add"
   },
   {
     "ticker": "LLY",
-    "weight": 10.1,
+    "weight": 11.6,
     "theme": "AI Applied",
-    "minWeight": 5.1,
+    "minWeight": 5.8,
     "action": "Trim"
   },
   {
     "ticker": "AMZN",
-    "weight": 10,
+    "weight": 10.8,
     "theme": "AI Applied",
-    "minWeight": 5,
-    "action": "Add"
-  },
-  {
-    "ticker": "LITE",
-    "weight": 9.6,
-    "theme": "AI Buildout",
-    "minWeight": 4.8,
+    "minWeight": 5.4,
     "action": "Add"
   },
   {
     "ticker": "VST",
-    "weight": 7.6,
+    "weight": 10.6,
     "theme": "AI Buildout",
-    "minWeight": 3.8,
+    "minWeight": 5.3,
     "action": "Add"
   }
 ] as Holding[],

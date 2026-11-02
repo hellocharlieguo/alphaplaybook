@@ -3,9 +3,10 @@
 cycle_scan.py v2 — theme-first sweep. Weekly Workflow 5.2 / 5.11. Revised 2026-09-29.
 
 Any voice may name a THEME or TREND. Tickers are DERIVED from themes via
-theme_map.json, never taken from a voice directly. ZaStocks' tickers are
-ignored entirely (they change too often); his themes still count. Visser and
-Camillo name-mentions are reported as HINTS for derivation, not as inputs.
+theme_map.json, never taken from a voice directly. Voices: Visser and Camillo.
+ZaStocks was RETIRED 2026-11-02 (C): his files are recognised by name and
+ignored entirely, themes included. Visser and Camillo name-mentions are
+reported as HINTS for derivation, not as inputs.
 
     cd ~/Desktop/alphaplaybook
     python3 cycle_scan.py --dir ~/Desktop/transcripts                # full history -> staleness
@@ -14,7 +15,7 @@ Camillo name-mentions are reported as HINTS for derivation, not as inputs.
 Read-only. Prints a report; writes nothing.
 
 Voice is taken from the file name: 'Visser' or 'Pomp' -> Visser; 'Camillo' ->
-Camillo; 'ZaStocks' or 'Za' -> ZaStocks. Date is the LAST m_d(_yy) in the name,
+Camillo; 'ZaStocks' or 'Za' -> retired, ignored. Date is the LAST m_d(_yy) in the name,
 so a '9_21-9_27' window dates to 9/27. Unparseable names are reported, not guessed.
 
 Blocks:
@@ -25,13 +26,29 @@ Blocks:
   5. NAME HINTS           Visser/Camillo only; pointers for derivation, never seats
 """
 import argparse, json, os, re, sys
+
+RETIRED = {"ZaStocks"}   # 2026-11-02 (C): no longer a voice - files ignored, themes and tickers
 from collections import defaultdict
 from datetime import date
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # The book as of 2026-09-30-v3.8-coinamzn. ASML removed 9/14; COIN added 9/30.
-BOOK = {"AIPO", "SOXX", "MU", "COPX", "AMZN", "LLY", "HOOD", "ETHA", "COIN", "GLDM", "IBIT", "SLV"}   # v3.9: GLW -> MU 10/01
+def _live_book():
+    """Held names, read from BASE_PORTFOLIO in server/daily-cron.cjs (single source of truth).
+    The hardcoded set it replaces (2026-11-02) had been stale since v3.9."""
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "server", "daily-cron.cjs")
+    try:
+        src = open(p).read()
+        body = src[src.index("const BASE_PORTFOLIO = {"):]
+        body = body[:body.index("\n}")]
+        names = set(re.findall(r"^\s*([A-Z]{1,6}):\s*\{", body, re.M))
+        if names: return names
+    except (OSError, ValueError):
+        pass
+    sys.exit("cycle_scan: could not read BASE_PORTFOLIO from server/daily-cron.cjs")
+
+BOOK = _live_book()
 
 # Name aliases: HINTS only (Visser/Camillo). Garbled forms observed in transcripts.
 ALIASES = [
@@ -69,7 +86,7 @@ ROLE_PATTERNS = [
 
 TS = re.compile(r"[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+")
 WS = re.compile(r"\s+")
-DATE = re.compile(r"(\d{1,2})[_/.-](\d{1,2})(?:[_/.-](\d{2,4}))?")
+DATE = re.compile(r"(\d{1,2})[_/.](\d{1,2})(?:[_/.](\d{2,4}))?")   # "-" is the RANGE separator, never inside a date (fixes "10_26-11_1" -> 2011-10-26)
 
 
 def voice_of(name):
@@ -118,9 +135,10 @@ def main():
     TM = json.load(open(a.map))["themes"]
     LEX = {k: re.compile(v["lex"], re.I) for k, v in TM.items()}
 
-    docs, skipped = [], []
+    docs, skipped, retired = [], [], 0
     for p in files:
         b = os.path.basename(p); v = voice_of(b); d = date_of(b, a.year)
+        if v in RETIRED: retired += 1; continue
         if not v or not d: skipped.append((b, "no voice" if not v else "no date")); continue
         docs.append((p, b, v, d))
     if not docs: sys.exit("No file had both a recognisable voice and date in its name.")
@@ -160,6 +178,7 @@ def main():
 
     bar = "=" * 78
     print(bar); print(f"THEME SWEEP — {len(docs)} file(s), newest {newest}, window {wstart} .. {newest}"); print(bar)
+    if retired: print(f"\n{retired} ZaStocks file(s) ignored - voice retired 2026-11-02.")
     if skipped:
         print("\nSKIPPED (fix the file name):")
         for b, why in skipped: print(f"  {b}  [{why}]")

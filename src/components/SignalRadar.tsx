@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'Sold out to 2029', blurb: 'Visser: the slump is hedge funds selling, not AI demand fading. Micron has deals covering over 35% of revenue through 2030, ASML sees shortages through 2028 and Lumentum is sold out until 2029.', binding: true },
-  { name: 'AI Applied',      tag: 'Revenue from science', blurb: 'Visser expects most AI revenue to come from biotech, robotics and science, not chat subscriptions. Only about 2% of companies run AI agents in daily work so far.' },
-  { name: 'Tokenized Rails', tag: 'Tokenization ends leverage', blurb: 'Visser: trading around the clock and spendable tokenized stocks will change how risk and margin work. Banks and big managers started taking crypto seriously in the last two months.' },
-  { name: 'Monetary',        tag: 'Bitcoin is the hedge', blurb: '\u201cIf I\u2019m right, it\u2019s to go buy Bitcoin.\u201d Bitcoin fell 2.3% in a week when AI stocks were hit hard; most of his portfolio is now crypto.' },
+  { name: 'AI Buildout',     tag: 'Memory and optical', blurb: '\u201cGo buy memory names. Trust me.\u201d Visser bought optical stocks three times this week; Corning says demand is pressing against its capacity, and renting future computing power keeps getting pricier.', binding: true },
+  { name: 'AI Applied',      tag: 'Adoption has barely started', blurb: 'Anthropic counts half the Fortune 500 as customers yet a tiny share of their spending. Eli Lilly grew revenue 39%; Microsoft offered buyouts to 27% of its staff.' },
+  { name: 'Tokenized Rails', tag: 'Tokenization continues', blurb: 'The DTCC\u2019s tokenization service is live and tokenized assets on Solana hit a record. Visser reads the Binance hack as growing pains now that banks are involved.' },
+  { name: 'Monetary',        tag: 'Shrugged off a $6B hack', blurb: '\u201cYou can\u2019t even tell that something happened.\u201d Bitcoin fell about 4% on the week of the largest theft on record; Visser sees the start of a major move.' },
 ]
 
 interface Holding { ticker?: string; category?: string }

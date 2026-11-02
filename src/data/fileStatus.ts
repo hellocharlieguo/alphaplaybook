@@ -25,13 +25,13 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-10-29T13:54:38.703Z",
-  "commit": "5bca67f",
+  "generatedAt": "2026-11-02T22:07:51.579Z",
+  "commit": "f837484",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
   "ignored": 3,
-  "modified": 6,
+  "modified": 9,
   "undeclared": 1,
   "orphanedSource": 0,
   "undeclaredSource": 0
@@ -77,19 +77,19 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 94679,
-    "mtime": "2026-10-29",
-    "lastCommit": "2026-10-19",
-    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
+    "sizeBytes": 94827,
+    "mtime": "2026-11-02",
+    "lastCommit": "2026-10-29",
+    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 21360,
-    "mtime": "2026-08-17",
+    "sizeBytes": 21352,
+    "mtime": "2026-11-02",
     "imports": 3,
     "importedBy": [
       "src/components/Dashboard.tsx"
@@ -101,11 +101,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/voiceCards.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 8547,
-    "mtime": "2026-10-28",
+    "sizeBytes": 7460,
+    "mtime": "2026-11-02",
     "imports": 0,
     "importedBy": [
       "src/components/SignalRecap.tsx",
@@ -121,10 +121,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 24625,
-    "mtime": "2026-10-29",
-    "lastCommit": "2026-09-29",
-    "lastMessage": "Workflow 5.11: theme-derived book changes. cycle_scan v2 (theme-first, ZaStocks tickers excluded), theme_map.json, book_"
+    "sizeBytes": 24829,
+    "mtime": "2026-11-02",
+    "lastCommit": "2026-10-29",
+    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
   },
   "pull_candidates.cjs": {
     "exists": true,
@@ -192,11 +192,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/SignalRadar.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 4027,
-    "mtime": "2026-10-20",
+    "sizeBytes": 4045,
+    "mtime": "2026-11-02",
     "imports": 1,
     "importedBy": [
       "src/components/SignalRecap.tsx"
@@ -208,7 +208,7 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/Portfolio.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 18341,
@@ -218,8 +218,8 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/Dashboard.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-01",
-    "lastMessage": "Portfolio: sort holdings by current weight (cash last), names for COIN/SOXX/AMZN; voice cards drop crypto-index referenc"
+    "lastCommit": "2026-10-29",
+    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
   },
   "Signal_Engine_Reference.md": {
     "exists": true,
@@ -304,10 +304,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 176443,
-    "mtime": "2026-10-29",
-    "lastCommit": "2026-10-19",
-    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
+    "sizeBytes": 184200,
+    "mtime": "2026-11-02",
+    "lastCommit": "2026-10-29",
+    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
   },
   "probe_source.textClipping": {
     "exists": true,
@@ -324,15 +324,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 31598,
-    "mtime": "2026-10-29",
+    "sizeBytes": 31335,
+    "mtime": "2026-11-02",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-19",
-    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
+    "lastCommit": "2026-10-29",
+    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
   },
   "system_changelog": {
     "exists": false,
@@ -373,11 +373,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/Dashboard.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 26759,
-    "mtime": "2026-09-25",
+    "sizeBytes": 26784,
+    "mtime": "2026-11-02",
     "imports": 7,
     "importedBy": [
       "src/App.tsx",
@@ -416,15 +416,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18614,
-    "mtime": "2026-10-20",
+    "sizeBytes": 18617,
+    "mtime": "2026-10-29",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-19",
-    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
+    "lastCommit": "2026-10-29",
+    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
   },
   "src/data/bookSnapshot.ts": {
     "exists": true,
@@ -432,15 +432,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 1861,
-    "mtime": "2026-10-29",
+    "sizeBytes": 1746,
+    "mtime": "2026-11-02",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-19",
-    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
+    "lastCommit": "2026-10-29",
+    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
   },
   "src/components/TradingTab.tsx": {
     "exists": true,
@@ -649,7 +649,7 @@ export const DECLARED_BUT_MISSING: string[] = [
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "v34_worksheet_2026-10-29.html"
+  "v34_worksheet_2026-11-02.html"
 ]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */

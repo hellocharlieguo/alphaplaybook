@@ -76,10 +76,9 @@ export const SYS_ZONES: SysZone[] = [
 export const SYS_NODES: SysNode[] = [
   { id: 'visser',   x: 10,  y: 18,  kind: 'input',  ref: 'A1 · INPUT L1', title: 'Visser',         sub: '2×/wk · moves themes', history: true },
   { id: 'camillo',  x: 10,  y: 106, kind: 'input',  ref: 'A2 · INPUT L2', title: 'Camillo',        sub: 'names only',           history: true },
-  { id: 'zastocks', x: 10,  y: 194, kind: 'input',  ref: 'A3 · INPUT L2', title: 'ZaStocks',       sub: 'verify only',          history: true },
 
   { id: 'approval', x: 536, y: 106, kind: 'human',  ref: 'C1 · GATE',     title: 'Approval',       sub: 'no auto-build' },
-  { id: 'freeze',   x: 732, y: 106, kind: 'write',  ref: 'C2 · WRITE',    title: 'Freeze',         sub: 'v3.14',                 history: true },
+  { id: 'freeze',   x: 732, y: 106, kind: 'write',  ref: 'C2 · WRITE',    title: 'Freeze',         sub: 'v3.15',                 history: true },
   { id: 'push',     x: 928, y: 106, kind: 'write',  ref: 'C3 · DEPLOY',   title: 'git push',       sub: '→ Vercel' },
 
   { id: 'cron',     x: 10,  y: 344, kind: 'input',  ref: 'D1 · TRIGGER',  title: 'GitHub Actions', sub: '23:17 UTC' },
@@ -92,7 +91,6 @@ export const SYS_NODES: SysNode[] = [
 export const SYS_EDGES: SysEdge[] = [
   { d: 'M162,54 C178,54 178,138 192,138',   tone: 'wire', arrow: true },
   { d: 'M162,140 L192,140',                 tone: 'wire', arrow: true },
-  { d: 'M162,226 C178,226 178,144 192,144', tone: 'wire', arrow: true },
   { d: 'M502,142 L536,142',                 tone: 'wire', arrow: true },
   { d: 'M698,142 L732,142',                 tone: 'wire', arrow: true },
   { d: 'M894,142 L928,142',                 tone: 'wire', arrow: true },
@@ -164,22 +162,9 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
       { t: 'kv', k: 'HOOD', v: 'deployed 6%' },
       { t: 'kv', k: 'BE', v: 'watch — entry re-rated 8/9' },
       { t: 'sec', label: 'Why BE is watch, not seat' },
-      { t: 'note', text: 'A 45% unwind on forced supply into an intact thesis is the anti-momentum setup the engine rewards — it is no longer the parabolic +1,300% name that scored S5 near 30. But it is still one voice leg with no Visser or ZaStocks corroboration, and its overlap with the AIPO power sleeve (BE is roughly 4.9% of AIPO) has to be resolved before any seat conversation.' },
+      { t: 'note', text: 'A 45% unwind on forced supply into an intact thesis is the anti-momentum setup the engine rewards — it is no longer the parabolic +1,300% name that scored S5 near 30. But it is still one voice leg with no Visser corroboration, and its overlap with the AIPO power sleeve (BE is roughly 4.9% of AIPO) has to be resolved before any seat conversation.' },
     ],
     files: [F_VOICES, F_RECAP, F_PULL],
-  },
-
-  zastocks: {
-    eyebrow: 'A3 · Input, Layer 2',
-    title: 'ZaStocks',
-    source: 'window Aug 10–17 · candidates-to-verify, never auto-seat',
-    blocks: [
-      { t: 'sec', label: 'Sourcing' },
-      { t: 'kv', k: 'Method', v: 'scheduled Grok task' },
-      { t: 'kv', k: 'Inference risk', v: 'high — chart images' },
-      { t: 'note', text: 'Gated tighter than Camillo. A ZaStocks name never seats alone and never trips the voice floor independently.' },
-    ],
-    files: [F_VOICES, F_RECAP],
   },
 
   tagging: {
@@ -336,9 +321,10 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     source: 'phase 2: system_changelog · PORTFOLIO_VERSION drives P&L drift',
     blocks: [
       { t: 'sec', label: 'Current' },
-      { t: 'kv', k: 'Version string', v: '2026-10-29-v3.14-restructure' },
-      { t: 'kv', k: 'Names', v: '9' },
+      { t: 'kv', k: 'Version string', v: '2026-11-02-v3.15-drop-lite-nocap' },
+      { t: 'kv', k: 'Names', v: '8' },
       { t: 'sec', label: 'Changelog' },
+      { t: 'row', date: '11/02', pill: 'book', tone: 'book', title: 'v3.15 freeze: Lumentum removed; 10% single-stock cap switched off', quote: 'Marvell agreed to buy Lumentum in an all-stock deal (4.5 MRVL per LITE), so LITE now trades as Marvell, which SOXX already holds. No replacement: optical exposure stays inside SOXX for now. The 10% cap on single stocks is off, so HOOD, LLY, AMZN and VST size where the engine scores them. 8 names. ZaStocks retired as a voice.' },
       { t: 'row', date: '10/29', pill: 'book', tone: 'book', title: 'v3.14 freeze: simplified to 9 names; biotech and cybersecurity added', quote: 'C discretionary restructure, not a data-check move. Out: ASML, MU, GEV, COIN, ETHA, SLV (chips exposure kept through SOXX; crypto through IBIT and HOOD). In: XBI (biotech basket, Visser 10/25: healthcare needs to be part of your portfolio) and CIBR (cybersecurity, Visser 10/25). 10% cap per single stock. Convictions reset: Applied certain, Buildout strong, Monetary strong, Rails forming; AMZN cooling to working. Weights: Buildout 29.4, Applied 45.1, Monetary 15.2, Rails 10.3. 9 names, 43.1pp one-way turnover.' },
       { t: 'row', date: '10/19', pill: 'book', tone: 'book', title: 'v3.13 freeze: ASML added for lithography; optical moves up a rung', quote: 'Data check: ASML says demand exceeds supply until at least 2028 and its planned capacity growth will not be enough (Q3, 10/14); guidance raised. Seated at binding/sole (only EUV supplier). Lumentum sold out through early 2029 and upstream indium phosphide is short: LITE forward to working. Memory held binding (Q4 DRAM contracts up 10-15 percent); CXMT watched, not moved. Single semis names rejected again: they draw from SOXX. Emergent weights: Buildout 34.5, Rails 25.2, Monetary 21.6, Applied 18.7. 13 names, 8.6pp one-way turnover.' },
       { t: 'row', date: '10/13', pill: 'book', tone: 'book', title: 'v3.12 freeze: AIPO becomes one power seat (GEV + VST); seat rule', quote: 'First freeze under the new data check (voices propose, data decides). A power-was-phase-1 reading was rejected: turbine backlog 116 GW and rising, PJM short 6.8 GW. AIPO failed vehicle fit (0.86 to SOXX). GEV binding/leader and VST working/leader share one power seat: a seat is a bottleneck, not a ticker (without the rule power would have jumped to 14.6%). Emergent weights: Buildout 32.2, Rails 26.1, Monetary 22.3, Applied 19.3. 12 names, 10.9pp one-way turnover.' },

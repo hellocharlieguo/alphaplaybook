@@ -1,6 +1,6 @@
 {
- "_doc": "Theme -> asset derivation. Voices name themes (any voice); tickers are DERIVED here, never taken from a voice directly (ZaStocks tickers are never inputs). Engine decides whether and how much. Maintained each cycle by Weekly Workflow 5.11. 'lex' is a case-insensitive regex matched on cleaned transcript text. Vehicle status: held | in_etf (look-through, verified pct + as_of) | candidate | watch | private | none.",
- "_revised": "2026-10-29",
+ "_doc": "Theme -> asset derivation. Voices name themes (any voice); tickers are DERIVED here, never taken from a voice directly (ZaStocks retired as a voice 2026-11-02, C). Engine decides whether and how much. Maintained each cycle by Weekly Workflow 5.11. 'lex' is a case-insensitive regex matched on cleaned transcript text. Vehicle status: held | in_etf (look-through, verified pct + as_of) | candidate | watch | private | none.",
+ "_revised": "2026-11-02",
  "themes": {
   "power_grid": {
    "trend": "1 AI buildout",
@@ -49,7 +49,7 @@
     "MU": "candidate",
     "SKHY": "in_etf:SOXX:3.11:2026-09-24"
    },
-   "note": "10/19: CXMT quality watch (Visser 10/18 00:50:34; XTB 10/12 DRAM-architecture progress; Q3 due 10/31). Duopoly held. DRAM/HBM only - pure vehicles MU and SK hynix are both inside SOXX; Samsung has no US listing. SNDK is NAND (post-spin) and sits under storage. Max-demand WAVE_DEMAND row with no direct holding. 'memory' also matches agent-memory talk - read the quote. 10/29: MU removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
+   "note": "11/02: 5.4b A passes binding - SK hynix Q3 10/28 DRAM+HBM effectively sold out through 2029, LTAs with 14 customers cover >half of 2027-28 capacity; TrendForce Q4 conventional DRAM contract +10-15% q/q (slowing). Visser 10/31 'go buy memory names. Trust me.'; Musk: robot RAM needs will exceed everything else. MU re-add projects 9.1% (5.11 ADD) - not set, reverses C's 10/29 simplification; C to decide. PRIOR: 10/19: CXMT quality watch (Visser 10/18 00:50:34; XTB 10/12 DRAM-architecture progress; Q3 due 10/31). Duopoly held. DRAM/HBM only - pure vehicles MU and SK hynix are both inside SOXX; Samsung has no US listing. SNDK is NAND (post-spin) and sits under storage. Max-demand WAVE_DEMAND row with no direct holding. 'memory' also matches agent-memory talk - read the quote. 10/29: MU removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
   },
   "storage_nearline": {
    "trend": "1 AI buildout",
@@ -66,13 +66,14 @@
    "sub": "optical",
    "lex": "\\boptical\\b|\\bfiber\\b|\\bphotonics?\\b|\\bco-?packaged\\b",
    "vehicles": {
-    "GLW": "candidate",
-    "LITE": "held",
     "COHR": "candidate",
-    "AAOI": "candidate"
+    "LITE": "watch",
+    "GLW": "candidate",
+    "AAOI": "candidate",
+    "CIEN": "candidate"
    },
-   "note": "10/19: LITE forward -> working (5.4b A: Lumentum sold out through early 2029, short ~70% of demand on some products, Bloomberg 10/09; InP gap wider than DRAM, TrendForce 8/06). Visser 10/18: 15 Vera Rubin names, 'most of them are in the optical side' (00:39:24). LITE seated 10/12 (v3.11), replacing COPX. Visser 10/11 agentic-portfolio slide: Lumentum CEO 'We are completely sold out through 2029' (00:40:10). Chosen on merits: pure-play lasers/transceivers, the name Visser pointed at, entry passes. GLW/COHR/AAOI under their 200-DMA on 10/12 (ADD-WHEN).",
-   "timing": "working"
+   "note": "11/02 (v3.15): LITE removed, NO replacement (C: optical stays inside SOXX for now - COHR/GLW run 0.73-0.80 with SOXX, little breadth to add). COHR is the first reinstatement candidate (off row in the worksheet); CIEN added as a candidate (SOXX 0.67, LITE 0.73, 1y Yahoo; not yet in the correlation matrix). Marvell signed an all-stock deal for Lumentum 11/02 (4.5 MRVL per LITE); LITE now trades as MRVL, a SOXX member - VEHICLE MISFIT (5.11: vehicle no longer matches the row). LITE -> watch (drop to none at deal close). COHR fit if seated: COHR-LITE 0.80/0.86/0.85 vs COHR-SOXX 0.73/0.78/0.80 (Yahoo 1y/6m/3m). GLW fails own-layer fit (GLW-SOXX 0.74 > GLW-LITE 0.67); optical ~47% of Corning sales. Timing working -> binding, 5.4b A on 2: Corning Q3 10/27 optical +44%, Q4 guide raised; Lumentum FQ1 11/02 FQ2 guide +27% q/q, capacity sold out. Visser 10/31: 'I would spend a lot of time on optical'. PRIOR: 10/19: LITE forward -> working (5.4b A: Lumentum sold out through early 2029, short ~70% of demand on some products, Bloomberg 10/09; InP gap wider than DRAM, TrendForce 8/06). Visser 10/18: 15 Vera Rubin names, 'most of them are in the optical side' (00:39:24). LITE seated 10/12 (v3.11), replacing COPX. Visser 10/11 agentic-portfolio slide: Lumentum CEO 'We are completely sold out through 2029' (00:40:10). Chosen on merits: pure-play lasers/transceivers, the name Visser pointed at, entry passes. GLW/COHR/AAOI under their 200-DMA on 10/12 (ADD-WHEN).",
+   "timing": "binding"
   },
   "lithography": {
    "trend": "1 AI buildout",
@@ -196,7 +197,7 @@
    "sub": null,
    "lex": "\\bhumanoids?\\b|\\brobot(?:ics|s)?\\b|\\bself.driving\\b|\\bembodied\\b",
    "vehicles": {},
-   "note": "Vehicles NOT YET DERIVED. Named by Visser, Camillo, ZaStocks 9/21-27. Research on first qualifying cycle."
+   "note": "11/02: Visser 10/31 - embodied agents start next year (Optimus plants, GPT-6 robotics); he reads it as demand for memory and silver. Wave held at consumer agents (no shipped product). PRIOR: Vehicles NOT YET DERIVED. Named by Visser, Camillo, ZaStocks 9/21-27. Research on first qualifying cycle."
   },
   "space": {
    "trend": null,
@@ -287,6 +288,15 @@
     "SPCX": "watch"
    },
    "note": "NEW 10/28. SpaceX Q3 (10/20) read by Visser as demand evidence for compute, not a buy. SPCX named by ZaStocks (his tickers are not inputs) and has ~96 sessions - no 200-DMA or 1y correlation. Watch only."
+  },
+  "sovereign_ai": {
+   "trend": "2 AI applied",
+   "sub": "sovereign AI",
+   "lex": "\\bsovereign(ty)? ai\\b|\\bai sovereignty\\b|\\bpalantir\\b|\\bpalunteer\\b|\\bpalanteer\\b",
+   "vehicles": {
+    "PLTR": "candidate"
+   },
+   "note": "NEW 11/02. Visser 10/31 (Pomp): Palantir is the only software company he owns and is becoming a bigger position, tied to Alex Karp's AI-sovereignty speech; same breath warns high-multiple software 'could go sideways for a year and a half'. One voice, one mention, no scarcity indicator - would enter at forward. PLTR-CIBR 0.58, PLTR-SOXX 0.20 (1y, Yahoo). Logged, not projected for add."
   }
  }
 }

@@ -6,7 +6,7 @@ import { VOICES, type VoiceSection } from '../data/voiceCards'
 const ACCENT = '#e0915c'
 
 // Book-overlap tags for the S&P-additions block — mirrors the voice ledger state
-// (RDDT = ZaStocks-only quarantine; BE = Camillo trim-and-rotate). Hand-maintained.
+// (RDDT = quarantined, from the retired ZaStocks voice; BE = Camillo). Hand-maintained.
 const SP_ADD_TAGS: Record<string, { label: string; color: string }> = {
   RDDT: { label: 'quarantined', color: '#c9705a' },
   BE: { label: 'Camillo', color: ACCENT },
@@ -102,7 +102,7 @@ export default function SignalRecap({ snapshot, theme: t, activeVoices }: Signal
       {/* Themes radar — moved to top, replaces the pillar row */}
       <SignalRadar theme={t} portfolio={snapshot?.portfolio} />
 
-      {/* Voice Sections — Visser leads the left column; Camillo + ZaStocks stack on the right */}
+      {/* Voice Sections — Visser leads the left column; Camillo sits on the right */}
       {visibleVoices.length > 0 && (
         <div className={rightVoices.length > 0 ? 'ap-voices-grid' : ''} style={{ marginBottom: 24 }}>
           {leadVoice && renderVoiceCard(leadVoice)}
