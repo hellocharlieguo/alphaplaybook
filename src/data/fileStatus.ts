@@ -25,13 +25,13 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-11-02T22:07:51.579Z",
-  "commit": "f837484",
+  "generatedAt": "2026-11-04T16:53:59.961Z",
+  "commit": "4d4e1d3",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
   "ignored": 3,
-  "modified": 9,
+  "modified": 4,
   "undeclared": 1,
   "orphanedSource": 0,
   "undeclaredSource": 0
@@ -77,15 +77,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 94827,
-    "mtime": "2026-11-02",
-    "lastCommit": "2026-10-29",
-    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
+    "sizeBytes": 94902,
+    "mtime": "2026-11-04",
+    "lastCommit": "2026-11-02",
+    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 21352,
@@ -95,13 +95,13 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/Dashboard.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-08-17",
-    "lastMessage": "Voice cards 8/17: extract VOICES to src/data; Visser dates Stage 4 tokenization, Camillo BE drawdown re-rates entry, ZaS"
+    "lastCommit": "2026-11-02",
+    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
   },
   "src/data/voiceCards.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 7460,
@@ -112,19 +112,19 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-28",
-    "lastMessage": "Voice cards 2026-10-28: Visser 10/22-10/25, Camillo 10/12 + 10/18-10/25, ZaStocks 10/19-10/26"
+    "lastCommit": "2026-11-02",
+    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
   },
   "Weekly_Workflow_v34_section.md": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 24829,
     "mtime": "2026-11-02",
-    "lastCommit": "2026-10-29",
-    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
+    "lastCommit": "2026-11-02",
+    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
   },
   "pull_candidates.cjs": {
     "exists": true,
@@ -192,7 +192,7 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/SignalRadar.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 4045,
@@ -202,8 +202,8 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/SignalRecap.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-19",
-    "lastMessage": "FREEZE 2026-10-19-v3.13-asml-litework: ASML added (lithography, binding/sole); LITE forward->working; 13 names, 8.6pp on"
+    "lastCommit": "2026-11-02",
+    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
   },
   "src/components/Portfolio.tsx": {
     "exists": true,
@@ -304,10 +304,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 184200,
-    "mtime": "2026-11-02",
-    "lastCommit": "2026-10-29",
-    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
+    "sizeBytes": 185841,
+    "mtime": "2026-11-04",
+    "lastCommit": "2026-11-02",
+    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
   },
   "probe_source.textClipping": {
     "exists": true,
@@ -324,15 +324,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 31335,
-    "mtime": "2026-11-02",
+    "sizeBytes": 31629,
+    "mtime": "2026-11-04",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-29",
-    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
+    "lastCommit": "2026-11-02",
+    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
   },
   "system_changelog": {
     "exists": false,
@@ -373,7 +373,7 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/Dashboard.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 26784,
@@ -391,8 +391,8 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/TradingTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-09-25",
-    "lastMessage": "Stat cards: F&G shows band + probability pill, rename to CNN Fear & Greed Index / Inflation"
+    "lastCommit": "2026-11-02",
+    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
   },
   "src/components/SystemTab.tsx": {
     "exists": true,
@@ -416,15 +416,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18617,
-    "mtime": "2026-10-29",
+    "sizeBytes": 18614,
+    "mtime": "2026-11-02",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-29",
-    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
+    "lastCommit": "2026-11-02",
+    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
   },
   "src/data/bookSnapshot.ts": {
     "exists": true,
@@ -432,15 +432,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 1746,
-    "mtime": "2026-11-02",
+    "sizeBytes": 1619,
+    "mtime": "2026-11-04",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-10-29",
-    "lastMessage": "FREEZE 2026-10-29-v3.14-restructure: 13 -> 9 names (C discretionary). Out ASML/MU/GEV/COIN/ETHA/SLV; in XBI, CIBR. 10% s"
+    "lastCommit": "2026-11-02",
+    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
   },
   "src/components/TradingTab.tsx": {
     "exists": true,
@@ -649,7 +649,7 @@ export const DECLARED_BUT_MISSING: string[] = [
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "v34_worksheet_2026-11-02.html"
+  "v34_worksheet_2026-11-04.html"
 ]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */

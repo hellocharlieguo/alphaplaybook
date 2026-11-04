@@ -1161,7 +1161,9 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 //          trend = derived_timing x conviction x breadth(N_eff);
 //          weight = trend_weight x (name score / sum in trend).
 // Canonical: v34_worksheet_2026-08-24.html   Spec: Trend_First_Spec.md
-// v3.15 (2026-11-02): 8 holdings. LITE removed, no replacement (Marvell all-stock deal made it a SOXX-member proxy;
+// v3.16 (2026-11-04): 7 holdings. VST removed, no replacement (C discretionary; no power exposure left). Caps still off.
+// Canonical: v34_worksheet_2026-11-04.html
+// prior v3.15 (2026-11-02): 8 holdings. LITE removed, no replacement (Marvell all-stock deal made it a SOXX-member proxy;
 // optical stays inside SOXX). 10% single-stock cap switched OFF (C). Canonical: v34_worksheet_2026-11-02.html
 // prior v3.14 (2026-10-29): 9 holdings. C discretionary restructure. Out: ASML, MU, GEV, COIN, ETHA, SLV. In: XBI (biotech
 // basket), CIBR (cybersecurity). 10% cap per single stock (HOOD, LITE, VST, LLY, AMZN). Convictions: Buildout strong,
@@ -1175,14 +1177,13 @@ function aggregateBullishAssets(narrativeSignals, crowdSignals, quantResult) {
 // Retired this freeze: SKHY (unscoreable, no SMA50 until ~Sept 18), SGOV (no cash
 // row in the cascade), MU + WDC (dropped 8/23 on measured redundancy).
 const BASE_PORTFOLIO = {
-  IBIT:  { base_weight: 15.3, theme: 'Monetary',       min_weight:  7.7, action: 'Add' },
-  SOXX:  { base_weight: 13.5, theme: 'AI Buildout',    min_weight:  6.8, action: 'Add' },
-  XBI:   { base_weight: 13.0, theme: 'AI Applied',     min_weight:  6.5, action: 'Add' },
-  CIBR:  { base_weight: 13.0, theme: 'AI Applied',     min_weight:  6.5, action: 'Add' },
-  HOOD:  { base_weight: 12.2, theme: 'Tokenized Rails', min_weight:  6.1, action: 'Add' },
-  LLY:   { base_weight: 11.6, theme: 'AI Applied',     min_weight:  5.8, action: 'Trim' },
-  AMZN:  { base_weight: 10.8, theme: 'AI Applied',     min_weight:  5.4, action: 'Add' },
-  VST:   { base_weight: 10.6, theme: 'AI Buildout',    min_weight:  5.3, action: 'Add' },
+  SOXX:  { base_weight: 16.8, theme: 'AI Buildout',    min_weight:  8.4, action: 'Add' },
+  IBIT:  { base_weight: 16.8, theme: 'Monetary',       min_weight:  8.4, action: 'Add' },
+  CIBR:  { base_weight: 15.0, theme: 'AI Applied',     min_weight:  7.5, action: 'Add' },
+  LLY:   { base_weight: 13.4, theme: 'AI Applied',     min_weight:  6.7, action: 'Trim' },
+  XBI:   { base_weight: 13.4, theme: 'AI Applied',     min_weight:  6.7, action: 'Add' },
+  HOOD:  { base_weight: 13.4, theme: 'Tokenized Rails', min_weight:  6.7, action: 'Add' },
+  AMZN:  { base_weight: 11.2, theme: 'AI Applied',     min_weight:  5.6, action: 'Add' },
 }
 
 // SGOV left the book 2026-08-24 (v3.4 has no cash row) but the momentum
@@ -1195,7 +1196,7 @@ const PRICE_EXTRAS = ['SGOV']
 // stored in yesterday's snapshot; a change forces a one-night rebalance-to-target.
 // Between bumps (same tickers, same version) holdings DRIFT with price — winners gain
 // weight, losers shed it. A ticker add/drop also forces a rebalance regardless.
-const PORTFOLIO_VERSION = '2026-11-02-v3.15-drop-lite-nocap'
+const PORTFOLIO_VERSION = '2026-11-04-v3.16-drop-vst'
 
 function computeModelPortfolio(bullishAssets, quantResult) {
   console.log('\n========================================')

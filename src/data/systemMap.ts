@@ -78,7 +78,7 @@ export const SYS_NODES: SysNode[] = [
   { id: 'camillo',  x: 10,  y: 106, kind: 'input',  ref: 'A2 · INPUT L2', title: 'Camillo',        sub: 'names only',           history: true },
 
   { id: 'approval', x: 536, y: 106, kind: 'human',  ref: 'C1 · GATE',     title: 'Approval',       sub: 'no auto-build' },
-  { id: 'freeze',   x: 732, y: 106, kind: 'write',  ref: 'C2 · WRITE',    title: 'Freeze',         sub: 'v3.15',                 history: true },
+  { id: 'freeze',   x: 732, y: 106, kind: 'write',  ref: 'C2 · WRITE',    title: 'Freeze',         sub: 'v3.16',                 history: true },
   { id: 'push',     x: 928, y: 106, kind: 'write',  ref: 'C3 · DEPLOY',   title: 'git push',       sub: '→ Vercel' },
 
   { id: 'cron',     x: 10,  y: 344, kind: 'input',  ref: 'D1 · TRIGGER',  title: 'GitHub Actions', sub: '23:17 UTC' },
@@ -321,9 +321,10 @@ export const SYS_DETAILS: Record<string, SysDetail> = {
     source: 'phase 2: system_changelog · PORTFOLIO_VERSION drives P&L drift',
     blocks: [
       { t: 'sec', label: 'Current' },
-      { t: 'kv', k: 'Version string', v: '2026-11-02-v3.15-drop-lite-nocap' },
-      { t: 'kv', k: 'Names', v: '8' },
+      { t: 'kv', k: 'Version string', v: '2026-11-04-v3.16-drop-vst' },
+      { t: 'kv', k: 'Names', v: '7' },
       { t: 'sec', label: 'Changelog' },
+      { t: 'row', date: '11/04', pill: 'book', tone: 'book', title: 'v3.16 freeze: Vistra removed', quote: 'C discretionary exit from VST, no replacement. AIPO was rejected (it trades like SOXX, 0.86) and GEV was considered. The book has no power exposure now; AI Buildout is SOXX alone. 7 names.' },
       { t: 'row', date: '11/02', pill: 'book', tone: 'book', title: 'v3.15 freeze: Lumentum removed; 10% single-stock cap switched off', quote: 'Marvell agreed to buy Lumentum in an all-stock deal (4.5 MRVL per LITE), so LITE now trades as Marvell, which SOXX already holds. No replacement: optical exposure stays inside SOXX for now. The 10% cap on single stocks is off, so HOOD, LLY, AMZN and VST size where the engine scores them. 8 names. ZaStocks retired as a voice.' },
       { t: 'row', date: '10/29', pill: 'book', tone: 'book', title: 'v3.14 freeze: simplified to 9 names; biotech and cybersecurity added', quote: 'C discretionary restructure, not a data-check move. Out: ASML, MU, GEV, COIN, ETHA, SLV (chips exposure kept through SOXX; crypto through IBIT and HOOD). In: XBI (biotech basket, Visser 10/25: healthcare needs to be part of your portfolio) and CIBR (cybersecurity, Visser 10/25). 10% cap per single stock. Convictions reset: Applied certain, Buildout strong, Monetary strong, Rails forming; AMZN cooling to working. Weights: Buildout 29.4, Applied 45.1, Monetary 15.2, Rails 10.3. 9 names, 43.1pp one-way turnover.' },
       { t: 'row', date: '10/19', pill: 'book', tone: 'book', title: 'v3.13 freeze: ASML added for lithography; optical moves up a rung', quote: 'Data check: ASML says demand exceeds supply until at least 2028 and its planned capacity growth will not be enough (Q3, 10/14); guidance raised. Seated at binding/sole (only EUV supplier). Lumentum sold out through early 2029 and upstream indium phosphide is short: LITE forward to working. Memory held binding (Q4 DRAM contracts up 10-15 percent); CXMT watched, not moved. Single semis names rejected again: they draw from SOXX. Emergent weights: Buildout 34.5, Rails 25.2, Monetary 21.6, Applied 18.7. 13 names, 8.6pp one-way turnover.' },

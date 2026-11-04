@@ -13,83 +13,76 @@ export interface Holding {
 export interface Sleeve { name: string; weight: number }
 
 export const BOOK = {
-  version: "2026-11-02-v3.15-drop-lite-nocap",
-  count: 8,
+  version: "2026-11-04-v3.16-drop-vst",
+  count: 7,
   total: 100,
-  generatedAt: "2026-11-02T22:07:51.581Z",
+  generatedAt: "2026-11-04T16:53:59.962Z",
   sleeves: [
   {
     "name": "AI Applied",
-    "weight": 48.4
+    "weight": 53
   },
   {
     "name": "AI Buildout",
-    "weight": 24.1
+    "weight": 16.8
   },
   {
     "name": "Monetary",
-    "weight": 15.3
+    "weight": 16.8
   },
   {
     "name": "Tokenized Rails",
-    "weight": 12.2
+    "weight": 13.4
   }
 ] as Sleeve[],
   holdings: [
   {
-    "ticker": "IBIT",
-    "weight": 15.3,
-    "theme": "Monetary",
-    "minWeight": 7.7,
-    "action": "Add"
-  },
-  {
     "ticker": "SOXX",
-    "weight": 13.5,
+    "weight": 16.8,
     "theme": "AI Buildout",
-    "minWeight": 6.8,
+    "minWeight": 8.4,
     "action": "Add"
   },
   {
-    "ticker": "XBI",
-    "weight": 13,
-    "theme": "AI Applied",
-    "minWeight": 6.5,
+    "ticker": "IBIT",
+    "weight": 16.8,
+    "theme": "Monetary",
+    "minWeight": 8.4,
     "action": "Add"
   },
   {
     "ticker": "CIBR",
-    "weight": 13,
+    "weight": 15,
     "theme": "AI Applied",
-    "minWeight": 6.5,
-    "action": "Add"
-  },
-  {
-    "ticker": "HOOD",
-    "weight": 12.2,
-    "theme": "Tokenized Rails",
-    "minWeight": 6.1,
+    "minWeight": 7.5,
     "action": "Add"
   },
   {
     "ticker": "LLY",
-    "weight": 11.6,
+    "weight": 13.4,
     "theme": "AI Applied",
-    "minWeight": 5.8,
+    "minWeight": 6.7,
     "action": "Trim"
   },
   {
-    "ticker": "AMZN",
-    "weight": 10.8,
+    "ticker": "XBI",
+    "weight": 13.4,
     "theme": "AI Applied",
-    "minWeight": 5.4,
+    "minWeight": 6.7,
     "action": "Add"
   },
   {
-    "ticker": "VST",
-    "weight": 10.6,
-    "theme": "AI Buildout",
-    "minWeight": 5.3,
+    "ticker": "HOOD",
+    "weight": 13.4,
+    "theme": "Tokenized Rails",
+    "minWeight": 6.7,
+    "action": "Add"
+  },
+  {
+    "ticker": "AMZN",
+    "weight": 11.2,
+    "theme": "AI Applied",
+    "minWeight": 5.6,
     "action": "Add"
   }
 ] as Holding[],
