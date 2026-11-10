@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'Memory and optical', blurb: '\u201cGo buy memory names. Trust me.\u201d Visser bought optical stocks three times this week; Corning says demand is pressing against its capacity, and renting future computing power keeps getting pricier.', binding: true },
-  { name: 'AI Applied',      tag: 'Adoption has barely started', blurb: 'Anthropic counts half the Fortune 500 as customers yet a tiny share of their spending. Eli Lilly grew revenue 39%; Microsoft offered buyouts to 27% of its staff.' },
-  { name: 'Tokenized Rails', tag: 'Tokenization continues', blurb: 'The DTCC\u2019s tokenization service is live and tokenized assets on Solana hit a record. Visser reads the Binance hack as growing pains now that banks are involved.' },
-  { name: 'Monetary',        tag: 'Shrugged off a $6B hack', blurb: '\u201cYou can\u2019t even tell that something happened.\u201d Bitcoin fell about 4% on the week of the largest theft on record; Visser sees the start of a major move.' },
+  { name: 'AI Buildout',     tag: 'Demand is insatiable', blurb: 'Visser bought Micron, Marvell and Nvidia into the selloff. He expects new governors to slow data-center building, not stop it: \u201cI don\u2019t think this changes the demand side of compute.\u201d', binding: true },
+  { name: 'AI Applied',      tag: 'Lilly and longevity', blurb: 'He expects Eli Lilly to be the world\u2019s biggest company within five years and longevity to be a major story next year. Cyber risk has reached \u201cextreme\u201d levels.' },
+  { name: 'Tokenized Rails', tag: 'Within two years', blurb: '\u201cNo doubt in my mind\u201d that tokenization and agent-driven commerce arrive within two years; he expects money supply to grow through tokenization, not printing.' },
+  { name: 'Monetary',        tag: 'Headwinds lifting', blurb: 'Oil fell about $20 in three days, inflation expectations dropped and rate-hike fears eased. Gold, silver and platinum rallied; he expects Bitcoin to follow gold higher.' },
 ]
 
 interface Holding { ticker?: string; category?: string }

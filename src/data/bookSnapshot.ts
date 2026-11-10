@@ -16,7 +16,7 @@ export const BOOK = {
   version: "2026-11-04-v3.16-drop-vst",
   count: 7,
   total: 100,
-  generatedAt: "2026-11-04T16:53:59.962Z",
+  generatedAt: "2026-11-10T17:58:22.814Z",
   sleeves: [
   {
     "name": "AI Applied",

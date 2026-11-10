@@ -25,8 +25,8 @@ export interface FileState {
 }
 
 export const MAP_META = {
-  "generatedAt": "2026-11-04T16:53:59.961Z",
-  "commit": "4d4e1d3",
+  "generatedAt": "2026-11-10T17:58:22.813Z",
+  "commit": "c370cdb",
   "declared": 47,
   "missing": 3,
   "untracked": 0,
@@ -74,13 +74,13 @@ export const FILE_STATUS: Record<string, FileState> = {
   "server/daily-cron.cjs": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 94902,
     "mtime": "2026-11-04",
-    "lastCommit": "2026-11-02",
-    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
+    "lastCommit": "2026-11-04",
+    "lastMessage": "FREEZE 2026-11-04-v3.16-drop-vst: VST out (C discretionary), no replacement; caps still off. 7 names, 10.6pp one-way"
   },
   "src/components/SignalRecap.tsx": {
     "exists": true,
@@ -101,11 +101,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/voiceCards.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 7460,
-    "mtime": "2026-11-02",
+    "sizeBytes": 7538,
+    "mtime": "2026-11-10",
     "imports": 0,
     "importedBy": [
       "src/components/SignalRecap.tsx",
@@ -192,11 +192,11 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/components/SignalRadar.tsx": {
     "exists": true,
     "tracked": true,
-    "dirty": false,
+    "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 4045,
-    "mtime": "2026-11-02",
+    "sizeBytes": 4036,
+    "mtime": "2026-11-10",
     "imports": 1,
     "importedBy": [
       "src/components/SignalRecap.tsx"
@@ -304,10 +304,10 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": true,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 185841,
-    "mtime": "2026-11-04",
-    "lastCommit": "2026-11-02",
-    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
+    "sizeBytes": 193063,
+    "mtime": "2026-11-10",
+    "lastCommit": "2026-11-04",
+    "lastMessage": "FREEZE 2026-11-04-v3.16-drop-vst: VST out (C discretionary), no replacement; caps still off. 7 names, 10.6pp one-way"
   },
   "probe_source.textClipping": {
     "exists": true,
@@ -321,7 +321,7 @@ export const FILE_STATUS: Record<string, FileState> = {
   "src/data/systemMap.ts": {
     "exists": true,
     "tracked": true,
-    "dirty": true,
+    "dirty": false,
     "ignored": false,
     "kind": "file",
     "sizeBytes": 31629,
@@ -331,8 +331,8 @@ export const FILE_STATUS: Record<string, FileState> = {
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-11-02",
-    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
+    "lastCommit": "2026-11-04",
+    "lastMessage": "FREEZE 2026-11-04-v3.16-drop-vst: VST out (C discretionary), no replacement; caps still off. 7 names, 10.6pp one-way"
   },
   "system_changelog": {
     "exists": false,
@@ -416,15 +416,15 @@ export const FILE_STATUS: Record<string, FileState> = {
     "dirty": false,
     "ignored": false,
     "kind": "file",
-    "sizeBytes": 18614,
-    "mtime": "2026-11-02",
+    "sizeBytes": 18675,
+    "mtime": "2026-11-04",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-11-02",
-    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
+    "lastCommit": "2026-11-04",
+    "lastMessage": "FREEZE 2026-11-04-v3.16-drop-vst: VST out (C discretionary), no replacement; caps still off. 7 names, 10.6pp one-way"
   },
   "src/data/bookSnapshot.ts": {
     "exists": true,
@@ -433,14 +433,14 @@ export const FILE_STATUS: Record<string, FileState> = {
     "ignored": false,
     "kind": "file",
     "sizeBytes": 1619,
-    "mtime": "2026-11-04",
+    "mtime": "2026-11-10",
     "imports": 0,
     "importedBy": [
       "src/components/SystemTab.tsx"
     ],
     "reachable": true,
-    "lastCommit": "2026-11-02",
-    "lastMessage": "FREEZE 2026-11-02-v3.15-drop-lite-nocap: LITE out (MRVL all-stock deal), no replacement, optical via SOXX; 10% single-st"
+    "lastCommit": "2026-11-04",
+    "lastMessage": "FREEZE 2026-11-04-v3.16-drop-vst: VST out (C discretionary), no replacement; caps still off. 7 names, 10.6pp one-way"
   },
   "src/components/TradingTab.tsx": {
     "exists": true,
@@ -649,7 +649,7 @@ export const DECLARED_BUT_MISSING: string[] = [
 ]
 
 export const UNDECLARED_UNTRACKED: string[] = [
-  "v34_worksheet_2026-11-04.html"
+  "v34_worksheet_2026-11-10.html"
 ]
 
 /** exists under src/ but nothing reaches it from the entry point — dead code */

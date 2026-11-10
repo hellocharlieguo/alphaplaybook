@@ -1,6 +1,6 @@
 {
  "_doc": "Theme -> asset derivation. Voices name themes (any voice); tickers are DERIVED here, never taken from a voice directly (ZaStocks retired as a voice 2026-11-02, C). Engine decides whether and how much. Maintained each cycle by Weekly Workflow 5.11. 'lex' is a case-insensitive regex matched on cleaned transcript text. Vehicle status: held | in_etf (look-through, verified pct + as_of) | candidate | watch | private | none.",
- "_revised": "2026-11-04",
+ "_revised": "2026-11-10",
  "themes": {
   "power_grid": {
    "trend": "1 AI buildout",
@@ -15,7 +15,7 @@
     "BE": "candidate",
     "FLNC": "candidate"
    },
-   "note": "10/13 (v3.12): AIPO -> watch, VEHICLE MISFIT under 5.4b C - AIPO-SOXX 0.86/0.88/0.90 (1y/6m/3m), ~12% GOOGL/NVDA/AVGO; it was a second semis holding. GEV seated: turbines are the scarcest input (gas backlog 116 GW Q2, slots into 2031). Equipment layer is the priced one (GEV 47x, PWR 38x, BE 74x fwd). Look-throughs via AIPO are now plain candidates. 10/29: GEV removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row.",
+   "note": "2026-11-10: Camillo 11/05 \"The more irrational the selloff gets the more $BE I buy\" (AI power shortage; stricter energy policy helps on-site power). BE ADD-WHEN 7.6% projected, 18% under its 200-DMA (trigger ~$223). Visser 11/07: Texas governor-elect pledged a data-center approval moratorium. 10/13 (v3.12): AIPO -> watch, VEHICLE MISFIT under 5.4b C - AIPO-SOXX 0.86/0.88/0.90 (1y/6m/3m), ~12% GOOGL/NVDA/AVGO; it was a second semis holding. GEV seated: turbines are the scarcest input (gas backlog 116 GW Q2, slots into 2031). Equipment layer is the priced one (GEV 47x, PWR 38x, BE 74x fwd). Look-throughs via AIPO are now plain candidates. 10/29: GEV removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row.",
    "quality": {
     "GEV": "leader"
    },
@@ -49,7 +49,7 @@
     "MU": "candidate",
     "SKHY": "in_etf:SOXX:3.11:2026-09-24"
    },
-   "note": "11/02: 5.4b A passes binding - SK hynix Q3 10/28 DRAM+HBM effectively sold out through 2029, LTAs with 14 customers cover >half of 2027-28 capacity; TrendForce Q4 conventional DRAM contract +10-15% q/q (slowing). Visser 10/31 'go buy memory names. Trust me.'; Musk: robot RAM needs will exceed everything else. MU re-add projects 9.1% (5.11 ADD) - not set, reverses C's 10/29 simplification; C to decide. PRIOR: 10/19: CXMT quality watch (Visser 10/18 00:50:34; XTB 10/12 DRAM-architecture progress; Q3 due 10/31). Duopoly held. DRAM/HBM only - pure vehicles MU and SK hynix are both inside SOXX; Samsung has no US listing. SNDK is NAND (post-spin) and sits under storage. Max-demand WAVE_DEMAND row with no direct holding. 'memory' also matches agent-memory talk - read the quote. 10/29: MU removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
+   "note": "2026-11-10: Visser 11/08 bought Micron the most this week; says DRAM price growth has peaked year over year (WATCH). MU ADD-WHEN 9.4% projected, 6.8pp out of SOXX, 7% under its 200-DMA (trigger ~$760). 11/02: 5.4b A passes binding - SK hynix Q3 10/28 DRAM+HBM effectively sold out through 2029, LTAs with 14 customers cover >half of 2027-28 capacity; TrendForce Q4 conventional DRAM contract +10-15% q/q (slowing). Visser 10/31 'go buy memory names. Trust me.'; Musk: robot RAM needs will exceed everything else. MU re-add projects 9.1% (5.11 ADD) - not set, reverses C's 10/29 simplification; C to decide. PRIOR: 10/19: CXMT quality watch (Visser 10/18 00:50:34; XTB 10/12 DRAM-architecture progress; Q3 due 10/31). Duopoly held. DRAM/HBM only - pure vehicles MU and SK hynix are both inside SOXX; Samsung has no US listing. SNDK is NAND (post-spin) and sits under storage. Max-demand WAVE_DEMAND row with no direct holding. 'memory' also matches agent-memory talk - read the quote. 10/29: MU removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
   },
   "storage_nearline": {
    "trend": "1 AI buildout",
@@ -190,14 +190,14 @@
    "vehicles": {
     "SLV": "watch"
    },
-   "note": "10/29: SLV removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
+   "note": "2026-11-10: Visser 11/08 \"my positivity comes in Bitcoin and in silver\"; SLV ADD-WHEN 7.8% projected, 26% under its 200-DMA (trigger ~$62.8). 10/29: SLV removed in the v3.14 restructure (C) - candidate again; reinstate from its worksheet row."
   },
   "robotics": {
    "trend": null,
    "sub": null,
    "lex": "\\bhumanoids?\\b|\\brobot(?:ics|s)?\\b|\\bself.driving\\b|\\bembodied\\b",
    "vehicles": {},
-   "note": "11/02: Visser 10/31 - embodied agents start next year (Optimus plants, GPT-6 robotics); he reads it as demand for memory and silver. Wave held at consumer agents (no shipped product). PRIOR: Vehicles NOT YET DERIVED. Named by Visser, Camillo, ZaStocks 9/21-27. Research on first qualifying cycle."
+   "note": "2026-11-10: Visser 11/05 humanoids in healthcare, 11/08 \"digital employees... humanoids combined with tokenization\" - still not derived. 11/02: Visser 10/31 - embodied agents start next year (Optimus plants, GPT-6 robotics); he reads it as demand for memory and silver. Wave held at consumer agents (no shipped product). PRIOR: Vehicles NOT YET DERIVED. Named by Visser, Camillo, ZaStocks 9/21-27. Research on first qualifying cycle."
   },
   "space": {
    "trend": null,
@@ -267,7 +267,7 @@
     "CRWD": "candidate",
     "PANW": "candidate"
    },
-   "note": "HELD 10/29 (v3.14, C): CIBR seated at forward/basket. NEW 10/28. Visser 10/25: AI-driven cyber attacks 'becomes the most important story over the next 3 years for the market' - but his conclusion is that it pushes banks onto blockchains (rails already held). Demand theme, no scarcity indicator. Priced: CRWD +120% YTD, ~232x trailing (10/23). Engine at forward: CIBR 7.3%, AI applied 18.7 -> 24.0 (against C's trend order). Logged, not acted."
+   "note": "2026-11-10: Visser 11/07 \"we've reached levels of cyber that are extreme risk\". HELD 10/29 (v3.14, C): CIBR seated at forward/basket. NEW 10/28. Visser 10/25: AI-driven cyber attacks 'becomes the most important story over the next 3 years for the market' - but his conclusion is that it pushes banks onto blockchains (rails already held). Demand theme, no scarcity indicator. Priced: CRWD +120% YTD, ~232x trailing (10/23). Engine at forward: CIBR 7.3%, AI applied 18.7 -> 24.0 (against C's trend order). Logged, not acted."
   },
   "edge_ai": {
    "trend": "1 AI buildout",

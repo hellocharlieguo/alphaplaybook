@@ -6,11 +6,13 @@
 // no 'we' reactions (C). Book changes live in the worksheet and Portfolio tab, not here.
 // Visser card headline 10/01: 'LONG SCARCITY, SHORT ABUNDANCE' -> 'LONG SPEED, SHORT FRICTION'.
 //
+// 2026-11-10 weekly cycle — CONFIRM THE BOOK (v3.16 unchanged).
+// New transcripts (Project files): Visser 11/05 (Natalie Brunell), 11/07 (Pomp), 11/08 (solo).
+// Camillo: Grok 11/3-11/9. Cards stay pure summaries of what each voice said.
+//
 // 2026-11-02 weekly cycle — FREEZE v3.15 (LITE removed after the Marvell-Lumentum deal; single-stock cap off).
-// New transcripts (Project files): Visser 10/31 (Pomp) and 10/31 (solo). Camillo: Grok 10/26-11/1.
 // ZaStocks RETIRED as a voice (C, 11/02) — his card is removed; the renderer needs no change
 // (SignalRecap stacks whatever voices follow Visser in the right column).
-// Cards stay pure summaries of what each voice said.
 //
 // Prior cycle notes (10/05 and earlier) are in git history for this file.
 //
@@ -38,36 +40,36 @@ export const VOICES: VoiceSection[] = [
     name: 'Visser',
     headline: 'LONG SPEED, SHORT FRICTION',
     subtitle: 'Jordi Visser — macro framework for the AI and crypto economy',
-    asOf: 'October 31, 2026',
+    asOf: 'November 8, 2026',
     active: true,
     themes: [
       {
         name: 'The framework',
-        editorial: `"The market structure has completely changed and it is forever changed." October felt like a crash but the S&P 500 ended the month down less than 1%, nine of eleven sectors rose and most stocks gained. Morgan Stanley's prime brokerage called it the largest hedge-fund pullback it has seen; he compares it to the GameStop-era unwind in a healthy economy, not to a bear market. His lesson is "strikeout, strikeout, strikeout, home run": nearly all of Nvidia's gain over 30 months came in one four-month stretch, so selling on bubble fears means missing it. Next week: the Treasury's November 4 refunding (he thinks it may cut long-bond sales), the midterms, Iran, and the Anthropic IPO.`,
+        editorial: `"Two weeks ago the AI bubble didn't pop, hedge fund leverage did." The Democrats' midterm sweep, including a surprise win for governor in Texas, set off a week of forced selling: JPMorgan estimated trend-following funds and leveraged ETFs cut more than $70 billion of stock exposure in 90 minutes on Thursday, and Goldman's panic gauge hit 9.57 out of 10. Yet the equal-weight S&P 500 and the S&P 500 without AI stocks both made record highs that week, which he reads as a rotation, not a recession. He calls it buying "into a falling knife," and is doing it. His new frame, borrowed from Marc Andreessen: the S&P 500 is 492 bonds and eight call options, and big public companies with large workforces will stop growing by 2030.`,
         tickers: [],
         curated: true,
       },
       {
         name: 'AI Buildout',
-        editorial: `"Guys, go buy memory names. Trust me." SK hynix's results were strong, memory makers keep signing contracts out to 2030, and Elon Musk says robots will need more memory than everything else on earth; he expects robots to be the next wave of AI, starting next year. On optical networking, Corning says demand is pressing against its capacity and connections per chip could grow tenfold; he bought optical stocks three times this week, and does not like Marvell buying Lumentum. Computing power is getting scarcer: the price to rent future chip capacity is rising. Oracle pledged to raise no more than $20 billion through 2030, a sign that outside financing for AI may be near its peak. His advice: hold less of the giant cloud companies and more of the companies building AI computing.`,
-        tickers: ['MU', 'GLW', 'MRVL'],
+        editorial: `"The AI demand is insatiable." The name he bought most this week was Micron, along with Marvell and Nvidia; Micron now trades near three times earnings, and the semiconductor ETF is still up 29% for the year after falling 11% in the week. He expects the new Texas governor and stricter states to slow data-center building over the next two years, but "I don't think this changes the demand side of compute," and the roughly $1.5 trillion raised this year already funds building through 2027. In his view the midterms removed the risk of a bubble by slowing the race. Memory price growth has peaked, which he expects to help bring inflation down.`,
+        tickers: ['MU', 'MRVL', 'NVDA'],
         curated: true,
       },
       {
         name: 'AI Applied',
-        editorial: `Eli Lilly, now his largest position, grew revenue 39% to $24.4 billion and raised its outlook; he still expects it to become the largest company in the S&P 500 before the end of 2030. Anthropic's IPO filing showed $132 billion in cash and half of the Fortune 500 as customers, yet a tiny share of their spending, so in his view business adoption of AI agents has barely started. Microsoft offering buyouts to 60,000 employees, 27% of its staff, is "stage one of the AI productivity boom," and the fight between workers and capital comes next. The only software company he owns is Palantir; cybersecurity stocks are expensive and could go nowhere for a year and a half even as attacks rise.`,
-        tickers: ['LLY', 'PLTR'],
+        editorial: `He expects Eli Lilly to be "the biggest company in the world" within five years. Health care has started to beat the market, as it did after the dot-com bust, and he thinks longevity becomes a major story next year. Lilly is making new highs alongside Apple and Berkshire Hathaway. Microsoft offering buyouts to 27% of its staff is "a major warning sign": the split between workers and capital is reaching a boiling point, and he expects governments to tax corporations and cut taxes for individuals. Cyber risk has reached "extreme" levels and big public companies are the targets. Anthropic's October results beat expectations as it prepares to go public.`,
+        tickers: ['LLY'],
         curated: true,
       },
       {
         name: 'Tokenized Rails',
-        editorial: `Tokenization "continues": the DTCC's tokenization service is live, tokenized real-world assets on Solana hit a record, and Google is building crypto custody for institutions. Stripe's agent-driven payments will "only grow from here." He reads the Binance hack as the growing pains of a new market, like the Nasdaq's electronic-trading breakdowns in 1999; now that banks are involved and promote crypto to clients, security problems get fixed faster.`,
-        tickers: ['SOL', 'HOOD'],
+        editorial: `"There's no doubt in my mind that tokenization, that agentic commerce... are going to happen over the course of the next two years." Tokenization will turn illiquid assets liquid, so he expects the money supply to "explode through tokenization, not through government printing." Private companies will raise money without public markets, and the public is learning crypto faster than Wall Street: "Everyone, including my son, knows more about crypto than people on Wall Street."`,
+        tickers: ['HOOD'],
         curated: true,
       },
       {
         name: 'Monetary',
-        editorial: `Binance lost about $6 billion to hackers, the largest theft on record, and Bitcoin fell only about 4% on the week: "You can't even tell that something happened." He thinks Bitcoin is at "the beginning of a major move," and his favorite trade is owning Bitcoin against the Nasdaq-100. Quantum: one company says it can break Bitcoin's encryption by 2028; his own research puts that near 15%. High real interest rates have weighed on Bitcoin and silver all year; he expects that to ease next year as the energy, tariff and memory-price effects on inflation fade. He still owns silver for the robotics phase.`,
+        editorial: `The pressures that held Bitcoin and gold back this year are lifting. Brent crude fell about $20 in three days after Iran signaled it was ready to talk, inflation expectations dropped below where the year began, fears of Fed rate hikes eased, and he expects a sharply negative inflation reading for November. Shares outstanding in the Bitcoin ETF hit a record even with prices well off their highs. He calls Bitcoin's pullback "almost textbook," holding in the mid-$70,000s. Gold, silver, platinum and palladium all had a big week, and he expects Bitcoin to move with gold on the way up.`,
         tickers: ['BTC', 'SLV'],
         curated: true,
       },
@@ -77,18 +79,18 @@ export const VOICES: VoiceSection[] = [
     name: 'Camillo',
     headline: 'INFORMATION EDGE, NOT VIBES',
     subtitle: 'Chris Camillo — social arbitrage; a supporting voice that can point to ideas but not change themes',
-    asOf: 'wk of Oct 26 – Nov 1 · via Grok',
+    asOf: 'wk of Nov 3 – Nov 9 · via Grok',
     active: true,
     themes: [
       {
-        name: 'Amazon, Bloom and Robinhood',
-        editorial: `Amazon is by far his largest position and he added aggressively around its October 29 earnings, calling it misunderstood: cloud, AI efficiency, advertising and scale. He cut his leverage before the report and added back after it. He added to Bloom Energy on October 26 for AI data-center power, and on October 30 said he was "meaningfully long" Amazon, Bloom Energy and Robinhood.`,
-        tickers: ['AMZN', 'BE', 'HOOD'],
+        name: 'Bloom, Amazon and Robinhood',
+        editorial: `"The more irrational the selloff gets the more $BE I buy." Bloom Energy is his strongest call this week: AI faces a real electricity shortage, and he says stricter energy policy and limits on data-center power help the case for its fuel cells. He took his borrowing up a little to buy more, while accepting that a very large drop is possible. Amazon remains his largest position after he added aggressively around its October earnings, and he is still meaningfully long Robinhood. He changed his view on Take-Two: games made by AI could cap the upside even if GTA 6 launches well.`,
+        tickers: ['BE', 'AMZN', 'HOOD'],
         curated: true,
       },
       {
         name: 'Lessons',
-        editorial: `"This is a time to think like a long term investor." He loves leverage but calls this fearful market a dangerous place to use it. Fear creates mispricing: five years from now, young investors will likely see this as an extraordinary chance to buy strong businesses, and he favors established companies over speculative ones while fear is high. Red days are "part of the game." The value in his posts is the reasoning, not copying his trades.`,
+        editorial: `"Investing is a game of probabilities not certainties." Fear creates mispricing, and the edge is in the strongest businesses rather than speculative ones. Size a position knowing the worst case up front, keep risky bets in a separate bucket, and do not confuse short-term noise with a long-term thesis. He changes his mind openly when new information arrives.`,
         tickers: [],
         curated: true,
       },
