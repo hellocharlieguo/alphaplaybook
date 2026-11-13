@@ -139,6 +139,7 @@ def main():
     for p in files:
         b = os.path.basename(p); v = voice_of(b); d = date_of(b, a.year)
         if v in RETIRED: retired += 1; continue
+        if b.lower().startswith("readme") or b.startswith("."): continue   # repo housekeeping files, not transcripts
         if not v or not d: skipped.append((b, "no voice" if not v else "no date")); continue
         docs.append((p, b, v, d))
     if not docs: sys.exit("No file had both a recognisable voice and date in its name.")

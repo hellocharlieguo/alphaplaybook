@@ -3,6 +3,8 @@
 **Replaces the old §5 "run rescore_current_v3.py" step. That script and
 `rescore_v34.py` both implement the retired composite method — do not run either.**
 
+**Revision 2026-11-13 (C).** **Transcripts move to a private GitHub repo: `hellocharlieguo/alphaplaybook-transcripts`.** Project files are no longer used for new transcripts (older ones there are an archive). C uploads each week's files on github.com; Claude clones or pulls the repo at the start of every cycle and runs `cycle_scan.py` on the whole folder, so the 28-day removal review is a count, not a recollection. File names: periods inside a date, a dash only between two dates, the voice's name somewhere in the name, `.txt` optional — `11.8.26 Visser Podcast.txt`, `11.7.26 Pomp Visser Podcast.txt`, `10.26-11.1 Camillo Grok Output.txt`. The main `alphaplaybook` repo is public, so transcripts never go there.
+
 **Revision 2026-11-02 (C).** **ZaStocks is retired as a voice.** Two voices remain: Visser and Camillo. His Grok captures are no longer added to Project files; any old ones are ignored by `cycle_scan.py` (themes and tickers alike), and his voice card is gone from the site. `cycle_scan.py` now reads holdings from `BASE_PORTFOLIO` (its hardcoded list was stale since v3.9) and dates cross-month windows correctly (`10/26-11/1` was parsing as 2011).
 
 **Revision 2026-10-28 (C).** Transcripts live in **Project files only**. Claude reads them there, in full, every cycle. The `~/Desktop/transcripts/` folder and the local `cycle_scan.py --dir` step are retired. Claude runs the sweep itself, in its own workspace, on the Project-file transcripts.
@@ -37,12 +39,12 @@ files are immutable snapshots; canonical tracks the newest reading of the book.
 
 ## 5.0 · Protocol
 
-1. Add the week's transcripts to **Project files**, with the voice and date in the name (`9/27/26 Visser Podcast`, `9/21-9/27 Camillo Grok Output`). That is the only place they need to go — no desktop copies.
+1. Upload the week's transcripts to **`alphaplaybook-transcripts`** on github.com (Add file → Upload files → Commit changes), named per the 2026-11-13 revision (`11.8.26 Visser Podcast.txt`, `11.3-11.9 Camillo Grok Output.txt`). That is the only place they need to go — no Project files, no desktop copies.
 2. Say **"run weekly workflow."**
 3. Claude, without waiting on anything from C:
-   - lists Project files and picks every transcript dated after the last cycle;
-   - reads each one **in full** with `project_read` (never keyword sampling);
-   - saves them to its own workspace and runs `cycle_scan.py --dir <that folder>` for the sweep;
+   - clones or pulls `alphaplaybook-transcripts` and picks every transcript dated after the last cycle;
+   - reads each new one **in full** (never keyword sampling);
+   - runs `cycle_scan.py --dir <the transcripts clone>` over the whole folder for the sweep, including the 28-day window;
    - pulls the live repo from GitHub (`BASE_PORTFOLIO`, worksheet, `theme_map.json`).
 4. Optional: for the canonical Twelve Data capture, C runs:
    ```
@@ -103,7 +105,7 @@ recorded as the proposal when he is the source; they are no longer sufficient.
 A theme no voice has described still enters at `forward` (×0.72) until the data
 check sets a rung.
 
-**Capture integrity, checked first.** Confirm each Project file's stated window matches
+**Capture integrity, checked first.** Confirm each transcript file's stated window matches
 the intended one. A Grok capture for `8_17-8_24` was once byte-identical to
 `8_10-8_17` and went undetected for a week. A missing capture is reported as a
 gap, never silently filled from the prior window.
@@ -112,9 +114,8 @@ gap, never silently filled from the prior window.
 
 ## 5.2 · Theme sweep — MANDATORY, RUNS FIRST
 
-Claude runs `cycle_scan.py` itself on the week's transcripts as read from
-**Project files** (saved to its workspace for the scan). Voice and date come from
-the Project-file name. Themes and their vehicles live in **`theme_map.json`**. Five blocks:
+Claude runs `cycle_scan.py` itself on the **`alphaplaybook-transcripts`** clone.
+Voice and date come from the file name. Themes and their vehicles live in **`theme_map.json`**. Five blocks:
 
 1. **Themes this window** — by voice, with a quote each. Two or more voices on one theme is flagged as convergence.
 2. **Derived candidates** — every vehicle for every theme voiced, marked held / inside a held ETF (with verified % and date) / candidate / watch.
