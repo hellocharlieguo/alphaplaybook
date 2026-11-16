@@ -6,6 +6,10 @@
 // no 'we' reactions (C). Book changes live in the worksheet and Portfolio tab, not here.
 // Visser card headline 10/01: 'LONG SCARCITY, SHORT ABUNDANCE' -> 'LONG SPEED, SHORT FRICTION'.
 //
+// 2026-11-16 weekly cycle — CONFIRM THE BOOK pending the 11/16 packet (v3.16).
+// New transcripts (private repo alphaplaybook-transcripts): Visser 11/14 (Pomp), 11/15 (solo, crypto);
+// Camillo: Grok 11/9-11/15 and the 11/4 Decoded Genius interview. Cards stay pure summaries.
+//
 // 2026-11-10 weekly cycle — CONFIRM THE BOOK (v3.16 unchanged).
 // New transcripts (Project files): Visser 11/05 (Natalie Brunell), 11/07 (Pomp), 11/08 (solo).
 // Camillo: Grok 11/3-11/9. Cards stay pure summaries of what each voice said.
@@ -40,37 +44,37 @@ export const VOICES: VoiceSection[] = [
     name: 'Visser',
     headline: 'LONG SPEED, SHORT FRICTION',
     subtitle: 'Jordi Visser — macro framework for the AI and crypto economy',
-    asOf: 'November 8, 2026',
+    asOf: 'November 15, 2026',
     active: true,
     themes: [
       {
         name: 'The framework',
-        editorial: `"Two weeks ago the AI bubble didn't pop, hedge fund leverage did." The Democrats' midterm sweep, including a surprise win for governor in Texas, set off a week of forced selling: JPMorgan estimated trend-following funds and leveraged ETFs cut more than $70 billion of stock exposure in 90 minutes on Thursday, and Goldman's panic gauge hit 9.57 out of 10. Yet the equal-weight S&P 500 and the S&P 500 without AI stocks both made record highs that week, which he reads as a rotation, not a recession. He calls it buying "into a falling knife," and is doing it. His new frame, borrowed from Marc Andreessen: the S&P 500 is 492 bonds and eight call options, and big public companies with large workforces will stop growing by 2030.`,
+        editorial: `"AI is inevitable. Tokenization is inevitable. Agentic commerce is inevitable." In under a week Jensen Huang went from scandal to resignation at Nvidia, and Fed governor Christopher Waller floated a half-point hike that drove the largest weekly jump in two-year Treasury yields since 2022. The S&P 500 still finished about 2.5% from its record, and he reads a market that shrugs off bad news as a good sign. His lesson from 2007 to 2022: once the iPhone arrived, following the Fed and the daily macro news made no one money; exponential innovation carried everything. He sees a bottom forming. Over two days, safe "quality" stocks lagged riskier ones by about 16%, a swing he has seen only in March 2009, March and June 2020, and November 2022. Taiwan and Korea stepped in to support their stock markets, which need higher prices to raise money for AI. He calls the Democrats' sweep bullish because it takes away the risk of a bubble and pushes Asia to move faster. Next up: Anthropic's IPO, Nvidia's earnings and the December Fed meeting.`,
         tickers: [],
         curated: true,
       },
       {
         name: 'AI Buildout',
-        editorial: `"The AI demand is insatiable." The name he bought most this week was Micron, along with Marvell and Nvidia; Micron now trades near three times earnings, and the semiconductor ETF is still up 29% for the year after falling 11% in the week. He expects the new Texas governor and stricter states to slow data-center building over the next two years, but "I don't think this changes the demand side of compute," and the roughly $1.5 trillion raised this year already funds building through 2027. In his view the midterms removed the risk of a bubble by slowing the race. Memory price growth has peaked, which he expects to help bring inflation down.`,
-        tickers: ['MU', 'MRVL', 'NVDA'],
+        editorial: `He compares Huang's exit to Steve Jobs, who was already ill when the iPhone launched; the product carried Apple regardless. Analysts cut their Nvidia price targets but "no one changed their earnings forecasts," and he expects the story to fade if the company keeps delivering. He had put "a good amount of money" into his chip names the week before. In his view the fall in AI stocks since the summer came from a flood of new shares hitting investors who were already fully invested — Google's roughly $80 billion sale, SpaceX, and now Anthropic coming at about $1.5 trillion, well below earlier talk of $2 to $3 trillion — not from a bubble bursting. If the U.S. slows data-center building, he says other countries will take it in exchange for access to the computing power. Memory chip prices are now about 250% above a year ago, down from about 900% earlier this year, and still falling.`,
+        tickers: ['NVDA'],
         curated: true,
       },
       {
         name: 'AI Applied',
-        editorial: `He expects Eli Lilly to be "the biggest company in the world" within five years. Health care has started to beat the market, as it did after the dot-com bust, and he thinks longevity becomes a major story next year. Lilly is making new highs alongside Apple and Berkshire Hathaway. Microsoft offering buyouts to 27% of its staff is "a major warning sign": the split between workers and capital is reaching a boiling point, and he expects governments to tax corporations and cut taxes for individuals. Cyber risk has reached "extreme" levels and big public companies are the targets. Anthropic's October results beat expectations as it prepares to go public.`,
-        tickers: ['LLY'],
+        editorial: `Hackers now use AI to get through layered defenses in days rather than months, so he expects "AI fighting with AI" to become the only workable defense, with swarms of AI agents hunting for breaches as they happen. He tied the $6 billion Binance theft to human error as much as to code. His bigger claim: AI will slow the growth of most public companies and make them more volatile. "There are no safe companies against AI." As agents move from writing code to personal assistants that shop and pay, he expects a "Mag Billion" of tokenized companies raising money on blockchains to take over from the Magnificent Seven.`,
+        tickers: [],
         curated: true,
       },
       {
         name: 'Tokenized Rails',
-        editorial: `"There's no doubt in my mind that tokenization, that agentic commerce... are going to happen over the course of the next two years." Tokenization will turn illiquid assets liquid, so he expects the money supply to "explode through tokenization, not through government printing." Private companies will raise money without public markets, and the public is learning crypto faster than Wall Street: "Everyone, including my son, knows more about crypto than people on Wall Street."`,
+        editorial: `"Tokenization is the most important thing for me for moving assets on chain." He calls AI and crypto "exactly the same trade": neither tokenization nor agent-driven commerce can grow without both. The question is how part of roughly $900 trillion in traditional assets moves into a $3 to $4 trillion crypto market, and his answer is a reason to use it, not demographics: pensions, insurers and fund managers putting assets on chain. Activity on Robinhood's blockchain is still growing, and he says more is coming. Andreessen Horowitz dropping "crypto" from its fund names fits his view that AI, crypto and traditional finance are merging. He bought Zcash, a privacy coin, on the dip.`,
         tickers: ['HOOD'],
         curated: true,
       },
       {
         name: 'Monetary',
-        editorial: `The pressures that held Bitcoin and gold back this year are lifting. Brent crude fell about $20 in three days after Iran signaled it was ready to talk, inflation expectations dropped below where the year began, fears of Fed rate hikes eased, and he expects a sharply negative inflation reading for November. Shares outstanding in the Bitcoin ETF hit a record even with prices well off their highs. He calls Bitcoin's pullback "almost textbook," holding in the mid-$70,000s. Gold, silver, platinum and palladium all had a big week, and he expects Bitcoin to move with gold on the way up.`,
-        tickers: ['BTC', 'SLV'],
+        editorial: `Bitcoin fell to about $69,000. It has moved with gold since March, and both are held back by rising rates. He sees no need for a half-point Fed hike: oil is back where it was 175 days ago, livestock and crop futures have fallen since September, two-year inflation expectations are at the year's lows, and Goldman expects inflation to fall about 1.1 points next year. Markets give a half-point move only a 10% to 13% chance, so a quarter-point hike in December would count as good news. Japanese bond yields falling back to May levels tells him the worst of the rate pressure is passing. He still calls Bitcoin "the purest AI trade" and thinks crypto bottomed this week. Strategy's removal from some stock indexes matters for trading, not for the long run.`,
+        tickers: ['BTC'],
         curated: true,
       },
     ],
@@ -79,18 +83,18 @@ export const VOICES: VoiceSection[] = [
     name: 'Camillo',
     headline: 'INFORMATION EDGE, NOT VIBES',
     subtitle: 'Chris Camillo — social arbitrage; a supporting voice that can point to ideas but not change themes',
-    asOf: 'wk of Nov 3 – Nov 9 · via Grok',
+    asOf: 'wk of Nov 9 – Nov 15 · via Grok + Nov 4 interview',
     active: true,
     themes: [
       {
-        name: 'Bloom, Amazon and Robinhood',
-        editorial: `"The more irrational the selloff gets the more $BE I buy." Bloom Energy is his strongest call this week: AI faces a real electricity shortage, and he says stricter energy policy and limits on data-center power help the case for its fuel cells. He took his borrowing up a little to buy more, while accepting that a very large drop is possible. Amazon remains his largest position after he added aggressively around its October earnings, and he is still meaningfully long Robinhood. He changed his view on Take-Two: games made by AI could cap the upside even if GTA 6 launches well.`,
-        tickers: ['BE', 'AMZN', 'HOOD'],
+        name: 'Amazon, Bloom and Robinhood',
+        editorial: `Amazon is still his largest position, confirmed on November 10. His thesis is an "AI efficiency wave": once intelligence is nearly free, every company can use it to cut costs and grow, and the winners are the ones with distribution that takes decades to build, which is why he picks Amazon. He made more than $10 million over a couple of days on Amazon's earnings after months of work on AWS demand and pricing, and says he should have bet bigger. Bloom Energy is "the quickest way to provide energy to the data centers" now that operators are told to bring their own power, and he keeps buying its selloffs. Robinhood is "the best managed financial institution in the world," with a shot at becoming the largest within 20 years. He is still long Nvidia and holds a small Take-Two position that he will add to or short depending on how gamers react to GTA 6 gameplay.`,
+        tickers: ['AMZN', 'BE', 'HOOD'],
         curated: true,
       },
       {
-        name: 'Lessons',
-        editorial: `"Investing is a game of probabilities not certainties." Fear creates mispricing, and the edge is in the strongest businesses rather than speculative ones. Size a position knowing the worst case up front, keep risky bets in a separate bucket, and do not confuse short-term noise with a long-term thesis. He changes his mind openly when new information arrives.`,
+        name: 'Robots, Bitcoin and lessons',
+        editorial: `He calls general-purpose robots the largest market he has ever seen, but expects deployment to move "meaningfully slower than anybody understands," because every warehouse and factory needs years of change. He expects a humanoid ready for commercial scale in 2027, scaling from 2028, and robots in homes in five to ten years. It will not be winner-take-all, and Tesla holds the pole position only if it executes. On Bitcoin he ignores the usual arguments: younger investors favor it and about $100 trillion will pass to them, so it has a strong tailwind unless security fears break trust. Lessons: keep a separate high-risk bucket for leverage and options, never get attached to a stock, buy irrational selloffs, and earn conviction through your own hours of work.`,
         tickers: [],
         curated: true,
       },

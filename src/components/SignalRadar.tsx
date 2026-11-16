@@ -12,10 +12,10 @@ const glass: CSSProperties = {
 }
 
 const THEME_META: { name: string; tag: string; blurb: string; binding?: boolean }[] = [
-  { name: 'AI Buildout',     tag: 'Demand is insatiable', blurb: 'Visser bought Micron, Marvell and Nvidia into the selloff. He expects new governors to slow data-center building, not stop it: \u201cI don\u2019t think this changes the demand side of compute.\u201d', binding: true },
-  { name: 'AI Applied',      tag: 'Lilly and longevity', blurb: 'He expects Eli Lilly to be the world\u2019s biggest company within five years and longevity to be a major story next year. Cyber risk has reached \u201cextreme\u201d levels.' },
-  { name: 'Tokenized Rails', tag: 'Within two years', blurb: '\u201cNo doubt in my mind\u201d that tokenization and agent-driven commerce arrive within two years; he expects money supply to grow through tokenization, not printing.' },
-  { name: 'Monetary',        tag: 'Headwinds lifting', blurb: 'Oil fell about $20 in three days, inflation expectations dropped and rate-hike fears eased. Gold, silver and platinum rallied; he expects Bitcoin to follow gold higher.' },
+  { name: 'AI Buildout',     tag: 'AI is inevitable', blurb: 'Jensen Huang resigned from Nvidia. Visser says analysts cut price targets, not earnings forecasts, and blames the AI selloff on a wave of new share sales, not a bubble. Camillo keeps buying Bloom Energy for data-center power.' },
+  { name: 'AI Applied',      tag: 'AI versus AI', blurb: 'Visser: hackers now break in within days, so defense becomes \u201cAI fighting with AI.\u201d Camillo: companies with distribution, led by Amazon, win once intelligence is nearly free.' },
+  { name: 'Tokenized Rails', tag: 'Same trade as AI', blurb: 'Visser calls tokenization the most important theme and AI and crypto \u201cexactly the same trade.\u201d Camillo calls Robinhood the best-run financial institution in the world.' },
+  { name: 'Monetary',        tag: 'Bottom forming', blurb: 'Bitcoin fell to about $69,000 alongside gold as rate fears rose. Visser sees inflation pressures fading and a bottom signal in stocks; Camillo sees a $100 trillion wealth transfer to younger investors as Bitcoin\u2019s tailwind.' },
 ]
 
 interface Holding { ticker?: string; category?: string }
