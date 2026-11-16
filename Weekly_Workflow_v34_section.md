@@ -3,6 +3,8 @@
 **Replaces the old §5 "run rescore_current_v3.py" step. That script and
 `rescore_v34.py` both implement the retired composite method — do not run either.**
 
+**Revision 2026-11-16 (C).** **Every file Claude hands over lands in `~/Downloads`.** Commands run it from there (`python3 ~/Downloads/<file>.py`), or move it into the repo first with an explicit `mv ~/Downloads/<file> <destination>` line. Never assume a file is already in `patches/` or the repo root. Commands still start with `cd ~/Desktop/alphaplaybook`. Prompted by the 11/16 cycle, whose sequence pointed at `patches/` and failed because the scripts were sitting in Downloads.
+
 **Revision 2026-11-13 (C).** **Transcripts move to a private GitHub repo: `hellocharlieguo/alphaplaybook-transcripts`.** Project files are no longer used for new transcripts (older ones there are an archive). C uploads each week's files on github.com; Claude clones or pulls the repo at the start of every cycle and runs `cycle_scan.py` on the whole folder, so the 28-day removal review is a count, not a recollection. File names: periods inside a date, a dash only between two dates, the voice's name somewhere in the name, `.txt` optional — `11.8.26 Visser Podcast.txt`, `11.7.26 Pomp Visser Podcast.txt`, `10.26-11.1 Camillo Grok Output.txt`. The main `alphaplaybook` repo is public, so transcripts never go there.
 
 **Revision 2026-11-02 (C).** **ZaStocks is retired as a voice.** Two voices remain: Visser and Camillo. His Grok captures are no longer added to Project files; any old ones are ignored by `cycle_scan.py` (themes and tickers alike), and his voice card is gone from the site. `cycle_scan.py` now reads holdings from `BASE_PORTFOLIO` (its hardcoded list was stale since v3.9) and dates cross-month windows correctly (`10/26-11/1` was parsing as 2011).
@@ -56,7 +58,7 @@ files are immutable snapshots; canonical tracks the newest reading of the book.
    ```
    and attaches `packet/cycle_YYYY-MM-DD.md`. Without it, Claude scores on its own price pull and labels the numbers as such.
 5. Receive: analysis, **data check (§5.4b)**, **book changes (§5.11)**, freeze recommendation, updated `v34_worksheet.html`, voice-card patches, and the git command sequence.
-6. Run the git sequence. **Claude cannot touch the repo** — it produces files and commands; execution is manual.
+6. Run the git sequence. **Claude cannot touch the repo** — it produces files and commands; execution is manual. Every file Claude delivers is downloaded to `~/Downloads`; the sequence either runs it from there or opens with the `mv ~/Downloads/... ` lines that put it in place (revision 2026-11-16).
 
 **Blockers are reported before numbers, never after.** A duplicate transcript
 capture, a stale `corr_matrix.json`, or a packet section that fell back to a raw
